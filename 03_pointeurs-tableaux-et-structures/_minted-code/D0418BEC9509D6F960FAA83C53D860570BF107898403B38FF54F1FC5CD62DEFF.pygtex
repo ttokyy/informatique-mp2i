@@ -1,0 +1,19 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{ifndef TERRAIN\PYGZus{}H}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{define TERRAIN\PYGZus{}H}
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}canvas.h\PYGZdq{}}
+
+
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} FUNCTIONS \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} //}
+
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{SMOOTHSTEP}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{lambda}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}HEIGHT\PYGZus{}OF\PYGZus{}PIXEL}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{o}{*}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{VertexHeights}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NoiseFrequency}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{PixelX}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{PixelY}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{ADD\PYGZus{}NOISE\PYGZus{}LAYER}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NoiseFrequency}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{RotationRadians}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{LayerWeight}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{GENERATE\PYGZus{}TERRAIN\PYGZus{}HEIGHTMAP}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Amplitude}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Frequency}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumOctaves}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Lacunarity}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Persistence}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Exponentiation}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{endif}
+\end{Verbatim}

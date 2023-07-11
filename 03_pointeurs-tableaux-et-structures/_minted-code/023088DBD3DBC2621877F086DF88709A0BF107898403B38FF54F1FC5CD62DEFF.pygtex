@@ -1,0 +1,60 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{ifndef DISPLAY\PYGZus{}H}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{define DISPLAY\PYGZus{}H}
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}canvas.h\PYGZdq{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}dispo.h\PYGZdq{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}terrain.h\PYGZdq{}}
+
+
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} GLOBAL CONSTANTS \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} //}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cGridlineColor}\PYG{p}{[}\PYG{l+m+mi}{4}\PYG{p}{]}\PYG{p}{;}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cServiceDisplayColors}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{p}{]}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// should have size cNumServiceClass x 3}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cTerrainDisplayColors}\PYG{p}{[}\PYG{l+m+mi}{9}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{p}{]}\PYG{p}{;}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cTerrainCosts}\PYG{p}{[}\PYG{l+m+mi}{9}\PYG{p}{]}\PYG{p}{;}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cDeepWaterHeight}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cShallowWaterHeight}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cLowGrassHeight}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cNormalGrassHeight}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cHighGrassHeight}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cHillsHeight}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cLowMountainsHeight}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cElevatedMountainsHeight}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cMountainPeaksHeight}\PYG{p}{;}
+
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} FUNCTIONS \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} //}
+
+\PYG{c+c1}{// utilitary}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{ASSIGN\PYGZus{}COLOR\PYGZus{}OF\PYGZus{}SERVICE\PYGZus{}CLASS}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pRed}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pGreen}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pBlue}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{ASSIGN\PYGZus{}COLOR\PYGZus{}OF\PYGZus{}TERRAIN\PYGZus{}TYPE}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{type}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pRed}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pGreen}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pBlue}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{TERRAIN\PYGZus{}TYPE\PYGZus{}OF\PYGZus{}HEIGHT}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Height}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// displaying attributes}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DisplayCanvasGrid}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DisplayTerrainHeights}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DisplayCellAttractivenesses}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DisplayUnitDensities}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DisplayUnitEntropies}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// rendering objects}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}RenderExistingServices}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}RenderExistingHomes}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}RenderTerrain}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// filling}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}FloodFillService}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{;}
+
+
+
+\PYG{c+c1}{// unused}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DoNothing}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{void}\PYG{p}{)}\PYG{p}{;}
+
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{endif	}
+\end{Verbatim}

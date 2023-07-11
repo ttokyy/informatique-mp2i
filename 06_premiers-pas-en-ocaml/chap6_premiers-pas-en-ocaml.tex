@@ -1,0 +1,736 @@
+\input{../commands_alt.tex}
+
+\begin{document}
+	
+\title{Premiers pas en OCaml}
+
+\section{Un nouveau langage}
+
+OCaml est un langage de programmation développé en France dans les années 1980 principalement pour la recherche et l'industrie, sous le nom ``Objective Caml''. Il est à la fois adapté à la programmation fonctionnelle, impérative et orientée objet (POO).
+\vs{2}
+
+\begin{Remarque}
+	Cependant, dans le cadre du programme de MP2I, nous utiliserons surtout ce langage de manière fonctionnelle, préférant le C pour la programmation impérative. La POO (objets, structures, méthodes...) est quant à elle hors-programme.
+\end{Remarque}
+
+\vs{2}
+Ce langage peut être compilé et interprété (ce qui permet d'exécuter dynamiquement les programmes grâce à une transformation du code source en code bas niveau), comme suit (en \textsl{bash}) : \\
+	\hs{5} \bdot syntaxe de compilation : \bash{ocamlc source.ml -o exec} \\
+	\hs{5} \bdot syntaxe d'interprétation : \bash{utop} \nll
+Lorsque l'on lance \caml{utop}, on peut alors taper l'une des commandes suivantes :
+
+	\begin{center}
+	\begin{tabular}{r|p{100mm}}
+		\caml{définition;;} & prend en compte la définition et affiche le type, la valeur et le nom de l'objet ainsi défini \vs{2} \\
+		\caml{expression;;} & évalue l'expression et affiche son type et sa valeur \vs{2} \\
+		\texttt{\#}\caml{use "source.ml";;} & importe les définitions écrites dans le fichier source \caml{source.ml} et évalue les expressions contenues dedans (interprétant donc, ligne à ligne, le fichier source) \vs{2} \\
+		\caml{exit 0;;} (ou \textsf{Ctrl\,+\,D}) & sortie de \caml{utop}
+	\end{tabular}
+	\end{center}
+	\vs{4}
+	
+OCaml est un langage statiquement typé, c'est-à-dire que le type des valeurs et des fonctions est fixé par les définitions dans le code source (en particulier, \textit{avant} l'appel de fonction et l'exécution).
+
+\vs{2}
+\begin{Remarque}
+	Le langage est muni d'un moteur d'inférence de type capable de déterminer le type d'une fonction, d'une valeur ou d'une expression, même quand celui-ci n'est pas précisé, et ceci grâce aux opérateurs, qui sont spécifiques à chaque type (\emph{cf.} plus loin). Néanmoins, on veillera toujours dans ce cours à expliciter ces types.
+\end{Remarque}
+\vs{2}
+
+Enfin, on met des parenthèses autour des sous-expressions.
+\vs{2}
+
+\begin{Exemple}
+	Ainsi, si \caml{f : int -> int -> int} est une fonction préalablement définie, alors ``\caml{f 5 6-1}'' donne l'évaluation de \(f(5,6)-1\) tandis que ``\caml{f 5 (6-1)}'' donne celle de \(f(5,6-1)\).
+\end{Exemple}
+
+\pagebreak
+\section{Structure d'un fichier \texttt{.ml}}
+	
+	Un code OCaml écrit dans un fichier \caml{.ml} est essentiellement constitué d'une suite de définitions, qui suivent la syntaxe décrite ci-dessous.
+	
+	\begin{Syntaxe}[définitions]
+	 \bdot Pour une définition simple, on a :
+	 	\begin{Caml}
+	 							let nom:t = e
+	 	\end{Caml}
+ 	
+ 	\vs{2}
+ 	où \caml{nom} est un identificateur, \caml{t} un type et \caml{e} une expression de type \caml{t}. \nll
+ 		%
+ 	\bdot Pour une fonction, on écrira : \vs{3}
+ 		\begin{Caml}
+		 			 let nom_f (arg@$_1$@:t@$_1$@) ... (arg@$_n$@:t@$_n$@) : t@$_s$@ =
+		 				 expr_f
+ 		\end{Caml}
+ 	
+ 	\vs{3}
+ 	où \caml{arg@$_1$@},...,\caml{arg@$_n$@} et \caml{t@$_1$@},...,\caml{t@$_n$@} sont les arguments et leurs types, \caml{t@$_s$@} est le type de sortie de la fonction, et \caml{expr_f} est une expression de type \caml{t@$_s$@}.
+ 	\end{Syntaxe}
+ 	
+ 	\vs{2}
+ 	\begin{Remarque}
+ 		Dans la définition précédente, le type de \caml{nom_f} est \caml{t@$_1$@ -> t@$_2$@ -> ... -> t@$_n$@ -> t@$_s$@}. \nt
+ 			%
+ 		Ainsi, une valeur peut être vue comme une fonction d'arité nulle, c'est-à-dire qu'elle possède un nom, un type et une valeur. Les fonctions, quant à elles, on toujours une valeur mais qu'on peut qualifier de ``fonctionnelle''.
+ 	\end{Remarque}
+ 
+ \section{Expressions en OCaml}
+ 
+ 	\subsection{Qu'est-ce qu'une expression ?}
+ 		
+ 		\begin{Definition}[environnement]
+ 			\`A un instant donné, on appelle environnement courant l'ensemble des valeurs, fonctions et types définis au préalable ou prédéfinis dans le langage.
+ 		\end{Definition}
+ 		
+ 		\begin{Definition}[expression]
+ 			Pour un environnement donné, une expression est une suite de caractères à laquelle on peut attribuer un type et une valeur (au sens large$^{(*)}$)
+ 		\end{Definition}
+ 		
+ 		\vs{2}
+ 		\begin{Remarque}
+ 			$^{(*)}$Par exmple, la fonction \(x\mapsto x+1 \) est une valeur, fonctionnelle, en tant qu'élément de \( \bb{N}^\bb{N}\).
+ 		\end{Remarque}
+ 		
+ 		\vs{2}
+ 		\begin{Remarque}
+ 			Le type et la valeur d'une expression ne la caractérisent pas (prendre par exemple \(3\) et \(1+2\)).
+ 		\end{Remarque}
+ 		
+ 	\subsection{Les constantes}
+ 	
+ 		On donne ici quelques exemples des types prédéfinis du langage OCaml, qui constituent donc aussi des types d'expression possibles. \vs{-4}
+ 			\renewcommand{\arraystretch}{1.2}
+ 			\begin{center}
+ 			\begin{tabular}{l|l|p{95mm}}
+ 				Type & Exemples & Remarques \\ \hline
+ 				\caml{int} & \caml{0}, \caml{1}, \caml{-38} & \\ \hline
+ 				\caml{float} & \caml{0.}, \caml{0.5}, \caml{12.}, \caml{12.0} & Il faut toujours mettre un point et préciser la partie entière (ne pas écrire ``\caml{.5}'', par exemple). \\ \hline
+ 				\caml{bool} & \caml{true}, \caml{false} & Ce sont les deux seules valeurs de ce type. \\ \hline
+ 				\caml{char} & \caml{'a'}, \caml{'3'}, \texttt{'\textbackslash n'}, \texttt{'\textbackslash ''}, \texttt{'\textbackslash \textbackslash'}, \texttt{'\textbackslash "'} & \\ \hline
+ 				\caml{string} & \caml{"coucou"}, \caml{""} & \\ \hline
+ 				\caml{unit} & \caml{()} & C'est l'unique valeur de ce type.
+ 			\end{tabular}
+ 			\end{center}
+ 		
+ 		\vs{4}
+ 		\begin{Remarque}
+ 			Les booléens ne fonctionnement pas avec les entiers comme en C.
+ 		\end{Remarque}
+ 		\vs{2}
+ 		
+ 		\begin{Remarque}
+ 			Le type \caml{unit} est l'équivalent du type \caml{void} en C.
+ 		\end{Remarque}
+ 	
+ 	\subsection{Les variables}
+ 	
+ 		Communément appelées (à tort) ``variables'', les valeurs définies dans l'environnement courant sont des expressions, ceci valant également pour les fonctions.
+ 		
+ 		\vs{2}
+ 		\begin{Exemple}
+ 			Si on écrit ``\caml{let a = 3}'', alors dans la suite \caml{a} est une expression.
+ 		\end{Exemple}
+ 		
+ 		\vs{3}
+ 		\begin{Remarque}
+ 			Ces ``variables'' ressemblent donc plus aux variables mathématiques (muettes,...) que celles informatiques, qui désignent plutôt des espaces réservés en mémoire.
+ 		\end{Remarque}
+ 	
+ 	\subsection{Les arguments}
+ 	
+ 		Dans une expression définissant une fonction, y compris une fonction anyonyme (\emph{cf.} section suivante), il est possible d'utiliser les arguments de cette fonction. Un argument de fonction est donc une expression tant qu'on est dans le corps de la fonction.
+ 		
+ 		\vs{2}
+ 		\begin{Remarque}
+ 			L'expression définissant la fonction possède donc un type, mais pas encore de valeur au sens d'une valeur dont le type est celui de sortie de la fonction (sa valeur est en fait fonctionnelle, par exemple : \caml{fun x -> x+1} qui est une fonction anonyme).
+ 		\end{Remarque}
+ 	
+ 		\vs{2}
+ 		\begin{Remarque}
+ 			Les expressions qu'on a vues jusqu'ici correspondent à des feuilles d'un arbre de syntaxe.
+ 		\end{Remarque}
+ 	
+ 	\subsection{Les fonctions anonymes (ou abstractions)}
+ 		
+ 		En OCaml, il est possible de décrire une fonction par une simple expression, c'est-à-dire sans la définir, sans faire appel à \caml{let} et sans lui donner de nom. Une telle fonction est dite anonyme.
+ 		\begin{Syntaxe}[fonctions anonymes]
+ 		On utilise la syntaxe suivante : \vs{2}
+ 			\begin{Caml}
+ 						  fun arg@$_1$@ arg@$_2$@ ... arg@$_n$@ -> e
+ 			\end{Caml}
+ 		
+ 		\vs{2}
+ 		où \caml{arg@$_1$@},...,\caml{arg@$_n$@} sont des identificateurs et \caml{e} est une expression qui peut utiliser ces arguments. \nt
+ 			%
+ 		Cette expression est de type \caml{t@$_1$@ -> ... -> t@$_n$@ -> t} où \caml{t@$_1$@},...,\caml{t@$_n$@} sont les types des arguments et \caml{t} est le type de \caml{e} qu'on infère à partir de \caml{e} (préciser les types n'est donc pas nécessaire).
+ 		\end{Syntaxe}
+ 		
+ 	\subsection{Les appels de fonctions}
+ 	
+ 		\subsubsection{Les opérateurs prédéfinis}
+ 		
+ 			Les opérateurs (arithmétiques, booléens, de comparaison) sont des cas particuliers de fonctions prédéfinies dans le langage, c'est pourquoi on les traite dans cette section.
+ 			
+ 			\begin{Definition}[notation préfixe, post-fixe, infixe]
+ 				On parle de notation préfixe (resp.\! post-fixe) lorsque l'opérateur se place avant (resp.\! après) ses opérandes. Pour les opérateurs binaires, il existe aussi la notation infixe où les opérandes se placent de part et d'autre des opérateurs.
+ 			\end{Definition}
+ 			
+ 			\vs{2}
+ 			\begin{Exemple}
+ 				Le moins unaire (\(-\)) et la négation (\(\neg\)) sont notés de manière préfixe. La factorielle (\(!\)) est notée de façon post-fixe.
+ 			\end{Exemple}
+ 		
+ 			\vs{2}
+ 			Les opérateurs prédéfinis en OCaml sont infixes s'ils sont binaires et préfixes s'ils sont unaires. On les présente dans le tableau ci-dessous :
+ 				
+ 				\begin{center}
+ 					\begin{tabular}[h]{l|p{60mm}|p{35mm}|p{37mm}}
+ 						Type \(t\) & Opérateurs binaires pour \(t\) & \raggedright Opérateurs unaires pour \(t\) & Type de l'expression composée \\ \hline
+ 						\caml{int} & \caml{+}, \caml{-}, \caml{*}, \caml{/}, \caml{mod} & \caml{-} & \caml{int} \\ \hline
+ 						\caml{float} & \caml{+.}, \caml{-.}, \caml{*.}, \caml{/.}, \caml{**} (puissance) & \caml{-.} & \caml{float} \\ \hline
+ 						\caml{int} ou \caml{float} & \caml{>}, \caml{>=}, \caml{=}, \caml{<}, \caml{<=}, \caml{<>} (``différent de'') & & \caml{bool} \\ \hline
+ 						\caml{bool} & \caml{&&}, \caml{||}, \caml{=} & \caml{not} & \caml{bool} \\ \hline
+ 						\caml{char} & & & \\ \hline
+ 						\caml{string} & \caml{^} (concaténation) & & \caml{string}
+ 					\end{tabular}
+ 				\end{center}
+ 			
+ 			\vs{4}
+ 			\begin{Remarque}
+ 				Pour les \caml{float}, il faut utiliser l'opérateur \caml{-.} pour les fonctions (par exemple : \caml{fun x -> -.x}) mais ce n'est pas nécessaire pour les constantes (par exemple : \caml{-12.0}).
+ 			\end{Remarque}
+ 			
+ 			\vs{2}
+ 			\begin{Remarque}
+ 				\caml{**} ne fonctionne pas sur les \caml{int}, mais il existe des opérateurs de conversion.
+ 			\end{Remarque}
+ 		
+ 			\vs{2}
+ 			\begin{Remarque}
+ 				Notons que contrairement au C, les tests d'égalité se font avec un simple \caml{=}. En fait, il existe aussi en OCaml un opérateur \caml{==}, mais celui teste l'égalité physique, c'est-à-dire liée aux adresses dans la mémoire.
+ 			\end{Remarque}
+ 			\vs{2}
+ 			
+ 			On a de façon générale : \caml{op@$^1$@ e@$_1$@}, ou bien \caml{e@$_1$@ op@$^2$@ e@$_2$@}, où : \\
+ 			\hs{5} \bdot \caml{op@$^1$@} est un opérateur unaire \\
+ 			\hs{5} \bdot \caml{op@$^2$@} est un opérateur binaire \\
+ 			\hs{5} \bdot \caml{e@$_1$@} et \caml{e@$_2$@} sont des expressions de types respectifs \caml{t@$_1$@} et \caml{t@$_2$@}.
+ 			
+ 		\subsubsection{Les fonctions en général}
+ 			
+ 			\vs{-2}
+ 			\begin{Syntaxe}[appel de fonction]
+ 			Pour appeler une fonction \caml{f}, on utilise la syntaxe suivante :\vs{2}
+ 			
+ 				\begin{Caml}
+ 								f e@$_1$@ e@$_2$@ ... e@$_n$@
+ 				\end{Caml}
+ 			\vs{2}
+ 			où \caml{e@$_1$@},...,\caml{e@$_n$@} sont des expressions du type attendu pour les arguments de la fonction. L'expression entière est alors du type de sortie de \caml{f}.
+ 			\end{Syntaxe}
+ 		
+ 			\vs{2}
+ 			\begin{Remarque}
+ 				OCaml évalue l'expression en lisant les arguments de la droite vers la gauche.
+ 			\end{Remarque}
+ 		
+ 		\subsubsection{L'alternative}
+ 			
+ 			\vs{-2}
+ 			\begin{Syntaxe}[branche conditionnelle et alternative]
+ 			Les branches conditionnelles en OCaml suivent la syntaxe suivante : \vs{2}
+ 			
+ 				\begin{Caml}
+ 							if cond then e@$_1$@ else e@$_2$@
+ 				\end{Caml}
+ 			
+ 			\vs{2}
+ 			où \caml{cond} est une expression de type \caml{bool} et \caml{e@$_1$@} et \caml{e@$_2$@} sont des expressions de même type \caml{t}. \\
+ 			Cette expression est de type \caml{t} et de valeur celle de \caml{e@$_1$@} si la condition vaut \caml{true}, celle de \caml{e@$_2$@} sinon.
+ 			\end{Syntaxe}
+ 		
+ 			\vs{2}
+ 			\begin{Remarque}
+ 				Le ``\caml{else}'' est obligatoire.
+ 			\end{Remarque}
+ 		
+ 		\subsubsection{Les \(\bm{n}\)-uplets}
+ 			
+ 			\vs{-2}
+ 			\begin{Syntaxe}[tupples]
+ 			Un \(n\)-uplet ou tupple est de la forme \caml{(e@$_1$@,e@$_2$@,...,e@$_n$@)} où pour tout \(i\in[1..n]\), \caml{e@$_i$@} est de type \caml{t@$_i$@}. \\
+ 			Cette expression est alors de type \caml{t@$_1$@ * t@$_2$@ * ... * t@$_n$@}.
+ 			\end{Syntaxe}
+ 			
+ 			\vs{2}
+ 			\begin{Exemple}
+ 				``\caml{(3,"a",(1,2))}'' est de type \caml{- : int * string * (int * int)}.
+ 			\end{Exemple}
+ 			
+ 		\subsubsection{Les définitions locales}
+ 			
+ 			\vs{-2}
+ 			\begin{Syntaxe}[définition locale]
+ 			Si l'on veut définir localement une variable à l'intérieur d'une expression, on utilise : \vs{2}
+ 				\begin{Caml}
+ 							   let def in e
+ 				\end{Caml}
+ 			\vs{2}
+ 			où \caml{let def} suit la syntaxe des définitions et \caml{e} est une expression de type \caml{t} qui peut utiliser les variables définies dans \caml{def}. L'expression globale reste de type \caml{t}.
+ 			\end{Syntaxe}
+ 			
+ 			\vs{2}
+ 			Cette commande est s'avère utile, notamment lorsque l'on veut déconstruire un tupple, c'est-à-dire récupérer individuellement ses composantes.
+ 			
+ 			\vs{2}
+ 			\begin{Exemple}\vs{-7.5}
+ 				\begin{Caml}
+		   let couple = (3,4);;
+		   let (c,d) = couple in a+b
+ 				\end{Caml}
+ 			\end{Exemple}
+ 		
+ \section{Définition récursive et mutuellement récursive}
+ 
+ 	\subsection{Fonctions récursives simples}
+ 	
+ 		Dans une déclaration classique de fonction, l'expression \caml{e} peut faire intervenir les arguments de la fonction, \caml{a@$_1$@} jusqu'à \caml{a@$_n$@}, des fonctions préalablement définies, mais pas la fonction \caml{f} elle-même. Afin de réaliser des appels récursifs sur une fonction, il faut définir celle-ci comme étant une fonction récursive.
+ 		
+ 		\begin{Syntaxe}[fonction récursive]
+ 			Une fonction récursive est définie comme suit : \vs{2}
+ 				\begin{Caml}
+ 					  let rec f (a@$_1$@:t@$_1$@) ... (a@$_n$@:t@$_n$@) : t@$_s$@ = e
+ 				\end{Caml}
+ 			\vs{2}
+ 			où \caml{e} est une expression de type \caml{t@$_s$@} pouvant faire appel à \caml{f}.
+ 		\end{Syntaxe}
+ 	
+ 		\begin{Exemple}
+ 			Voyons deux façons possibles de coder la factorielle de manière récursive. \\
+ 			En récursif non terminal : \vs{-7.5}
+ 				\begin{Caml}
+ 					  let rec facto (n:int) : int =
+ 						  if n = 0 then 1
+ 						  else (facto (n-1)) * n
+ 				\end{Caml}
+ 			En récursif terminal : \vs{-7.5}
+ 				\begin{Caml}
+ 				  let facto (n:int) : int =
+ 					  let rec aux nn res =
+ 						  if nn = 0 then res
+ 						  else aux (nn-1) (res*nn)
+ 					  in aux n 1
+ 				\end{Caml}
+ 		\end{Exemple}
+ 	
+	\subsection{Fonctions mutuellement récursives}
+		
+		\vs{-2}
+		\begin{Syntaxe}[fonctions mutuellement récursives]
+			On peut définir des fonctions qui soient récursives entre elles comme suit : \vs{3}
+				\begin{Caml}
+				   let rec f@$^1$@ (a@$^1_1$@:t@$^1_1$@) ... (a@$^1_{n_1}$@:t@$^1_{n_1}$@) : t@$^1_s$@ = expr@$_1$@
+				   and f@$^2$@ (a@$^2_1$@:t@$^2_1$@) ... (a@$^2_{n_2}$@:t@$^2_{n_2}$@) : t@$^2_s$@ = expr@$_2$@
+					@$\vdots$@
+				   and f@$^k$@ (a@$^k_2$@:t@$^k_1$@) ... (a@$^k_{n_k}$@:t@$^k_{n_k}$@) : t@$^k_s$@ = expr@$_k$@
+				\end{Caml}
+			\vs{3}
+			où pour tout \(i\in[1..k]\), \caml{expr@$_i$@} est une expression de type \caml{t@$^i_s$@} pouvant faire intervenir \caml{f@$^j$@} pour tout \(j\in[1..k]\) et \(a^i_r\) pour tout \(r\in[1..n_i]\).
+		\end{Syntaxe}
+ 		
+ 		
+\section{Définition de types}
+
+	\subsection{Renommer un type}
+	
+		\vs{-2}
+		\begin{Syntaxe}[définition d'un nouveau type]
+			En OCaml, il est possible de définir des nouveaux types grâce à la syntaxe suivante : \vs{2}
+			\begin{Caml}
+						type nomtype = expr_de_type
+			\end{Caml}
+			\vs{2}
+			où \caml{nomtype} est un identificateur et \caml{expr_de_type} est une expression de type connue.
+		\end{Syntaxe}
+	
+		\vs{2}
+		\begin{Exemple}
+			\begin{tabular}[h]{l} \\
+				\caml{type entier = int;;} \\
+				\caml{type mon_triplet = entier * float * entier;;} \\
+			\end{tabular}
+		\end{Exemple}
+		\vs{2}
+		
+		Les expressions de type peuvent être simples ou composées, on liste dans ce qui suit les principales sortes de type.
+		
+		\subsubsection{Les types simples}
+			On distingue trois sortes de types simples : \nt
+			\bdot Les types prédéfinis : \caml{int}, \caml{float}, \caml{bool}, \caml{char}, \caml{string}, \caml{unit}. \\[1mm]
+			\bdot Les types préalablement définis : après une définition de type de la forme \caml{type nomtype = expr}, \\ \listspace \caml{nomtype} est une expression de type simple. \\[1mm]
+			\bdot Les variables de type : une variable de type est désignée par \caml{'identificateur}.
+			
+			\vs{2}
+			\begin{Exemple}
+				\caml{fun x -> x;;} dans \caml{utop} donne \caml{a' -> 'a = <fun>} : \caml{'a} est une variable de type.
+			\end{Exemple}
+	
+		\subsubsection{Les types produit cartésien}
+			
+			Les types produit cartésien sont les \caml{t@$_1$@ * t@$_2$@ * ... * t@$_n$@} où \caml{t@$_1$@},...,\caml{t@$_n$@} sont des expressions de type. \nt
+				%
+			Un type produit cartésien désigne donc un type de \(n\)-uplet, ressemblant aux structures en C où chaque champ pouvait avoir un type différent, à ceci près qu'ici, les composantes du \(n\)-uplet n'ont pas de nom. Il existe néanmoins un autre type appelé type produit (à ne pas confondre avec le type produit cartésien présenté ici), qui permet de nommer les champs (\emph{cf.} plus loin).
+			
+			\vs{2}
+			\begin{Exemple}
+				\caml{type faux_triplet = int * (int * int)}
+			\end{Exemple}
+			\vs{2}
+			
+			\begin{Remarque}
+				\caml{t@$_1$@*t@$_2$@*t@$_3$@}, \caml{(t@$_1$@*t@$_2$@)*t@$_3$@} et \caml{t@$_1$@*(t@$_2$@*t@$_3$@)} ne représentent pas le même type.
+			\end{Remarque}
+			\vs{2}
+			
+			Pour accéder aux différentes composantes d'un \(n\)-uplet, on utilise \caml{let in}.
+			\vs{2}
+			\begin{Exemple}
+				
+			\end{Exemple}
+			
+		\subsubsection{Les types fonctionnels}
+		
+			Le type \caml{t@$_e$@ -> t@$_s$@} désigne le type d'une fonction à un seul argment de type \caml{t@$_e$@}, et dont le type de sortie est \caml{t@$_s$@}. Plus généralement, si \caml{f} est une fonction de type de sortie \caml{t@$_s$@} dont les arguments sont de types respectifs \caml{t@$_1$@},...,\caml{t@$_n$@}, alors le type de \caml{f} est : \caml{t@$_1$@ -> ... -> t@$_n$@ -> t@$_s$@}.
+			
+			\vs{2}
+			\begin{Exemple}
+			\end{Exemple}
+			
+			\vs{2}
+			En OCaml, une fonction de deux arguments est vue comme une fonction qui associé au premier argument une fonction du deuxième argument. Ainsi, \caml{t@$_1$@->t@$_2$@->t@$_3$@} et \caml{t@$_1$@->(t@$_2$@->t@$_3$@)} représentent le même type.
+			
+			\vs{2}
+			\begin{Exemple}
+			\end{Exemple}
+			
+			\vs{2}
+			\begin{Remarque}
+				
+			\end{Remarque}
+		
+			\vs{2}
+			\begin{Remarque}
+				Attention en revanche, les types \caml{t@$_1$@->t@$_2$@->t@$_3$@} et \caml{(t@$_1$@->t@$_2$@)->t@$_3$@} sont différents.
+			\end{Remarque}
+		
+	\subsection{Définir un type paramétré}
+	
+		\subsubsection{Type paramétré à un seul paramètre}
+			
+			\vs{-2}
+			\begin{Syntaxe}[type paramétré simple]
+				On définit un type paramétré comme suit : \vs{2}
+					\begin{Caml}
+						 type 'a nomtype = expr_de_type
+					\end{Caml}
+				\vs{2}
+				où \caml{a} et \caml{nomdutype} sont des identificateurs et \caml{expr_de_type} est une expression qui peut faire intervenir la variable \caml{'a}.
+			\end{Syntaxe}
+			
+			\vs{2}
+			Après une telle définition, \caml{t nomdutype} est une expression de type pour n'importe quelle expression de type \caml{t}. \`A l'oral, on désignera parfois \caml{'a} par ``alpha''.
+			
+			\vs{2}
+			\begin{Exemple} \vs{-7.5}
+				\begin{Caml}
+		   type 'a quadruplet = 'a*'a*'a*'a;;
+		   let a:bool quadruplet = (true,true,true,false);;
+		   type quad_bool = bool quadruplet;;
+				\end{Caml}
+			\end{Exemple}
+		
+			\vs{2}
+			\begin{Remarque}
+				Attention à ne pas oublier de définir le type \caml{'a} après.
+			\end{Remarque}
+		
+		\subsubsection{Type paramétré à plusieurs paramètres}
+			
+			\vs{-2}
+			\begin{Syntaxe}[type paramétré à plusieurs paramètres]
+				On les définit comme suit : \vs{2}
+					\begin{Caml}
+			    type ('a@$_1$@,'a@$2$@,...,'a@$_n$@) nomdutype = expr_de_type
+					\end{Caml}
+				\vs{2}
+				où \caml{a@$_1$@},...,\caml{a@$_n$@} et \caml{nomdutype} sont des identificateurs et \caml{expr_de_type} est une expression de type pouvant faire intervenir \caml{'a@$_1$@}, \caml{'a@$_2$@},...,\caml{'a@$_n$@}.
+			\end{Syntaxe}
+		
+			\begin{Exemple} \vs{-7.5}
+				\begin{Caml}
+		   type ('a,'b) quadruplet = 'a*'b*'a*'b;;
+		   let a:(float,int) quadruplet = (2.0,-1,3.0,4);;
+		   type quad_bool = (bool,bool) quadruplet;;
+		   type 'd semi_bool_quad = (bool,'d) quadruplet;;
+				\end{Caml}
+			\end{Exemple}
+		
+	\subsection{Définir un type somme}
+		
+		\subsubsection{Définition du type somme}
+		
+		\vs{-2}
+		\begin{Syntaxe}[type somme]
+			Un type somme est un type dont on définit préalablement les valeurs possibles. Comme les types simples, il peut être paramétré, ce que l'on obtient avec la syntaxe : \vs{2}
+				\begin{Caml}
+					  type ('a@$_1$@,'a@$_2$@,...,'a@$_n$@) typeSomme =
+						  | Cons@$_1$@ @$\text{\texttt{\textcolor{gray}{[of t$_1$]}}}$@
+						  | Cons@$_2$@ @$\text{\texttt{\textcolor{gray}{[of t$_2$]}}}$@
+						      @$\vdots$@
+						  | Cons@$_m$@ @$\text{\texttt{\textcolor{gray}{[of t$_m$]}}}$@
+				\end{Caml}
+			\vs{2}
+			où \caml{Cons@$_1$@},...,\caml{Cons@$_m$@} sont des identificateurs appelés constructeurs et \caml{t@$_1$@},...,\caml{t@$_n$@} sont des expressions de type (que l'on met facultativement), qui peuvent faire intervenir \caml{a@$_1$@},...,\caml{a@$_n$@}. \nt
+				%
+			Voici une syntaxe alternative qui met en valeur le caractère facultatif de ces types : \vs{2}
+				\begin{Caml}
+					  type ('a@$_1$@,'a@$_2$@,...,'a@$_n$@) typeSomme =
+						  | Cons@$^1_0$@
+						      @$\vdots$@
+						  | Cons@$^k_0$@
+						  | Cons@$^1_1$@ of t@$^1$@
+						      @$\vdots$@
+						  | Cons@$^\ell_1$@ of t@$^\ell$@
+				\end{Caml}
+			\vs{2}
+		\end{Syntaxe}
+	
+		\vs{2}
+		Après une telle définition : \\
+			\hs{5} \bdot n'importe quelle expression de la forme \caml{et@$_1$@,et@$_2$@,...,et@$_n$@ typeSomme} est une expression de \\ \listskip type si \caml{et@$_1$@},...,\caml{et@$_1$@} sont des expressions de type \\
+			\hs{5} \bdot chaque \caml{Cons@$^i_0$@} est une expression dont le type est \caml{('a@$_1$@,'a@$_2$@,...,'a@$_n$@) typeSomme} \\
+			\hs{5} \bdot chaque \caml{Cons@$^j_1$@ e} est une expression dont le type est \caml{('a@$_1$@,'a@$_2$@,...,'a@$_n$@) typeSomme} ou une \\ \listskip spécialisation de ce type, si \caml{e} est une expression de type \caml{t@$^j$@}.
+	
+		\vs{2}
+		\begin{Remarque}
+			Une fonction dont les arguments appartiennent à un type paramétré (donc elle-même de type paramétré) est appelée fonction polymorphe. Lorsque l'un ou plusieurs des paramètres de type sont définis, on parle alors de spécialisation pour cette fonction.
+		\end{Remarque}
+	
+		\subsubsection{Filtrage associé}
+		
+			\begin{Syntaxe}[filtrage]
+				Le filtrage sur une expression issue d'un type somme permet de réaliser des instructions ou retourner des valeurs différentes en fonction de la valeur de cette expression. Ceci se fait en listant de manière exhaustive les cas possibles ainsi que la valeur associée à chaque cas : \vs{3}
+				\begin{Caml}
+						match e with
+							| Cons@$^1_0$@ -> e@$^1_0$@
+							    @$\vdots$@
+							| Cons@$^k_0$@ -> e@$^k_0$@
+							| Cons@$^1_1$@ val@$_{1}$@ @$\text{ou}$@ var@$_{1} $@-> e@$^1_1$@
+								@$\vdots$@
+							| Cons@$^\ell_1$@ val@$_{\ell}$@ @$\text{ou}$@ var@$_{l} $@-> e@$^\ell_1$@
+				\end{Caml}
+				\vs{3}
+				où \caml{e} est une expression dont le type est \caml{('a@$_1$@,'a@$_2$@,...,'a@$_n$@) typeSomme} ou une spécialisation, \caml{val@$^{i}$@} est une expression de type \caml{t@$^1$@} (une valeur) et \caml{var@$^i$@} est un identificateur (pour une variable). \nt
+					%
+				On peut aussi écrire une syntaxe plus générale : 
+				\vs{2}
+				\begin{Caml}
+							  match e with
+							      | motif -> expr
+				\end{Caml}
+				\vs{2}
+			\end{Syntaxe}
+			
+			\renewcommand{\arraystretch}{1}
+			\vs{2}
+			\begin{Remarque}
+				\!\!\begin{tabular}[t]{l}
+				\bdot L'ordre des motifs est important. \\
+				\bdot Il ne faut pas qu'il y ait de motif redondant. \\
+				\bdot Les motifs doivent couvrir toutes les valeurs possibles du type somme.			
+				\end{tabular} \nt
+				%
+			Les warnings possibles dans les filtrages sont donc la redondance et la non exhaustivité.
+			\end{Remarque}
+			\vs{2}
+			\begin{Remarque}
+				On peut n'est pas limité à une seule valeur lorsqu'on traite le cas \caml{Cons@$^i_1$@} : on peut aussi le filtrer successivement selon plusieurs valeurs \caml{val@$^{i,j}$@} différentes.
+			\end{Remarque}
+			
+			\vs{2}
+			\begin{Exemple}
+				On peut modéliser un jeu de cartes à l'aide de types sommes : \emph{cf.} fichier ``\texttt{carte-bis.ml}''.
+			\end{Exemple}
+			
+		\subsubsection{Un type somme récursif : implémentation de la pile en OCaml}
+		
+			Comme on a le choix, pour chaque constructeur d'un type somme, de préciser ou non un type associé à ce constructeur, il est possible de définir des types sommes récursifs. On illustre cela dans l'exemple suivant, dédié à une implémentation possible de la structure de pile en OCaml. \nll
+				%
+			Voici donc les définitions des fonctions élémentaires :
+			
+			\renewcommand{\arraystretch}{1.5}
+			\begin{center}
+				\hs{13}\begin{tabular}[h]{r|p{0.55\textwidth}}
+					Définition du type &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+type 'a pile =
+	| PileVide
+	| PileNonVide of ('a * ('a pile))
+						\end{minted}
+					\end{minipage} \vs{2}\\ \hline
+					Création d'un pile vide &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+let cree_pile_vide : 'a pile = PileVide
+						\end{minted}
+					\end{minipage} \vs{1}\\ \hline
+					Test de vacuité &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+let est_pile_vide (p:'a pile) : bool =
+	match p with
+		| PileVide -> true
+		| _ -> false
+						\end{minted}
+					\end{minipage} \vs{2}\\
+				\end{tabular}
+			\end{center}
+				\begin{center}
+					\hs{-3}\begin{tabular}[h]{r|p{0.55\textwidth}}
+										Accès au sommet (sans filtrage) &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+let sommet (p:'a pile) : 'a =
+	(* hyp : not(est_pile_vide p) *)
+	let PileNonVide (elem,pp) = p in elem
+						\end{minted}
+					\end{minipage} \vs{2}\\ \hline
+										Accès au sommet (avec filtrage) &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+let sommet_bis (p:'a pile) : 'a =
+	(* hyp : not(est_pile_vide p) *)
+	match p with
+		| PileVide -> failwith "pile vide"
+		| PileNonVide (elem,_) -> elem
+						\end{minted}
+					\end{minipage} \vs{2}\\ \hline
+										Empilement &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+let empiler (p:'a pile) (elem:'a) : 'a pile =
+	PileNonVide (elem,p)
+						\end{minted}
+					\end{minipage} \vs{2}\\ \hline
+										Dépilement &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+let depiler (p:'a pile) : 'a pile =
+	(* hyp : not(est_pile_vide p) *)
+	match p with
+		| PileVide -> failwith "pile vide"
+		| PileNonVide (_,pp) -> pp
+						\end{minted}
+					\end{minipage} \vs{2}\\
+				\end{tabular}
+			\end{center}
+			
+			\vs{2}
+			\`A cela, on rajoute les définitions de deux fonctions non élémentaires : l'une permettant de sommer les valeurs d'une pile d'entiers (donc, \caml{int pile} ici), l'autre permettant de concaténer les chaînes contenue dans une pile de chaîne de caractères (\caml{string pile}), la chaîne au sommet de la pile se plaçant au début. \vs{-2}
+				%
+			\renewcommand{\arraystretch}{1.5}
+			\begin{center}
+				\begin{tabular}[h]{r|p{0.65\textwidth}}
+					Somme (récursif non terminal) &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+let rec somme (p:int pile) : int =
+	match p with
+		| PileVide -> 0
+		| PileNonVide (e,pp) -> e + (somme pp)
+						\end{minted}
+					\end{minipage} \vs{2}\\ \hline
+					Somme (récursif terminal) &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+let somme_rt (p:int pile) : int =
+	let rec aux (pp:int pile) (s:int) =
+		(* calcule s + la somme des éléments de pp *)
+		match pp with
+			| PileVide -> s
+			| PileNonVide (e,spp) -> aux spp (s+e)
+	in aux p 0
+						\end{minted}
+					\end{minipage} \vs{2}\\ \hline
+					Concaténation (non temrinal) &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+let rec conca (p:string pile) : string =
+	match p with
+		| PileVide -> ""
+		| PileNonVide (e,pp) -> e^(conca pp)
+						\end{minted}
+					\end{minipage} \vs{2}\\ \hline
+					Concaténation (temrinal) &
+					\begin{minipage}[t]{0.5\textwidth}
+						\begin{minted}[tabsize=4]{ocaml}
+let conca_rt (p:string pile) : string =
+	let rec aux (pp:string pile) (s:string) =
+		match pp with
+			| PileVide -> s
+			| PileNonVide (e,spp) -> aux spp (s^e)
+	in aux p ""
+						\end{minted}
+					\end{minipage} \vs{2}\\
+				\end{tabular}
+			\end{center}
+
+\vs{4}
+\begin{Remarque}
+	Remarquons bien que l'opération de concaténation ne se fait pas dans le même sens pour \caml{conca} et \caml{conca_rt}, même si ces deux fonctions sont bien équivalentes (réfléchir à la façon dont se construit la chaîne totale dans les deux cas).
+\end{Remarque}
+
+		\subsubsection{Le type option : un type somme paramétré prédéfini}
+		
+			Le type option est un type particulier, il est défini comme suit :
+				\begin{Caml}
+							type 'a option =
+								| None
+								| Some of 'a
+				\end{Caml}
+			Il est notamment utile si l'on veut s'autoriser à ne ``rien'' retourner dans une fonction : alors, on retournera \caml{Some v} lorsqu'il est possible de trouver une valeur \caml{v} convenable, et \caml{None} dans le cas contraire.
+			
+	\section{Définir un type produit}
+	
+		Les types produit, aussi appelés types enregistrement ou ``record'', sont l'équivalent des \cc{struct} en C : ils permettent de rassembler des données de types différents et d'y accéder grâce à des noms.
+		
+		\begin{Syntaxe}[type produit]
+			Un type produit peut, tout comme un type somme, être paramétré. On le définit comme suit :\vs{2}
+				\begin{Caml}
+					type ('a@$_1$@,'a@$_2$@,...,'a@$_n$@) typeProduit = {
+						champ@$_1$@ : t@$_1$@
+						champ@$_2$@ : t@$_2$@
+						   @$\vdots$@
+						champ@$_m$@ : t@$_m$@
+					}
+				\end{Caml}
+			\vs{2}
+			où \caml{champ@$_1$@},...,\caml{champ@$_n$@} sont des identificateurs et \caml{t@$_1$@},...,\caml{t@$_n$@} sont des expressions de type pouvant utiliser \caml{a@$_1$@},...,\caml{a@$_n$@}. \nll
+				%
+			\bdot Lorsqu'on définit alors une variable de type \caml{typeProduit}, on adopte la syntaxe suivante : \vs{2}
+				\begin{Caml}
+	let var : (s@$_1$@,...,s@$_n$@) typeProduit = {champ@$_1$@ = val@$_1$@,...,champ@$_m$@ = val@$_m$@}
+				\end{Caml}
+			\vs{2}
+			où \caml{s@$_1$@},...,\caml{s@$_n$@} sont des expressions de type et \caml{val@$_1$@},...,\caml{val@$_m$@} sont de types respectifs \caml{t@$_1$@},...,\caml{t@$_m$@} (avec la spécialisation induite par \caml{s@$_1$@},...,\caml{s@$_n$@}). \nll
+				%
+			\bdot Pour \(i\in[1..m]\), on peut alors accéder au champ \caml{champ@$_i$@} de \caml{var} avec : \caml{var.champ@$_i$@}.
+		\end{Syntaxe}
+	
+		\vs{2}
+		\begin{Remarque}
+			Contrairement au C, il est nécessaires de réécrire les noms des champs lors de la définition d'une variable, mais on peut par contre les initialiser dans un ordre différent de celui indiqué dans la définition du type produit.
+		\end{Remarque}
+\end{document}

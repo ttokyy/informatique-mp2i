@@ -1,0 +1,595 @@
+\input{../commands_alt.tex}
+\usepackage{euscript}
+\newcommand{\vois}{\EuScript{V}}
+\newcommand{\Pred}{\EuScript{P}\text{{red}}}
+\newcommand{\Succ}{\EuScript{S}\text{{ucc}}}
+\newcommand{\1}{\bbm{1}}
+\newcommand{\accesno}{\leftrightarrow}
+\newcommand{\acceso}{\widetilde{\leftrightarrow}}
+\newcommand{\bord}{\EuScript{B}}
+\newcommand{\ouv}{\EuScript{O}}
+\newcommand{\ferm}{\EuScript{F}}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\lng}{long}
+
+\newcommand{\algfun}[1]{\text{\textsf{#1}}}
+\newcommand{\escr}[1]{\EuScript{#1}}
+
+\begin{document}
+
+\title{Graphes}
+
+\vs{-2}
+\section{Définitions}
+
+	\subsection{Graphes}
+		
+		\eqskip{2mm}
+		\vs{-2}
+		\begin{Definitions}[graphes non orientés et vocabulaire]
+			Un graphe non orienté est la donnée d'un couple \(\EuScript{G} = (V,E)\) où \(V\) est un ensemble fini non vide et \(E\subseteq \left\{\!\{x,y\}\,\middle|\,(x,y) \in V^2\right\}\). \\
+			\bdot Les éléments de \(V\) sont appelés sommets du graphe. \\
+			\bdot Les éléments de \(E\) sont appelés arêtes du graphes. \nt
+				%
+			Si \(e =\{x\} \in E\) avec \(x\in V\), on dit que \(e\) est une boucle sur le sommet \(x\). \nll
+			Pour \((x,y)\in V^2\), on dit que \(x\) et \(y\) sont voisins ssi \(\{x,y\}\in E\) et on appelle voisinage de \(x\), noté \(\vois(x)\), l'ensemble de ses voisins :
+				\[
+					\vois(x) = \left\{y\in V\,\middle|\, \{x,y\}\in E\right\}
+				\]
+			Le degré de \(x\) est alors son nombre de voisins, on le note \(d(x)\) ou \(\deg(x)\) :
+				\[
+					\deg(x) = \card(\vois(x))
+				\]
+			%
+		\end{Definitions}
+		
+		\begin{Definitions}[graphes orientés et vocabulaire]
+			Un graphe orienté est la donnée de \(\EuScript{G} = (S,A)\) où \(S\) est un ensemble fini non vide et \(A\subseteq S^2\). \\
+			\bdot Les éléments de \(S\) sont appelés sommets du graphe. \\
+			\bdot Les éléments de \(A\) sont appelés arcs du graphes. \nt
+			%
+			Si \(a =(x,x) \in A\) avec \(x\in S\), on dira de même que \(a\) est une boucle sur le sommet \(x\). \nll
+				%
+			Pour \((x,y)\in V^2\), on dit que : \hs{-2}\begin{tabular}[t]{l}
+				\bdot \(x\) est prédécesseur de \(y\) ssi \((x,y)\in A\) \\
+				\bdot \(x\) est successeur de \(y\) ssi \((y,x) \in A\)
+			\end{tabular} \\
+			\eqskip{3mm}
+			Dans la suite de ce cours, on notera respectivement, pour \(x\in S\) donné, \(\Pred(x)\) et \(\Succ (x)\) les ensembles des prédécesseurs et des successeurs de \(x\). Ainsi :
+				\[
+					\Pred(x) = \left\{z\in S\,\middle|\, (z,x)\in A\right\} \qquad\qquad \Succ(x) = \left\{y\in S\,\middle|\, (x,y) \in A\right\}
+				\]
+			Le degré entrant de \(x\) (noté \(d_+(x)\) ou \(\deg_+(x)\)) est alors son nombre de prédécesseurs, et son degré sortant (noté \(d_-(x)\) ou \(\deg_-(x)\)) est son nombre de successeurs :
+				\[
+					\deg_+(x) = \card(\Pred(x)) \qquad\qquad \deg_-(x) = \card(\Succ(x))
+				\]
+		\end{Definitions}
+		
+		\vs{2}
+		\begin{Remarque}
+			Il convient de ne pas mélanger la terminologie des graphes non orientés avec celle des graphes orientés qui, contrairement à la première, tend à rendre apparente la notion de sens, ce qui se verra davantage encore dans les définitions qui suivront.
+		\end{Remarque}
+	\pagebreak
+		\colsep{1.5pt}
+		\begin{Propriete}[somme des degrés]
+			Soit \(\EuScript{G} = (V,E)\) un graphe non orienté sans boucle et \(\EuScript{G}' = (S,A)\) un graphe orienté sans boucle. \\
+			Alors, on a les propriétés suivantes : \nt
+				\hs{5}\begin{tabular}[h]{cl}
+					\i & \(\displaystyle \sum_{x\in V} \deg(x) = 2\card(E)\) \\
+					\ii & \(\displaystyle \sum_{z\in S} \deg_-(z) = \sum_{z\in S} \deg_+(z) = \card(A)\)
+				\end{tabular}
+		\end{Propriete}
+		
+		\vs{2}
+		\eqskip{2mm}
+		\begin{Preuve}
+			\i Puisque par hypothèse \(\EuScript{G}\) ne comporte pas de boucle, on a :
+				\[
+					S_1 := \sum_{x\in V} \deg(x) = \sum_{x\in V}\sum_{y\in V} \1_{\{x,y\}\in E} \overset{hyp.}{=} \sum_{x\in V}\sum_{\substack{y\in V \\ x\neq y}} \1_{\{x,y\}\in E} = \sum_{\substack{(x,y)\in V^2\\ x\neq y}} \1_{\{x,y\}\in E}
+				\]
+			Or en notant \(\widetilde{E} = \left\{(x,y)\in V^2\,|\,\{x,y\}\in E\right\}\), on a \(\{x,y\}\in E\) ssi \((x,y),(y,x)\in \widetilde{E}\). D'où :
+				\[
+					S_1 = 2 \hs{-2} \sum_{\substack{\{x,y\} \\ (x,y)\in V^2, x\neq y}} \hs{-2} \1_{\{x,y\}\in E} = 2\sum_{\{x,y\}\in E} 1 = 2\card(E)
+				\]
+				%
+			\ii
+		\end{Preuve}
+	
+	\subsection{Accessibilité, connexité}
+	
+		\intro{Pour cette section, on fixe \(\EuScript{G} = (V,E)\) un graphe non orienté sans boucle \\ et \(\EuScript{H} = (S,A)\) un graphe orienté sans boucle.}
+		
+		\vs{-4}
+		\begin{Definition}[chaîne, chemin, cas élémentaire]
+			Soient \(s = (s_i)_{i\in[0..n]} \in V^{n+1}\) et \(t = (t_j)_{j\in[0..m]} \in S^{m+1}\). On dit que : \\
+			\hs{5} \bdot \(s\) est une chaîne (de longueur \(n\)) de \(\EuScript{G}\) ssi \(\forall\,i\in[0..n-1],\, \{s_i,s_{i+1}\}\in E\) \\
+			\hs{5} \bdot \(t\) est un chemin (de longueur \(m\)) de \(\EuScript{H}\) ssi \(\forall\,j\in[0..m-1]\), \((t_j,t_{j+1})\in A\) \nt
+		Dans les deux cas, on dira que \(s_n\) ou \(t_m\) est accessible depuis \(s_0\) ou \(t_0\). \\
+		Plus précisément, dans le premier cas, \(s\) relie \(s_0\) et \(s_n\) tandis que dans le second, \(t\) relie \(t_0\) à \(t_m\). \nll
+			%
+		Si de plus \(\forall\,(i,i')\in[0..n-1]^2\cup[1..n]^2 = [0..n]^2\backslash\{(0,n),(n,0)\}\) avec \(i\neq i'\), on a \(t_i \neq t_{i'}\), alors on dit que \(t\) est élémentaire. Cette définition s'adapte au cas des graphes non orientés.
+		\end{Definition}
+	
+		\begin{Definition}[cycle, circuit]
+			Une chaîne \(s = (s_i)_{i\in[0..n]}\) de \(\EuScript{G}\) est appelée un cycle ssi \(s_0 = s_n\). \\
+			De même, un chemin \(t = (t_j)_{j\in[0..n]}\) de \(\EuScript{H}\) sera appelé un circuit si \(t_0 = t_m\).
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Il y a toujours un nombre fini de chaînes ou chemins élémentaires, mais dans le cas où le graphe admet un cycle, il y a un nombre infini de chaînes ou de cycles puisque l'on peut ``tourner en rond'' autant de fois que l'on veut.
+		\end{Remarque}
+		
+		\pagebreak
+		\begin{Propriete}
+			On définit la relation binaire \(\accesno\) sur \(V\) par :
+				\[
+					\forall\,(x,y)\in V^2,\, x \accesno y \iff \exists\, s \text{ une chaîne reliant \(x\) et \(y\)}
+				\]
+			On définit de même une relation \(\acceso\) sur \(S\) par :
+				\[
+				\forall\,(x,y)\in S^2,\, x \ \acceso \ y\iff
+					\left\{ \begin{tabular}[h]{l}
+						\(\exists\, t \text{ un chemin reliant \(x\) à \(y\)}\) \\
+						\(\exists\, t' \text{ un chemin reliant \(y\) à \(x\)}\)
+					\end{tabular} \right.
+				\]
+			Alors, \(\accesno\) et \(\acceso\) sont des relations d'équivalence : plus précisément, ce sont les clôtures réflexives transitives respectives de \(E\) et de \(A\).
+		\end{Propriete}
+	
+		\begin{Preuve}
+		\end{Preuve}
+	
+		\begin{Definition}[composante connexe, composante fortement connexe]
+			On appelle composante connexe de \(\EuScript{G}\) toute classe d'équivalence pour la relation \(\accesno\). \\
+			On appelle de même composantes fortement connexes de \(\EuScript{H}\) les classes d'équivalence pour \(\acceso\).
+		\end{Definition}
+	
+		\begin{Definition}[connexité, connexité forte]
+			Si \(\EuScript{G}\) admet une seule composante connexe, on dit que \(\EuScript{G}\) est connexe. \\
+			Si \(\EuScript{H}\) admet une seule composante fortement connexe, on dit que \(\EuScript{H}\) est fortement connexe.
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Les composantes connexes d'un graphe forment une partition de l'ensemble de ses sommets, en tant qu'éléments de son espace quotient par une relation d'équivalence (\emph{cf.} chapitre 8 -- ``ordre et induction'').
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Remarque}
+			La définition de la connexité simple (\emph{i.e.} non forte) pour les graphes orientés est ambiguë. Ainsi, le graphe suivant peut être connexe ou non selon la définition adoptée :
+		\end{Remarque}
+	
+		\begin{Definition}[partie connexe de l'ensemble des arêtes]
+			Pour \(W\subseteq V\) non vide, on dit que \(W\) est connexe ssi \(\forall\,(x,y)\in W^2\), \(x\accesno y\).
+		\end{Definition}
+		
+		\eqskip{2mm}
+		\begin{Propriete}[caractérisation des composantes connexes]
+			Soit \(W\subseteq V\), \(W \neq \emptyset\). \(W\) est une composante connexe de \(\EuScript{G}\) ssi \(W\) est connexe maximal, \emph{c-à-d} :
+				\[
+					\forall\,W' \subseteq V,\, W \subsetneq W' \Longrightarrow W' \text{ n'est pas connexe}
+				\]
+		\end{Propriete}
+	
+		\begin{Definition}[sous-graphe]
+			Soit \(\EuScript{G}' = (V',E')\) un graphe. \(\EuScript{G}'\) est un sous-graphe de \(\EuScript{G}\) ssi \(V' \subseteq V\) et \(E' \subseteq E\).
+		\end{Definition}
+	
+		\begin{Definition}[graphe induit]
+			Soit \(V'\subseteq V\). On appelle graphe induit par \(\EuScript{G}\) sur \(V'\) le graphe :
+				\[
+					\EuScript{G}' = \left(V',\left\{\!\{x,y\}\in E\,\middle|\, (x,y) \in (V')^2\right\}\right)
+				\]
+			Ce graphe est alors facilement un sous-graphe de \(\EuScript{G}\).
+		\end{Definition}
+		
+		\begin{Propriete}[caractérisation de la connexité]
+			Soit \(W\subseteq V\). \(W\) est connexe ssi le graphe qu'il induit est connexe.
+		\end{Propriete}
+	
+	\subsection{Types de graphes}
+		
+		\vs{-2}
+		\begin{Definition}[graphe acyclique]
+			Un graphe non orienté (resp.\! orienté) est dit acyclique s'il ne contient aucun cycle (resp.\! circuit) de longueur supérieure ou égale à 2.
+		\end{Definition}
+	
+		\begin{Definition}[arbres et forêts]
+			Un arbre est un graphe non orienté connexe acyclique. \\
+			Une forêt est un graphe acyclique décomposé en ses composantes connexes, qui sont des arbres.
+		\end{Definition}
+	
+		\uplabel{Propriétés :}
+			\emph{cf.} TD n°13, exercice 2 pour caractérisations.
+		
+		\eqskip{3mm}
+		\begin{Definition}[graphe biparti]
+			Soit \(\EuScript{G} = (V,E)\) un graphe non orienté. \(\EuScript{G}\) est dit biparti ssi il existe une partition \(\{W_1,W_2\}\) de \(V\) telle que toutes les arêtes de \(E\) ont une extrémité dans \(W_1\) et l'autre dans \(W_2\), c'est-à-dire :
+				\[
+					E \subseteq \left\{\!\{x,y\}\in V^2\,\middle|\, (x,y) \in W_1\!\times\! W_2 \,\cup\, W_2\!\times\! W_1\right\}
+				\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Illustration}
+			
+		\end{Illustration}
+	
+
+\section{Parcours}
+
+	\subsection{Définitions}
+		
+		\vs{-2}
+		\begin{Definition}[bordure]
+			Soit \(\EuScript{G} = (V,E)\) un graphe non orienté. Pour \(W \subseteq V\), on définit la bordure de \(W\) par :
+				\[
+					\bord(W) = \{v\in V\backslash W\,|\, \exists\,w\in W,\, v\in \vois(w)\}
+				\]
+			Pour \(\EuScript{G}' = (S,A)\) un graphe orienté, on définit de même la bordure de  \(T\subseteq S\) par :
+				\[
+					\bord(T) = \{s\in S\backslash T\,|\, \exists\,t\in T,\, s\in \Succ(t)\}
+				\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			On obtient des définitions équivalentes en remplaçant \(v\in\vois(w)\) et \(s\in\Succ(t)\) respectivement par \(\{w,v\}\in E\) et \((t,s)\in A\).
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Remarque}
+			En particulier, \(\bord(\emptyset) = \emptyset\).
+		\end{Remarque}
+	
+		\begin{Definition}[parcours, points de regénération]
+			Soit \(\EuScript{G} = (V,E)\) un graphe quelconque (non orienté ou orienté). \\
+			Soit \((L_i)_{i\in[1..n]} \in V^n\) une permutation des sommets de \(V\) (qui est donc de cardinal \(n\)). \nt
+				% 
+			On dit que \(L\) est un parcours de \(\EuScript{G}\) ssi
+				\[
+					\forall\,i\in[1..n],\, L_i\in \bord\big(\!\left\{L_j\,\middle|\, j\in [1..i-1]\right\}\!\big) \text{ ou } \bord\big(\!\left\{L_j\,\middle|\, j\in [1..i-1]\right\}\!\big) = \emptyset
+				\]
+			De plus, on dit que \(L_i\) est un point de regénération du parcours si \(\bord(\{L_j\,|\, j\in [1..i-1]\}) = \emptyset\).
+		\end{Definition}
+	
+		\begin{Definition}[forêt d'arborescences associée à un parcours]
+			Soit \(\EuScript{G} = (V,E)\) un graphe et \(L\) un parcours de ce graphe. En notant \(\EuScript{R}\) l'ensemble des points de regénération de \(L\), on dit que le graphe orienté \(\EuScript{F} = (W,P)\) est une forêt d'arborescences associée au parcours \(L\) ssi : \\
+			\hs{5} \bdot \(\forall\,i\in[1..n],\, L_i\in\EuScript{R}\) ou (\(\exists\,j\in[1..i-1]\) tel que \(L_i\in \vois(L_j)\) (ou \(\Succ(L_j)\)) et \((L_j,L_i) \in P\)) \\
+			\hs{5} \bdot \(\forall\, u\in V\backslash \EuScript{R}\), \(\exists!\, w\in V\) tel que \((w,u)\in P\) : on dit alors que \(w\) est le père de \(u\) \\
+			\hs{5} \bdot \(P\) est minimal parmi les ensembles vérifiant la première propriété.
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Dans la première propriété, on peut englober les cas non orienté et orienté dans une seule proposition en écrivant tout simplement ``\(L_i \in \bord(\{L_j\,|\, j\in [1..i-1]\})\)''.
+		\end{Remarque}
+		\vs{2}
+		\begin{Remarque}
+			La troisième propriété rend un peu redondante la deuxième.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Exemples}
+		\end{Exemples}
+	
+		\begin{Propriete}
+			Soit \(\EuScript{G} = (V,E)\) un graphe non orienté et \(L = (L_i)_{i\in[1..n]}\) un parcours de \(\EuScript{G}\) où \(n = \card(V)\). \nt
+			Si l'ensemble des points de regénération s'écrit \(\{L_{r_k}\,|\,k\in[1..K]\}\) avec \((r_k)_{k\in[1..K]}\) croissante, alors \(\EuScript{G}\) admet \(K\) composantes connexes, à savoir les \((C_k)_{k\in[1..K]}\) définies par :
+				\[
+					\forall\,k\in [1..K],\, C_k = \{L_i\,|\, i\in [r_k..r_{k+1}-1]\}
+				\]
+			où on a noté \(r_{K+1} = n+1\).
+		\end{Propriete}
+		\vs{2}
+	
+		La preuve de cette propriété va nécessiter le lemme suivant.
+		
+		\vs{2}
+		\begin{Lemme}
+			Soit \(\EuScript{G} = (V,E)\) un graphe non orienté et \(W\subseteq V\). Si \(\bord(W) = \emptyset\), alors il n'existe aucune chaîne reliant un sommet de \(W\) et un sommet de \(V\backslash W\).
+		\end{Lemme}
+		
+		\vs{2}
+		\colsep{1.5pt}
+		\begin{Preuve}
+			\bdot Si \(W = \emptyset\), c'est évident. \\
+			\bdot Sinon, supposons par l'absurde qu'il existe une chaîne \(\gamma\) de longueur \(\ell\) telle que : \(\left\{ \begin{tabular}[h]{l} \(\gamma_0 \in W\) \\ \(\gamma_\ell\in V\backslash W\) \end{tabular} \right.\). \\[1mm]
+			On a clairement \(\gamma_0 \neq \gamma_\ell\) donc \(\ell > 0\). On peut alors définir \(i_0 = \min\left\{i\in[1..\ell]\,|\, \gamma_i \notin W\right\}\) puisque cet ensemble contient au moins \(\ell\), donc est non vide. \nt
+			Par définition de \(i_0\), \(\gamma_{i_0-1} \in W\) et par définition d'une chaîne, \(\{\gamma_{i_0-1},\gamma_{i_0}\} \in E\) c'est-à-dire \(\gamma_{i_0} \in \vois(\gamma_{i_0-1})\). Ainsi on a \(\gamma_{i_0} \in \bord(W)\) ce qui est absurde.
+		\end{Preuve}
+		
+		\vs{3}
+		\begin{Preuve}[la propriété]
+			Soit \(k\in[1..K]\), montrons que \(C_k\) est connexe maximal. \nt
+				%
+			Considérons donc \(u\in V\backslash C_k\) et montrons que \(C_k \sqcup \{u\}\) n'est pas connexe. \\
+			Par définition d'un parcours, il existe \(i_u\in [1..n]\) tel que \(u = L_{i_u}\). Comme \(u\notin C_k\), \(i_u \notin [r_k..r_{k+1}[\). Alors, il faut distinguer deux cas : \vs{-1}
+				\begin{addmargin}{5mm}
+					\bdot Si \(i < r_k\), posons \(W = \{L_i \,|\, i\in[1..r_k[\}\). On a \(L_{i_u} \in W\) et \(\bord(W) = \emptyset\) puisque \(L_{r_k}\) est un point de regénération. D'après le lemme, il n'existe aucun chemin reliant \(L_{i_u}\) et \(L_{r_k} \notin W\), donc par caractérisation de la connexité \(C_k \sqcup \{u\}\) n'est pas maximal. \nt
+						%
+					\bdot Si \(i \geq r_{k+1}\), on pose \(W = \{L_i \,|\, i\in [1..r_{k+1}[\}\). On a clairement \(C_k \subseteq W\) donc \(L_{r_k}\in W\). De plus, \(\bord(W) = \emptyset\) : en effet : \\
+						\hs{5} \(\cdot\) si \(k < K\), alors \(L_{r_{k+1}}\) est un point de regénération donc \(\bord(W) = \emptyset\)\\
+						\hs{5} \(\cdot\) si \(k = K\), \(\bord(W) = \bord(\{L_i \,|\, i\in [1..n+1[\}) = \bord(V) = \emptyset\) puisque \(\bord(V) \subseteq V\backslash V = \emptyset\).
+				\end{addmargin} \vs{-1}
+			D'après le lemme, on ne peut donc pas trouver de chemin reliant \(L_{r_k}\) et \(L_{i_u} \notin V\backslash W\). \nt
+				%
+			Ainsi, s'il est connexe, \(C_k\) est nécessairement connexe maximal. \eqskip{2mm} \nll
+				%
+			Montrons à présent que \(C_k\) est bien connexe : on suppose par l'absurde qu'il ne l'est pas. \\
+			Par transitivité, on peut alors dire qu'il existe \(i\in \,\,]r_k..r_{k+1}[\) tel que \(L_{r_k} \not\accesno L_i\). Soit alors :
+				\[
+					i_0 = \min\left\{i\in \,\,]r_k..r_{k+1}[\,\middle|\, L_{r_k} \not\accesno L_i\right\}
+				\]
+			Par minimalité de \(i_0\), \(\forall\,j\in \,\,]r_k..i_0[\), \(L_{r_k} \accesno L_j\), ce qui implique que \(\forall\,j\in[r_k..i_0[, \,L_{i_0} \not\accesno L_{j}\) (sinon, on aurait \(L_{i_0} \accesno L_{r_k}\) par transitivité). De plus comme \(L_{r_k} \in \EuScript{R}\), \(\bord(\{L_j\,|\, j\in[1..r_k[\}) = \emptyset\) donc d'après le lemme, \(\forall\,j\in [1..r_k[, L_{i_0} \not\accesno L_j\). \nt
+				%
+			Ainsi, \(\forall\,j \in [1..i_0[,\, L_{i_0} \not\accesno L_j\), en particulier \(\{L_j,L_{i_0}\}\notin E\). Donc \(L_{i_0} \notin \bord(\{L_j\,|\, j\in[1..r_k-1]\})\). \nt
+				%
+			Par définition d'un parcours, on a alors nécessairement \(\bord(\{L_j\,|\, j\in[1..r_k-1]\}) = \emptyset\) donc \(L_{i_0} \in \EuScript{R}\), ce qui est absurde puisque par hypothèse \(L_{r_k}\) et \(L_{r_{k+1}}\) sont des points de regénération consécutifs.
+		\end{Preuve}
+		
+		\eqskip{2mm}
+		\begin{Definition}[sommets ouverts, parcours en largeur, parcours en profondeur]
+			Soit \(\EuScript{G} = (V,E)\) un graphe orienté et \(L = (L_i)_{i\in[1..n]}\) un parcours de \(\EuScript{G}\). \nt
+			Pour \(k\in[1..n]\), on appelle sommet ouvert à l'étape \(k\) (dans \(L\)) un sommet de l'ensemble
+				\[
+					\ouv_k = \left\{L_j\,|\, j\in [1..k[ \text{ et } \vois(L_j) \nsubseteq \{L_i\,|\, i\in[1..k[\} \right\}
+				\]
+			Alors, on dit que : \eqskip{1mm} \\
+				\hs{5} \bdot \(L\) est un parcours en largeur de \(\EuScript{G}\) ssi
+					\[
+						\forall\,k\in[1..n],\, L_k\in \EuScript{R} \text{ ou bien } L_k \in \vois(L_{i_0}) \text{ où } i_0 = \min\left\{i\in[1..n]\,|\, L_i \in \ouv_k\right\}
+					\]
+				\hs{5} \bdot \(L\) est un parcours en profondeur de \(\EuScript{G}\) ssi
+					\[
+						\forall\, k\in[1..n],\, L_k \in \EuScript{R} \text{ ou bien } L_k \in \vois(L_{i_0}) \text{ où } i_0 = \max\left\{i\in[1..n]\,|\, L_i \in \ouv_k\right\}
+					\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Autrement dit, \(L\) est un parcours en largeur ssi chaque sommet du parcours est point de regénération ou bien voisin du premier sommet ouvert, et c'est un parcours en profondeur ssi chaque sommet est point de regénération ou voisin du dernier sommet ouvert. \nt
+				%
+			En fait, on observe une similarité entre ces notions de parcours pour les graphes et pour les arbres (\emph{cf.} chapitre 9 -- ``structures de données arborescentes'').
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Remarque}
+			Lorsqu'on s'intéresse à la forêt d'arborescences associée à un parcours en largeur/profondeur, on choisira comme père d'un sommet \(L_k\) le premier/dernier sommet ouvert  à l'étape \(k\). La forêt justifiera donc que le parcours est en largeur/profondeur.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Exemple}
+		\end{Exemple}
+	
+	\subsection{Algorithmes de parcours}
+	
+		\subsubsection{Détection de composantes connexes}
+			On propose ici un algorithme qui consiste à associer à chaque sommet du graphe pris en entrée un numéro qui représentera la composante connexe à laquelle il appartient. \nll
+				%
+			Il nous faudra pour cela introduire un ensemble \(\ouv\) des sommets ouvert à l'étape courant, que l'on n'a pas fini de traiter, ainsi qu'un ensemble \(\ferm\) des fermés, sommets que l'on a fini de traiter et qu'on ne traitera donc plus. \nt
+			
+			\pagebreak
+			\begin{algo}{Comp\_connexe}{\(\EuScript{G} = (V,E)\) avec \(V = [1..n]\) un graphe non orienté}{\(T_{\rm{res}}\) un tableau contenant pour chaque sommet, le numéro de sa composante connexe}{}
+				\(n = \textsf{nb\_sommets}(\EuScript{G})\) \\
+				\(\ouv,\ferm = \text{ ensembles de sommets initialement vides}\) \\
+				\(T_{\rm{res}} = \text{ tableau indicé par \([1..n]\), initialisé à \(-1\)}\) \\
+				\(n_c = 0\) \codecom{numéro de la composante connexe courante} \\
+				racine \(= 1\) \\
+				\(T_{\rm{res}}[\rm{racine}] \gets n_c\) \\
+				\(\ouv.\text{\textsf{ajouter}}(\rm{racine})\) \\
+				\(i = 0\) \\
+				Tant que \(i < n\) \\ \Indp
+					Si \(\ouv\) est vide \\ \Indp
+						racine \(\gets\) un sommet \(s\) tel que \(T_{\rm{res}}[s] = -1\) \\
+						\(n_c \gets n_c + 1\) \\
+						\(\ouv.\text{\textsf{ajouter}}(\rm{racine})\) \\
+						\(T_{\rm{res}}[\rm{racine}] \gets n_c\) \\ \Indm
+					Sinon \\ \Indp
+						\(u =\) un sommet extrait de \(\ouv\) \codecom{comprendre : il n'y est plus après l'instruction} \\
+						Pour tout \(v\) voisin de \(u\) \\ \Indp
+							Si \(T_{\rm{res}}[v] = -1\) alors \\ \Indp
+								\(\ouv.\text{\textsf{ajouter}}(v)\) \\
+								\(T_{\rm{res}}[v] \gets n_c\) \\ \Indm \Indm
+						\(\ferm.\text{\textsf{ajouter}}(u)\) \\
+						\(i \gets i+1\) \\ \Indm \Indm
+				Retourner \(T_{\rm{res}}\)
+			\end{algo}
+		
+			\vs{2}
+			\begin{Remarque}
+				En réalité, l'ensemble \(\ferm\) n'est pas indispensable à l'algorithme. Néanmoins, il s'avère utile lors que l'on cherche à établir des invariants en vue d'en montrer la correction. \nt
+					%
+				Ce constat pourra également se reproduire dans les algorithmes qui suivront.
+			\end{Remarque}
+		
+		\subsubsection{Détection de graphes bipartis}
+		
+		\subsubsection{Plus court chemin en nombre d'arcs}
+		
+			\begin{Definition}[distance dans un graphe]
+				Soit \(\EuScript{G} = (V,E)\) un graphe non orienté et \((a,b) \in V^2\). La distance entre \(a\) et \(b\), notée \(\dist(a,b)\), est la longueur minimale d'une chaîne reliant \(a\) et \(b\), ou bien \(+\infty\) s'il n'en existe pas. \nt
+					%
+				Pour \(\EuScript{G}' = (S,A)\) un graphe orienté et \((a',b')\in S^2\), on définit de même la distance entre \((a',b')\), notée toujours \(\dist(a,b)\), comme la longueur minimale d'un chemin reliant \(a'\) à \(b'\) et \(+\infty\) s'il n'existe pas de telle chaîne.
+			\end{Definition}
+			
+			\vs{2}
+			\begin{Exemple}
+			\end{Exemple}
+			
+			\vs{2}
+			\begin{Remarque}
+				Attention, la distance dans un graphe orienté n'est pas une distance au sens mathématique puisqu'on n'a pas toujours \(\dist(a,b) = \dist(b,a)\). 
+			\end{Remarque}
+			
+			Voici maintenant un algorithme qui permet d'obtenir un tableau contenant les distances de chaque sommet d'un graphe orienté par rapport à un sommet quelconque choisi. \nll
+				%
+			Comme précédemment, nous stockerons à chaque étape les ouverts et les fermés, mais les ouverts nécessiteront cette fois-ci une structure de file, que l'on ``implémente'' à l'aide de deux piles.
+			
+			\begin{algo}{PCCNA}{\(\EuScript{G} = (S,A)\) un graphe orienté avec \(S = [1..n]\) \\ \entspace \((a,b)\in S^2\)}{}{}
+				\(n = \algfun{nb\_sommets}(\escr{G})\) \\
+				\(\ouv_1,\ouv_2 = \) piles d'entiers initialement vides \\
+				\(\ferm = \) ensemble initialement vide \\
+				\(D,P = \) tableaux d'entiers indicés par \([1..n]\), initialisés respectivement à \(+\infty\) et \(-1\) \\
+				prof \(= 0\) \\
+				\(\ouv_2.\algfun{ajouter}(a)\) \\
+				\(D[a], P[a] \gets 0,a\) \\
+				Tant que (``\(\ouv_1 \cup \ouv_2\)'' \(\neq \emptyset\)) \\ \Indp
+					Si \(\ouv_1\) est vide alors \\ \Indp
+						transvaser \(\ouv_2\) dans \(\ouv_1\) \\
+						prof \(=\) \(\rm{prof}+1\) \\ \Indm
+					\(u = \ouv_1.\algfun{extraire\_sommet}\) \\
+					Pour tout \(v\) successeur de \(u\) \\ \Indp
+						Si \(D[v] = +\infty\) alors \\ \Indp
+							\(D[v] \gets D[u] + 1\) \\
+							\(P[v] \gets u\) \\
+							\(\ouv_2.\algfun{ajouter}(v)\) \\ \Indm \Indm
+					\(\ferm.\algfun{ajouter}(u)\) \\ \Indm
+				Retourner \(D[b]\)
+			\end{algo}
+		
+			\vs{2}
+			\begin{Remarque}
+				On effectue dans cet algorithme un parcours en largeur de la composante connexe contenant le sommet de départ, ce qui évite, lorsque l'on cherche à affecter une distance à un sommet, de devoir effectuer des comparaisons à des distances déjà existantes. Cela justifie que l'on ait eu besoin d'une file pour les ouverts.
+			\end{Remarque}
+			
+			\vs{2}
+			Grâce au tableau \(P\) stockant les pères, il est également possible de construire et de renvoyer la liste d'entiers correspondant à un chemin possible de longueur minimale entre \(a\) et \(b\) :
+		
+			\begin{algocont}
+				Si \(D[b] < +\infty\) alors \\ \Indp
+					\(w = b\) \\
+					\(\gamma = \) liste d'entiers initialement vide \\
+					Tant que \(P[w] \neq w\) \codecom{ou bien \(\bm{w \neq a}\)} \\ \Indp
+						\(\gamma.\algfun{ajoute\_début}(w)\) \\
+						\(w \gets P[w]\) \\ \Indm
+					\(\gamma.\algfun{ajoute\_début}(a)\) \\ \Indm
+				Retourner \(\gamma\)
+			\end{algocont}
+			
+
+\section{Plus courts chemins}
+	
+	\subsection{Graphes pondérés}
+	
+		\begin{Definition}[pondération]
+			Soit \(\escr{G} = (V,E)\) un graphe non orienté. On dit que \(w\) est une pondération des arêtes ssi \(w \in \escr{F}(E,\bb{R})\) et on dira alors que \(\escr{G} = (V,E,w)\) est un graphe pondéré. \nt
+				%
+			Pour \(\escr{G}' = (S,A)\) un graphe orienté, \(w\) est une pondération des arcs ssi \(w\in\escr{F}(A,\bb{R})\) et dans ce cas, \(\escr{G}' = (S,A,w)\) sera aussi appelé un graphe pondéré.
+		\end{Definition}
+	
+		\begin{Definition}[longueur et distances dans un graphe pondéré]
+			Soit \(\escr{G} = (V,E,\omega)\) un graphe pondéré non orienté. \nt
+				%
+			Si \(\gamma = (\gamma_i)_{i\in[0..n]}\) est une chaîne de \(\escr{G}\), sa longueur est :
+				\[
+					\lng(\gamma) = \sum_{i=0}^{n-1} \omega(\{\gamma_i,\gamma_{i+1}\})
+				\]
+			On définit alors la distance entre deux sommets de \(V\) par :
+				\[
+					d(a,b) = \min\left\{\lng(\gamma)\,\middle|\,\gamma \text{ est une chaîne reliant \(a\) et \(b\)}\right\}
+				\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Bien sûr, ces deux définitions se généralisent aussi au cas des graphes orientés.
+		\end{Remarque}
+	
+	\subsection{Algorithme de Dijkstra}
+	
+		\begin{algo}{Dijkstra}{\(\escr{G} = (V,E,\omega)\) un graphe orienté, pondéré positivement \\ \entspace \(s\in S\) où \(S = [1..n]\)}{}{}
+			\(n = \algfun{nb\_sommets}(\escr{G})\) \\
+			\(D,P = \) tableaux indexés par \([1..n]\), initialisés à \(+\infty\) et \(-1\) respectivement \\
+			\(D[s], P[s] \gets 0, s\) \\
+			\(\ouv, \ferm = \{s\}, \emptyset\) \\
+			Tant que \(\ouv \neq \emptyset\) \\ \Indp
+				\(u = \) extraire de \(\ouv\) un élément minimisant \(D\) \codecom{donc $\bm{u =} \bm{\argmin_{i\in\ouv} D[i]}$} \\
+				Pour \(v\in\Succ(u)\) \\ \Indp
+					Si \(D[v] = +\infty\) alors \codecom{accessible en \(\bm{\Theta(1)}\)} \\ \Indp
+						\(\ouv.\algfun{ajouter}(v)\) \\ \Indm
+					Si \(D[u] + \omega(u,v) < D[v]\) alors \\ \Indp
+						\(D[v] \gets D[u] + \omega(u,v)\) \\
+						\(P[v] \gets u\) \\ \Indm \Indm
+				\(\ferm.\algfun{ajouter}(u)\) \\ \Indm
+			Retourner \(D\) (ou \(P\))
+		\end{algo}
+	
+		\begin{Propriete}
+			Soit \(\escr{G} = (S,A,\omega)\) un graphe orienté pondéré positivement et \(s\in S\). Le tableau \(D\) retourné par \textsf{Dijkstra}\((\escr{G},s)\) est tel que :
+				\[
+					\forall\,u \in S,\,D[u] = d_\omega(s,u)
+				\]
+			\(d_\omega\) étant la distance pour la pondération \(\omega\).
+		\end{Propriete}
+	
+		\vs{2}
+		\begin{Preuve}
+			\emph{cf.} annexe ``scan Dijkstra''.
+		\end{Preuve}
+	
+	\subsection{Une première résolution par programmation dynamique}
+	
+		Soit \(\escr{G} = (S,A,\omega)\) un graphe orienté pondéré positivement avec \(S = [1..n]\). \nt
+			%		
+		Pour \((i,j)\in S^2\) et \(\ell\in\bb{N}\), on note :
+			\begin{align*}
+				& \text{\bdot} M^{\ell}_{i,j} = \min \left\{\lng_\omega(\gamma)\,|\,\gamma \text{ est un chemin de \(i\) à \(j\) ayant au plus \(\ell\) arcs}\right\} \\[-1mm]
+				& \text{\bdot} N^{\ell}_{i,j} = \min \left\{\lng_\omega(\gamma)\,|\, \gamma \text{ est un chemin de \(i\) à \(j\) ayant exactement \(\ell\) arcs}\right\}
+			\end{align*}
+		
+		\vs{-2}
+		\colsep{1.5pt}
+		\begin{Proprietes}
+			On a alors les quatre propriétés suivantes : \\
+			\hs{5}\begin{tabular}[t]{cl}
+				\i & \(\forall\,(i,j) \in S^2,\,M^0_{i,j} = N^0_{i,j} = \left\{ \begin{tabular}[h]{l}
+					\(0\) si \(i = j\) \\
+					\(+\infty\) sinon
+					\end{tabular} \right.
+				\) \\[4mm]
+				\ii & \(\forall\,(i,j) \in S^2,\, N^1_{i,j} = \left\{ \begin{tabular}[h]{l}
+					\(\omega(i,j)\) si \((i,j)\in A\) \\
+					\(+\infty\) sinon
+					\end{tabular} \right.
+					\) \\[4mm]
+				\iii & \(\forall\,(i,j) \in S^2,\, M^1_{i,j} = \left\{ \begin{tabular}[h]{l}
+					\(0\) si \(i=j\) \\
+					\(\omega(i,j)\) si \((i,j)\in A\) \\
+					\(+\infty\) sinon
+					\end{tabular} \right.
+					\) \\[7mm]
+				\iv & \parbox[t]{150mm}{Pour \(\ell \geq 2\) et \((i,j)\in S^2\), on a :
+					\begin{align*}
+						& \text{\bdot} N^\ell_{i,j}= \min_{\substack{s\in S \\ k\in[1..\ell-1]}} N^k_{i,s} + N^{\ell-k}_{s,j} = \min_{u\in\Succ(i)} \omega(i,u) + N^{\ell-1}_{u,j} = \min_{u\in[1..n]} N^1_{i,u} + N^{\ell-1}_{u,j} \\
+						& \text{\bdot} M^\ell_{i,j} = \min\big( M^{\ell-1}_{i,j}, \min_{u\in\Succ(i)} \omega(i,u) + M^{\ell-1}_{u,j} \big) = \min \big( M^{\ell-1}_{i,j}, \min_{v\in\Pred(j)} M^{\ell-1}_{i,v} + \omega(v,j) \big)
+					\end{align*}
+				}
+				\end{tabular}
+		\end{Proprietes}
+		
+		\vs{2}
+		Définissons pour \((A,B) \in \big( (\bb{R}^+ \cup \{+\infty\})^{n^2} \big)^2\) la loi interne \(\otimes\) par :
+			\[
+				\forall\,(i,j)\in[1..n]^2,\, (A\otimes B)_{i,j} = \min_{k\in[1..n]} A_{i,k} + B_{k,j} 
+			\]
+		Alors, la première partie de la propriété \iv se reformule comme suit :
+			\[
+				\forall\,\ell\geq 2,\,\forall\, (i,j)\in S^2,\, N^\ell_{i,j} = (N^\ell)_{i,j} = (N^1 \otimes N^{\ell-1})_{i,j}
+			\]
+		
+		\vs{2}
+		\begin{Remarque}
+			Si l'on acceptait de définir des matrices à coefficients dans un ensemble qui n'est pas un corps (ni même un anneau), on pourrait écrire ``\(\cal{M}_n(\overline{\bb{R}^+})\)'' à la place de \((\bb{R}^+ \cup \{+\infty\})^{n^2}\) mais on perd dans ce cas la stucture d'algèbre pour \((\cal{M}_n(\overline{\bb{R}^+}),+,\otimes,\cdot)\). \nt
+				%
+			Néanmoins, il est intéressant de voir le parallèle que l'on peut faire avec \((\cal{M}_n(\bb{K}),+,\times,\cdot)\) si \((\bb{K},+,\times)\) est un corps puisque dans \((\overline{\bb{R}^+},\rm{min},+)\) : \\
+				\hs{5} \bdot on conserve la propriété de distributivité puisque \(a + \min(b,c) = \min(a+b,a+c)\) \\
+				\hs{5} \bdot le neutre pour \(\min\), \(+\infty\), est absorbant pour \(+\) \\
+				\hs{5} \bdot la définition de \(\otimes\) dans \(\cal{M}_n(\overline{\bb{R}^+})\) est alors analogue à celle de \(\times\) dans \(\cal{M}_n(\bb{K})\) \\
+				\hs{5} \bdot on a enfin une matrice ``identité''
+		\end{Remarque}
+	
+	\subsection{Algorithme de Floyd-Warshall}
+			
+\end{document}

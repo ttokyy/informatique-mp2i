@@ -1,0 +1,1188 @@
+\input{../commands_alt.tex}
+
+\usepackage{lmodern}
+\usepackage{euscript}
+% \usepackage{mathabx}
+\usepackage{stmaryrd}
+
+\DeclareMathSymbol{\shortminus}{\mathbin}{AMSa}{"39}
+\newcommand{\constr}[2]{|_{\scriptscriptstyle #2}^{\scriptscriptstyle #1}}
+\newcommand{\noset}{\{\! \shortminus \!\}}
+
+\newcommand{\Var}{\EuScript{V}ar}
+\newcommand{\FpQ}{\bb{F}_p(\cal{Q})}
+
+\newcommand{\V}{\text{\sf{V}}}
+\newcommand{\F}{\text{\sf{F}}}
+\newcommand{\boolinv}{\overline{\text{\! \bdot \!}} \,}
+
+\newcommand{\itp}[2]{[#1]^{#2}}
+\newcommand{\fbl}[2]{\llbracket #1 \rrbracket^{#2}}
+\newcommand{\ambr}{A_{m,B,R}}
+\newcommand{\ambrk}[1]{A^{#1}_{m,B,R}}
+
+%\newcommand{\Id}{I\hspace{-0.5mm}d}
+
+%\newcommand{\fonction}[]{
+%	\begin{Definition}[h]{rcl}
+%		\(#1\) & \(rightarrow\) & \(#2\) \\
+%		\foreach i in {4: {#3}+3{
+%			\(#{i}\)
+%		}
+%}
+
+\begin{document}
+	
+\title{Logique propositionnelle}
+
+\intro{Dans ce chapitre, on étudie les outils mathématiques permettant de modéliser les expressions booléennes sans entrer dans le détail des sous-expressions non booléennes. On fera bien la distinction entre ce qui relève de la syntaxe des formules, c'est-à-dire comment elles sont écrites, et ce qui relève de leur sémantique, c'est-à-dire les valeurs qu'on leur donne.}
+
+\vs{-2}
+\subsection{Introduction et rappels}
+
+\vs{-2}
+\begin{Rappel}[arbres de syntaxe]
+	On peut représenter les expressions booléennes à l'aide d'arbres de syntaxe.
+\end{Rappel}
+
+\vs{2}
+\begin{Exemple}
+	Pour l'expression \caml{y mod x == 0 && false}, on a l'arbre suivant :
+\end{Exemple}
+\vs{2}
+
+La logique propositionnelle de modéliser un grand nombre de situations ou de problèmes.
+
+\eqskip{3mm}
+\vs{2}
+\begin{Exemple}
+	Considérons un jeu de Sudoku en \(4 \times 4\), comme représenté ci-dessous : \\
+		%
+	Notons \((M_{i,j})_{\substack{\scriptscriptstyle i \in [1..4] \\[-0.2mm] \scriptscriptstyle j \in [1..4]}}\) les cases du tableau. Alors, en notant \( \cal{P}_{i,j,k} \) la propriété ``\(M_{i,j} = k\)'', on a : \vs{-2}
+		\[\displaystyle \bigwedge_{k=1}^{4} \bigwedge_{i=1}^{4} \left( \bigvee_{j=1}^{4} \cal{P}_{i,j,k} \right)\]
+	Cette formule traduit/modélise la règle : ``pour tout \(k \in [1..4]\), il existe sur chaque ligne \(i\) une colonne \(j\) telle que la case \((i,j)\) contient \(k\)'', permettant de décider si une solution est valide.
+\end{Exemple}
+
+\vs{2}	
+\begin{Remarque}
+	On voit à travers cet exemple que les quantificateurs sur des ensembles finis se tradusent par des conjonctions et des disjonctions finies. La logique avec des quantificateurs, que nous n'étudions pas dans ce cours, s'appelle la logique du 1$^{\text{er}}$ ordre.
+\end{Remarque}
+
+\section{Syntaxe de la logique propositionnelle}
+
+	\begin{center}
+		\textit{Pour toute cete partie, on fixe \(\cal{Q}\) un ensemble non vide de \\ symboles appelés variables propositionnelles.}
+	\end{center}
+
+
+	\subsection{Définition inductive des formules}
+	
+		\subsubsection{Avec des règles de construction}
+			
+			\vs{-2}
+			\begin{Definition}[construction des formules de la logique propositionnelle]
+				L'ensemble des formules de la logique propositionnelle, noté \(\bb{F}_p (\cal{Q})\), est construit par induction à partir des règles de construction suivantes : \\
+					\hs{5} \bdot \(\Var |_{\scriptscriptstyle \cal{Q}}^{\scriptscriptstyle 0}\) \\
+					\hs{5} \bdot \(\top |_{\scriptscriptstyle \{\! \shortminus \!\}}^{\scriptscriptstyle 0}\) (vrai) \\
+					\hs{5} \bdot \(\bot |_{\scriptscriptstyle \{\! \shortminus \!\}}^{\scriptscriptstyle 0}\) (faux) \\
+					\hs{5} \bdot \(\neg \constr{1}{\noset}\) (négation) \\
+					\hs{5} \bdot \(\wedge \constr{2}{\noset}\) (conjonction) \\
+					\hs{5} \bdot \(\vee \constr{2}{\noset}\) (disjonction) \\
+					\hs{5} \bdot \(\rightarrow \!\! \constr{2}{\noset}\) (implication) \\
+					\hs{5} \bdot \(\leftrightarrow \!\! \constr{2}{\noset}\) (équivalence -- mais attention, ce n'est pas une relation d'équivalence)
+			\end{Definition}
+			\vspace{2mm}
+			\begin{Remarque}
+				Ce système n'est pas minimal, autrement dit on pourrait obtenir un ensemble de formules équivalent à partir de moins de règles. Par exemple, on peut omettre \(A \vee B\), que l'on désignerait alors par \(\neg \left((\neg A) \wedge (\neg B)\right)\).
+			\end{Remarque}
+			\vs{2}
+			
+			\intro{Afin d'alléger les écritures, on note désormais : \\
+					\(\top\) pour \((\top,\_)\) \\
+					\(\bot\) pour \((\bot,\_)\) \\
+					\(\Var(q)\) pour \((\Var,q)\) \\
+					\(\neg A\) pour \((\neg,\_,A)\) \\
+					\(A \wedge B\) pour \((\wedge,\_,A,B)\) \\
+					\(A \vee B\) pour \((\vee,\_,A,B)\) \\
+					\(A \rightarrow B\) pour \((\rightarrow,\_,A,B)\) \\
+					\(A \leftrightarrow B\) pour \((\leftrightarrow,\_,A,B)\)}
+		
+		\vs{-4}
+		\subsubsection{En français}
+		
+		
+	\subsection{Représentation sous forme d'arbres}
+	
+		Une formule de \(\bb{F}_p(\cal{Q})\) peut être réprésentée par un arbre binaire non vide dont les feuilles sont étiquetées par \(\cal{Q} \cup \{\top,\bot\}\) et dont les n\oe uds d'arité 1 et 2 sont respectivement étiquetés par \(\{\neg\}\) et \(\{\vee,\wedge,\rightarrow,\leftrightarrow\}\). 
+		
+		\vs{2}
+		\begin{Exemple}
+			Pour \(\cal{Q} = \{x,y,z\}\), on a par exemple :
+		\end{Exemple}
+		
+		\vs{2}
+		\begin{Remarque}
+			Dans cette représentation, une sous-formule correspond à un sous-arbre.
+		\end{Remarque}
+		
+		\eqskip{3mm}
+		\begin{Definition}[hauteur et taille d'une formule]
+			La hauteur (resp.\! taille) d'une formule est la hauteur (resp.\! taille) de l'arbre qui le représente. \\
+			Formellement, on définit la hauteur et la taille des formules de \(\bb{F}_p(\cal{Q})\) par induction comme suit :
+				\setlength{\tabcolsep}{2.2pt}
+				\[
+				h = \left( \!\!
+				\begin{tabular}[h]{rcl}
+					\(\bb{F}_p(\cal{Q})\) & \(\rightarrow\) & \(\bb{N}\) \vspace{1mm} \\
+					\( \left. \begin{tabular}[h]{r}
+						\(\top\) \\ \(\bot\) \\ \(q \in Q\)
+					\end{tabular} \! \right\} \hspace{-1mm} \vspace{1mm} \)
+					& \(\mapsto\) & \(0\) \\
+					\(\neg A \) & \(\mapsto\) & \(1 + h(A)\) \\
+					\raggedleft \( A \, \alpha \, B \) & \(\mapsto\) & \(1 + \max (h(A),h(B)) \)
+				\end{tabular} \right)
+				\qquad
+				s = \left( \!\!
+				\begin{tabular}[h]{rcl}
+					\(\bb{F}_p(\cal{Q})\) & \(\rightarrow\) & \(\bb{N}\) \vspace{1mm} \\
+					\( \left. \begin{tabular}[h]{r}
+						\(\top\) \\ \(\bot\) \\ \(q \in \cal{Q}\)
+					\end{tabular} \! \right\} \hspace{-1mm} \vspace{1mm} \)
+					& \(\mapsto\) & \(1\) \\
+					\(\neg A \) & \(\mapsto\) & \(1 + s(A)\) \\
+					\raggedleft \( A \, \alpha \, B \) & \(\mapsto\) & \(1 + s(A) + s(B) \)
+				\end{tabular} \right)
+				\]
+			où à chaque fois on a \(\alpha \in \{\vee,\wedge,\rightarrow,\leftrightarrow\}\).
+		\end{Definition} \setlength{\tabcolsep}{5pt}
+		
+		\vs{2}
+		\begin{Exercice}
+			Donner de même la définition de quatre fonctions donnant les nombres et les ensembles de feuilles et de variables.
+		\end{Exercice}
+		
+	\subsection{Conjonction et disjonction}
+		
+		\pagebreak
+		\begin{Notations}[conjonction et disjonction de \(n\) formules]
+			Soit \((A_i)_{i \in [1..n]} \in \bb{F}_p(\cal{Q})^n\) avec \(n \in \bb{N}^*\). On note : \\
+				\hs{5} \bdot \(\displaystyle \bigwedge\nolimits_{i=1}^n A_i\) pour désigner la formule \(\left((A_1 \wedge A_2) \wedge A_3 \, ... \, \right) \wedge A_n\) \\[1mm]
+				\hs{5} \bdot \(\displaystyle \bigvee\nolimits_{i=1}^n A_i\) pour désigner la formule \(((A_1 \vee A_2) \vee A_3 \, ... \,) \vee A_n\). \colsep{1.5pt} \nt
+			Formellement :
+			\begin{tabular}[t]{cl}
+					\i & \(\displaystyle \bigwedge_{i=1}^1 A_i = A_1\) et \(\displaystyle \forall\,n \geq 2, \, \bigwedge_{i=1}^{n} A_i = \bigg(\bigwedge_{i=1}^{n-1} A_i\bigg) \wedge A_n\) \\[5mm]
+					\ii & \(\displaystyle \bigvee_{i=1}^1 A_i = A_1\) et \(\displaystyle \forall\,n \geq 2,\,\bigvee_{i=1}^{n} A_i = \bigg(\bigvee_{i=1}^{n-1} A_i\bigg) \vee A_n\)
+			\end{tabular} \\[4mm]
+				%
+			Plus généralement, si \(I \neq \emptyset\) est un ensemble fini et ordonné et si \((A_i)_{i \in I} \in \bb{F}_p(\cal{Q})^I\), on s'autorisera à écrire \(\displaystyle \bigwedge_{i \in I} A_i\) et \(\displaystyle \bigvee_{i \in I} A_i\). Enfin, on conviendra que \(\displaystyle \bigwedge_{i \in \emptyset} A_i = \top\) et \(\displaystyle \bigvee_{i \in \emptyset} A_i = \bot\).
+		\end{Notations}
+		
+	\subsection{Formes normales}
+		
+		\vs{-2}
+		\begin{Definitions}[littéraux et clauses]
+			Soit \(A \in \bb{F}_p(\cal{Q})\). Alors : \\
+				%
+			\hs{5} \bdot \(A\) est un littéral s'il existe \(q \in \cal{Q}\) tel que \(A = q\) ou \(A = \neg q\). \\
+			\hs{5} \bdot \(A\) est une clause (disjonctive) si c'est une disjonction de littéraux. \\
+			\hs{5} \bdot Pour \(n \in \bb{N}^*\), \(A\) est une \(n\)-clause si c'est une disjonction d'exactement \(n\) littéraux.
+		\end{Definitions}
+	
+		\begin{Definition}[formes normales]
+			Soit \(A \in \FpQ\). \nt
+			\bdot \(A\) est sous forme normale conjonctive (FNC) si c'est une conjonction de clauses disjonctives. \\
+			\bdot \(A\) est sous forme normale disjonctive (FND) si c'est une disjonction de conjonctions de \\ \listspace littéraux, c'est-à-dire une disjonction de clauses conjonctives.
+		\end{Definition}
+		\vs{2}
+		\begin{Exemples}
+			\(((x \vee y) \vee \neg z) \vee \neg x \vee x\) est une 5-clause. \\
+			\hspace*{23.1mm} \((a \vee b) \wedge (a \vee b \vee c)\) est une formule sous FNC.
+		\end{Exemples}
+		
+		\vs{2}
+		\begin{Remarque}
+			Pour \(q \in Q\), \(q\) et \(\neg q\) sont des clauses (plus précisément, des 1-clauses).
+		\end{Remarque}
+		
+\section{Algèbre booléenne}
+
+	\subsection{Définition}
+		
+		\vs{-2}
+		\begin{Definition}[algèbre de Boole]
+			Notons \(\bb{B}\) l'ensemble \(\{\V,\F\}\). On munit \(\bb{B}\) des trois opérations suivantes :
+				\setlength{\tabcolsep}{2.2pt}
+				\[
+					+ = \left( \begin{tabular}[h]{rcl}
+						\(\bb{B} \times \bb{B}\) & \(\rightarrow\) & \(\bb{B}\) \\
+						\((\F,\F)\) & \(\mapsto\) & \(\F\) \\
+						\((\F,\V)\) & \(\mapsto\) & \(\V\) \\
+						\((\V,\F)\) & \(\mapsto\) & \(\V\) \\
+						\((\V,\V)\) & \(\mapsto\) & \(\V\)
+					\end{tabular} \right)
+					\qquad
+					\times = \left( \begin{tabular}[h]{rcl}
+						\(\bb{B} \times \bb{B}\) & \(\rightarrow\) & \(\bb{B}\) \\
+						\((\F,\F)\) & \(\mapsto\) & \(\F\) \\
+						\((\F,\V)\) & \(\mapsto\) & \(\F\) \\
+						\((\V,\F)\) & \(\mapsto\) & \(\F\) \\
+						\((\V,\V)\) & \(\mapsto\) & \(\V\)
+					\end{tabular} \right)
+					\qquad
+					\boolinv = \left( \begin{tabular}[h]{rcl}
+						\(\bb{B}\) & \(\rightarrow\) & \(\bb{B}\) \\
+						\(\V\) & \(\mapsto\) & \(\F\) \\
+						\(\F\) & \(\mapsto\) & \(\V\)
+					\end{tabular} \right)
+				\]
+				%
+			\(\bb{B}\) muni de ces opérations, c'est-à-dire \((\bb{B},+,\times,\boolinv \!)\), est appelé l'algèbre de Boole.
+		\end{Definition} \setlength{\tabcolsep}{5pt}
+		
+		\begin{Remarque}
+			\(\boolinv\) ne correspond pas au passage à l'opposé (inversion pour \(+\)), ni au passage à l'inverse (inversion pour \(\times\)).
+		\end{Remarque}
+		
+		\colsep{1.5pt}
+		\begin{Proprietes}[lois \(+\), \(\times\) et $\boolinv$]
+			On a les propriétés suivantes : \!\begin{tabular}[t]{cl}
+			\i & \(+\) et \(\times\) sont associatives et commutatives \\
+			\ii & \(\F\) est neutre pour \(+\) et absorbant pour \(\times\) \\
+			\iii & \(\V\) est neutre pour \(\times\) et absorbant pour \(+\) \\
+			\iv & \(\boolinv\) est involutive
+			\end{tabular}
+		\end{Proprietes}
+		
+		\vs{2}
+		\begin{Preuve}
+			\i On montre l'associativité en étudiant tous les cas possibles, que l'on présente dans un tableau appelé table de vérité (\emph{cf.} définition plus loin). Soit donc \((a,b,c) \in \bb{B}^3\). On a :
+		\end{Preuve}
+		
+		\eqskip{2mm}
+		\colsep{1.5pt}
+		\begin{Proprietes}[distributivité]
+			\i \(+\) est distributive par rapport à \(\times\), c'est-à-dire :
+				\[
+				\forall \, (a,b,c) \in \bb{B}^3, \,
+				\left\{ \begin{tabular}[h]{l}
+					\((a \times b) + c = (a+c) \times (b+c)\) \\
+					\(c + (a \times b) = (c+a) \times (c+b)\)
+				\end{tabular} \right.
+				\]
+			\ii \(\times\) est distributive par rapport à \(+\), c'est-à-dire :
+				\[
+				\forall \, (a,b,c) \in \bb{B}^3, \,
+				\left\{ \begin{tabular}[h]{l}
+					\((a + b) \times c = (a \times c) + (b \times c)\) \\
+					\(c \times (a + b) = (c \times a) + (c \times b)\)
+				\end{tabular} \right.
+				\]
+		\end{Proprietes}
+		
+		\vs{2}
+		\begin{Preuve}
+		\end{Preuve}
+		\vs{-2}
+		
+	\subsection{Fonctions booléennes}
+		
+		\vs{-2}
+		\begin{Definition}[fonction booléenne]
+			Pour \(n \in \bb{N}^*\), on appelle fonction booléenne d'arité \(n\) une fonction de \(\bb{B}^n\) dans \(\bb{B}\).
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			\(\card (\bb{B}^n) = 2^n\) et \(\card (\bb{B}^{\bb{B}^n}) = \card (\EuScript{F} (\bb{B}^n,\bb{B})) = 2^{2^n}\).
+		\end{Remarque}
+		
+		\eqskip{3mm}
+		\begin{Definition}[table de vérité d'une fonction booléenne]
+			Soit \(n \in \bb{N}^*\) et \(f \in \cal{F} (\bb{B}^n,\bb{B})\). \\[2mm]
+			On appelle table de vérité de \(f\) un tableau \(T\) ayant \(2^n\) lignes (indicées de 1 à \(2^n\)) et \(n+1\) colonnes (indicées de 1 à \(n+1\)), à valeurs dans \(\bb{B}\) et tel que :
+				\begin{align*}
+					& \text{\bdot} \!\left\{(T_{i,j})_{j \in [1..n]} \, \middle| \, i \in [1..2^n] \right\} = \bb{B}^n \\
+					& \text{\bdot} \forall \, i \in [1..2^n], \, f((T_{i,j})_{j \in [1..n]}) = T_{i,n+1}
+				\end{align*}
+			Autrement dit, les lignes de \(T\) couvrent l'ensemble des \(n\)-uplets de \(\bb{B}^n\) et pour chaque ligne, la dernière colonne donne l'image par \(f\) du \(n\)-uplet constitué des premières cases de cette ligne.
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Il est recommandé d'énumérer les \(2^n\) \(n\)-uplets en comptant en binaire afin de plus facilement les lister exhaustivement et sans doublons.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Remarque}
+			Par ailleurs, on s'autorisera à rassembler les tables de vérité de plusieurs fonctions booléennes de même arité dans un même tableau en factorisant les premières colonnes.
+		\end{Remarque}
+		
+\section{Sémantique de la logique propositionelle}
+
+	\begin{center}
+		\textit{Dans cette partie, on fixe à nouveau \(\cal{Q}\) un ensemble non vide \\ de symboles et on note \(\bb{B}\) l'algèbre de Boole.}
+	\end{center}
+
+
+	\subsection{Interprétation}
+		
+		\vs{-2}
+		\begin{Definition}[environnement propositionnel]
+			On appelle environnement propositionnel une fonction de \(\cal{Q}\) dans \(\bb{B}\). On l'appelle également valeurs de vérité, ou encore assignation des variables.
+		\end{Definition}
+		
+		\eqskip{3mm}
+		\begin{Definition}[interprétation selon un environnement]
+			Soit \(\rho \in \bb{B}^Q\) un environnement propositionnel.
+			On définit l'interprétation selon \(\rho\) des formules de la logique propositionnelle sur \(\cal{Q}\) par :
+				\setlength{\tabcolsep}{2.2pt}
+				\[
+					[\text{\! \bdot \!}]^\rho = \left( \begin{tabular}[h]{rcl}
+						\(\FpQ\) & \(\rightarrow\) & \(\bb{B}\) \\
+						\(\top\) & \(\mapsto\) & \(\V\) \\
+						\(\bot\) & \(\mapsto\) & \(\F\) \\
+						\(q \in \cal{Q}\) & \(\mapsto\) & \(\rho(q)\) \\
+						\(\neg A\) & \(\mapsto\) & \(\overline{[A]^\rho}\) \\
+						\(A \vee B\) & \(\mapsto\) & \([A]^\rho + [B]^\rho\) \\
+						\(A \wedge B\) & \(\mapsto\) & \([A]^\rho \times [B]^\rho\) \\
+						\(A \rightarrow B\) & \(\mapsto\) & \(\overline{[A]^\rho} + [B]^\rho = [\neg A \vee B]^\rho\) \\
+						\(A \leftrightarrow B\) & \(\mapsto\) & \(([A]^\rho \times [B]^\rho) + (\overline{[A]^\rho} \times \overline{[B]^\rho})\)
+					\end{tabular} \right)
+				\]
+		\end{Definition}
+		
+		\begin{Definition}[satisfiabilité, tautologie, antilogie]
+			Soit \(A \in \FpQ\). \\[2mm]
+			\bdot Si \(\rho \in \bb{B}^\cal{Q}\) est telle que \([A]^\rho = \V\), alors on dit que \(\rho\) satisfait \(A\). \\
+			\bdot On dit que \(A\) est satisfiable s'il existe \(\rho \in \bb{B}^{\cal{Q}}\) tel que \(\rho\) satsifait \(A\). \\
+			\bdot On dit que \(A\) est valide ou bien que \(A\) est une tautologie ssi \(\forall \, \rho \in \bb{B}^\cal{Q}\), \(\rho\) satisfait \(A\). \\
+			\bdot On dit que \(A\) est insatisfiable ou que c'est une antilogie ssi \(\forall \, \rho \in \bb{B}^\cal{Q}\), \(\rho\) ne satisfait pas \(A\).
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Exemples}
+			\(\top\) et \((x \vee \neg x)\) sont des tautologies. \(\bot\) et \((x \wedge \neg x)\) sont quant à elles des antilogies.
+		\end{Exemples}
+		
+		\vs{2}
+		\begin{Remarque}
+			Notons qu'antilogie n'est pas la négation de tautologie.
+		\end{Remarque}
+		
+	\subsection{Fonction booléenne associée à une formule}
+	
+		On change maintenant de point de vue : en effet, \([A]^\rho\) dépend de de \(A\) mais aussi de \(\rho\). Dans la section précédente, on a vu que la dépendance en \(A\) pour \(\rho \in \bb{B}^\cal{Q}\) fixé était donnée par la fonction \([\text{\! \bdot \!}]^\rho = A \mapsto [A]^\rho\). \nt
+			%
+		Pour la dépendance en \(\rho\) à \(A \in \FpQ\) fixé, on a la fonction \(\llbracket\text{\! \bdot \!}\rrbracket^A = \rho \mapsto [A]^\rho\) définie ci-après.
+		
+		\eqskip{3mm}
+		\pagebreak
+		\begin{Definition}[fonction booléenne associée à une formule]
+			Soit \(A \in \FpQ\).
+			On appelle fonction booléenne associée à la formule \(A\) la fonction :
+				\setlength{\tabcolsep}{2.2pt}
+				\[
+					\llbracket\text{\! \bdot \!}\rrbracket^A = \left( \begin{tabular}[h]{rcl}
+						\(\bb{B}^\cal{Q}\) & \(\rightarrow\) & \(\bb{B}\) \\
+						\(\rho\) & \(\mapsto\) & \([A]^\rho\)
+					\end{tabular} \right)
+				\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Toute fonction booléenne d'arité \(n \in \bb{N}^*\) est la fonction booléenne associée d'une formule propositionnelle sur un ensemble de variables propositionnelles de cardinal \(n\) (\emph{cf.} section ``mise sous forme normale'').
+		\end{Remarque}
+		
+		\eqskip{2mm}
+		\begin{Definition}[équivalence logique]
+			On définit la relation binaire \(\equiv\) sur \(\FpQ\) par :
+				\begin{align*}
+					\forall \, (A,B) \in \FpQ^2, \, A \equiv B & \Longleftrightarrow \llbracket\text{\! \bdot \!}\rrbracket^A = \llbracket\text{\! \bdot \!}\rrbracket^B \\
+					& \Longleftrightarrow \forall \, \rho \in \bb{B}^\cal{Q}, \, \llbracket \rho \rrbracket^A = \llbracket \rho \rrbracket^B \\
+					& \Longleftrightarrow \forall \, \rho \in \bb{B}^\cal{Q}, \, [A]^\rho = [B]^\rho
+				\end{align*}
+			On dit que \(A\) et \(B\) sont logiquement équivalentes, et on parlera d'équivalence logique, si \(A \equiv B\).
+		\end{Definition}
+		\vs{2}
+			%
+		\uplabel{Propriété :} La relation \(\equiv\) est une relation d'équivalence sur \(\FpQ\). \nll
+		
+		\begin{Exemple}
+			Pour \((A,B) \in \FpQ^2\), on a toujours \(A \vee B \equiv B \vee A\). \\
+			En effet, \(\forall \, \rho \in \bb{B}^\cal{Q}\), \([A \vee B]^\rho\) \hspace{-3mm}
+				\begin{tabular}[t]{l}
+					\(= [A]^\rho + [B]^\rho\) par définition de l'interprétation\\
+					\(= [B]^\rho + [A]^\rho\) par commutativité de \(+\) \\
+					\(= [B \vee A]^\rho\) en réutilisant la définition de l'interprétation.
+				\end{tabular}
+		\end{Exemple}
+		
+		\colsep{1.5pt}
+		\begin{Exercice}
+			Soit \((A,B) \in \FpQ^2\). Démontrer les équivalences logiques suivantes : \\
+			\hs{5}\begin{tabular}[t]{l}
+				\bdot \(\bm{a)}\) \(A \wedge B \equiv B \wedge A\) \\
+				\bdot \(\bm{b)}\) \(A \rightarrow B \equiv (\neg A) \vee B\) \\
+				\bdot \(\bm{c)}\) \(A \rightarrow B \equiv (\neg B) \rightarrow (\neg A)\) \\
+				\bdot \(\bm{d)}\) \(A \leftrightarrow B \equiv (A \rightarrow B) \wedge (B \rightarrow A)\) \\
+				\bdot \(\bm{e)}\) \(A \vee \neg A \equiv \top\) \\
+				\bdot \(\bm{f)}\) \((A \rightarrow B) \wedge A \equiv A \wedge B\).
+			\end{tabular}
+		\end{Exercice}
+		\vs{2}
+		
+		\begin{Correction} \\
+			\(\bm{a)}\) \(\forall \, \rho \in \bb{B}^\cal{Q}\), \(\itp{A \wedge B}{\rho} = \itp{A}{\rho} \times \itp{B}{\rho} = \itp{B}{\rho} \times \itp{A}{\rho} = \itp{B \wedge A}{\rho}\) d'où \(A \wedge B \equiv B \wedge A\). \nt
+				%
+			\(\bm{b)}\) \(\forall \, \rho \in \bb{B}^\cal{Q}\), \(\itp{A \rightarrow B}{\rho} = \overline{\itp{A}{\rho}} + \itp{B}{\rho} = \itp{\neg A}{\rho} + \itp{B}{\rho} = \itp{\neg A \vee B}{\rho}\), d'où \(A \rightarrow B \equiv \neg A \vee B\). \nt
+				%
+			\(\bm{d)}\) \(\forall \, \rho \in \bb{B}^\cal{Q}\), \(\itp{A \leftrightarrow B}{\rho}\)\!
+				\begin{tabular}[t]{l}
+					\(= (\itp{A}{\rho} \times \itp{B}{\rho}) + (\overline{\itp{A}{\rho}} \times \overline{\itp{B}{\rho}})\) par définition \\
+					\(= (\itp{A}{\rho} + \overline{\itp{A}{\rho}}) \times (\itp{A}{\rho} + \overline{\itp{B}{\rho}}) \times (\itp{B}{\rho} + \overline{\itp{A}{\rho}}) \times (\itp{B}{\rho} + \overline{\itp{B}{\rho}})\) \\
+					\(= (\itp{A}{\rho} + \overline{\itp{B}{\rho}}) \times (\itp{B}{\rho} + \overline{\itp{A}{\rho}})\) car \(\forall \, X \in \bb{B}, X + \overline{X} = V\) \\
+					\(= \itp{B \rightarrow A}{\rho} \times \itp{A \rightarrow B}{\rho}\) par commutativité de \(+\) puis par définition \\
+					\(= \itp{A \rightarrow B}{\rho} \times \itp{B \rightarrow A}{\rho}\) par commutativité de \(\times\) \\
+					\(= \itp{(A \rightarrow B) \wedge (B \rightarrow A)}{\rho}\).
+				\end{tabular} \\[1mm]
+			D'où \(A \leftrightarrow B \equiv (A \rightarrow B) \wedge (B \rightarrow A)\).
+		\end{Correction}
+		
+		\pagebreak
+		
+	\subsection{Conséquence logique}
+		
+		\vs{-2}
+		\begin{Definition}[conséquence logique]
+			Soit \((A,B) \in \FpQ^2\). On dit que \(B\) est conséquence logique de \(A\), ce que l'on note \(A \vDash B\), ssi tout environnement propositionnel satisfaisant \(A\) satisfait aussi \(B\), autrement dit
+				\[
+					\{\rho \in \bb{B}^\cal{Q} \, | \, [A]^\rho = \V\} \subseteq \{\rho \in \bb{B}^\cal{Q} \, | \, [B]^\rho = \V\}
+				\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			L'équivalence logique correspond au cas d'égalité de l'inclusion précédente.
+		\end{Remarque}
+		\vs{2}
+		
+		\uplabel{Propriété :} La relation binaire \(\vDash\) est réflexive et transitive.
+		
+		\vs{2}
+		\begin{Exercice}
+			Prouver cette propriété.
+		\end{Exercice}
+	
+		\begin{Definition}[généralisation pour un ensemble de formules]
+			Soit \(X \subseteq \FpQ\) et \(B \in \FpQ\). On note \(X \vDash B\) ssi tout environnement propositionnel satisfaisant toutes les formules de \(X\) satisfait aussi \(B\), autrement dit :
+				\[
+					\{\rho \in \bb{B}^\cal{Q} \, | \, \forall \, A \in X, [A]^\rho = \V\} \subseteq \{\rho \in \bb{B}^\cal{Q} \, | \, [B]^\rho = \V\}
+				\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Il faut distinguer ceci de : ``\(B\) est conséquence logique de la conjonction des formules de \(X\)'' (c'est-à-dire \((\displaystyle\bigwedge\nolimits_{A \in X} A) \vDash B \) $(*)$). En effet, \(X\) pouvant être de cardinal infini, la définion précédente caractérise une propriété plus forte que $(*)$, qui ne coïncide avec elle que si l'ensemble \(X\) est fini.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Exemples}
+			Soit \((A,B) \in \FpQ^2\). Montrer que : \\
+				\hs{5} \bdot \(\bm{a)}\) \(\{(A \rightarrow B), A\} \vDash B \) \\
+				\hs{5} \bdot \(\bm{b)}\) \(\{(A \rightarrow B), \neg B\} \vDash \neg A\).
+		\end{Exemples}
+	
+	\subsection{Reformulations avec des équivalences}
+		
+		\vs{-2}
+		\begin{Proprietes}
+			Soit \((A,B) \in \FpQ^2\). Alors :
+				\!\begin{tabular}[t]{cl}
+					\i & \(A\) est une tautologie ssi \(A \equiv \top\). \\
+					\ii & \(A\) est une antilogie ssi \(A \equiv \bot\). \\
+					\iii & \(A\) est une tautologie ssi \(\neg A\) est une antilogie. \\
+					\iv & \(A \equiv B\) ssi \(A \leftrightarrow B \equiv \top\) (\emph{i.e.} \(A \leftrightarrow B\) est une tautologie.) \\
+					\v & \(A \vDash B\) ssi \(A \rightarrow B \equiv \top\) (\emph{i.e.} \(A \rightarrow B\) est une tautologie).
+				\end{tabular}
+		\end{Proprietes}
+	
+		\vs{2}
+		L'espace des formules logiques quotienté par équivalence, \(\FpQ/\!\equiv\), est en bijection avec \(\cal{F}(\bb{B}^\cal{Q},\bb{B})\). En effet, une classe d'équivalence selon \(\equiv\) est caractérisée par la fonction booléenne à laquelle sont associés tous ses éléments.
+			\nt
+		Cela justifie que \(\llbracket \text{\! \bdot \!} \rrbracket^A\) soit parfois appelée la \emph{représentation} de \(A\).
+			\nll
+		On peut alors être amené à se demander quel représentant l'on préfèrera pour une classe donnée, et s'il est envisageable de choisir une forme canonique pour représenter une classe de formules équivalentes.
+		
+\section{Mise sous forme normale}
+
+	\subsection{Mise sous FND à partir d'une table de vérité}
+	
+		\subsubsection{Sur un exemple}
+			
+			\eqskip{2mm}
+			On cherche à mettre sous FND la formule \(A = (a \vee b) \rightarrow (c \wedge a)\), dont voici la table de vérité : \\[60mm]
+			On en déduit, en prenant la disjonction des clauses conjonctives formées par les lignes du tableau ``satisfaisant'' \(A\) (\emph{c-à-d} telles que la dernière case contienne \(\V\)) :
+				\[
+					A \equiv (a \wedge b \wedge c) \vee \underbrace{(a \wedge \neg b \wedge c) \vee (\neg a \wedge \neg b \wedge c)}_{\equiv (\neg b \wedge c)} \vee (\neg a \wedge \neg b \wedge \neg c)
+				\]
+			ce que l'on peut encore simplifier en \((a \wedge b \wedge c) \vee (\neg b \wedge c) \vee (\neg a \wedge \neg b \wedge \neg c)\).
+			
+		\subsubsection{Table de vérité d'une formule}
+		
+			\intro{
+				\textit{On étend ici la définition de la table de vérité aux formules pour une numérotation \\ des variables fixée, \(\cal{Q} = \{q_1,q_2, \! ... ,q_n\}\) où \(n = \card(\cal{Q})\).}
+			}
+			
+			\eqskip{3mm}
+			\vs{-4}
+			\begin{Definition}[table de vérité d'une formule]
+				Une table de vérité d'une formule \(A \in \FpQ\) est une table de vérité \(T\) de la fonction booléenne associée \(\llbracket \text{\! \bdot \!} \rrbracket^A\), de sorte qu'on a :
+					\begin{align*}
+						\text{\bdot} & \!\left\{(T_{i,j})_{j \in [1..n]} \, \middle| \, i \in [1..2^n] \right\} = \bb{B}^\cal{Q} \\
+						\text{\bdot} & \forall \, i \in [1..2^n], \, T_{i,n+1} = \llbracket \rho^i \rrbracket^A
+					\end{align*}
+				où pour tout \(i \in [1..2^n]\), \(\rho^i\) est défini par \(\forall \, j \in [1..n]\), \(\rho^i (q_j) = T_{i,j}\).
+			\end{Definition}
+			
+			\vs{2}
+			\begin{Remarque}
+				En calculant une FND à partir du tableau \(T\), on calcule donc bien quelque chose qui ne dépend pas exactement de \(A\) mais de sa classe...
+			\end{Remarque}
+			
+		\subsubsection{Calculer une FND à partir d'une table de vérité}
+			
+			On a vu sur l'exemple au-dessus une méthode ``intuitive'' permettant de mettre une formule sous FND à partir de sa table de vérité. Il s'agit à présent de formaliser ce processus et de montrer qu'il ``fonctionne'' effectivement. \nll
+				%
+			Soit \(A \in \FpQ\) où \(\cal{Q} = \{q_1,q_2, \! ... ,q_n\}\).
+			Soit \(T\) une table de vérité de \(A\) suivant cette numérotation de \(\cal{Q}\) et \((\rho^i)_{i \in [1..2^n]}\) la famille des environnements propositionnels définis comme précédemment à partir des valeurs des cases de \(T\).
+			
+			\begin{Notation}
+			Pour tout \(i \in [1..2^n]\) et \(j \in [1..n]\), on note \(\ell_{i,j}\) comme étant : \\
+			\hspace*{5mm} \bdot le littéral \(q_{j}\) si \(T_{i,j} = \V\) \\
+			\hspace*{5mm} \bdot le littéral \( \neg q_j\) si \(T_{i,j} = \F\).
+			\end{Notation}
+			
+			\vs{2}
+			\begin{Lemme}
+				\(\forall \, i \in [1..2^n], \, \forall \, j \in [1..n]\), \([\ell_{i,j}]^{\rho^i} = \V\).
+			\end{Lemme}
+			
+			\vs{2}
+			\begin{Preuve}
+				Soit \(i \in [1..2^n]\) et \(j \in [1..n]\). \\[2mm]
+				%
+				\bdot Si \(T_{i,j} = \V\), alors \(\ell_{i,j} = q_j\) donc \([\ell_{i,j}]^{\rho^i} = [q_j]^{\rho^i} = \rho^i (q_j)\) par définition de l'interprétation d'une variable. Or par définition de \(\rho^i\), \(\rho^i (q_j) = T_{i,j}\) donc \([\ell_{i,j}]^{\rho^i} = \V\). \\[1mm]
+					%
+				\bdot Si \(T_{i,j} = \F\), alors \(\ell_{i,j} = \neg q_j\) donc \([\ell_{i,j}]^{\rho^i} = \overline{\rho^i (q_j)}\) par définition de l'interprétation d'une négation puis d'une variable. Or par définition de \(\rho^i\), \(\rho^i (q_j) = T_{i,j}\) donc \([\ell_{i,j}]^{\rho^i} = \V\).
+			\end{Preuve}
+			\vs{2}
+			
+			\begin{Notation}
+			Ensuite, on pose, pour tout \(i \in [1..2^n]\), \(\displaystyle L^i = \bigwedge_{j=1}^n \ell_{i,j}\). 
+			\end{Notation}
+		
+			\vs{2}
+			\begin{Lemme}
+				On a : \!\begin{tabular}[t]{cl}
+				\i & \(\forall \, i \in [1..2^n], \, [L^i]^{\rho^i} = \V\) \\
+				\ii & \(\forall \, (i,k) \in [1..2^n]^2, \, i \neq k, \, [L^i]^{\rho^k} = \F\).
+				\end{tabular}
+			\end{Lemme}	
+			
+			\eqskip{2mm}
+			\vs{2}
+			\begin{Preuve}
+				\i Soit \(i \in [1..2^n]\). Par définition de l'interprétation d'une conjonction,
+					\[
+						[L^i]^{\rho^i} = \prod_{j=1}^n [\ell_{i,j}]^{\rho^i} = \prod_{j=1}^n \V = \V
+					\]
+				d'après le lemme précédent appliqué aux couples \(((i,j))_{j \in [1..n]}\). D'où \([L^i]^{\rho^i} = \V\). \\[3mm]
+					%
+				\ii Soit \(k \in [1..2^n]\) tel que \(k \neq i\). Puisque les lignes de \(T\) restreintes à leur \(n\) premières colonnes sont deux à deux distinctes (il y en a \(2^n\) et elles couvrent \(\bb{B}^\cal{Q}\) qui est de cardinal \(2^n\)), il existe \(j_0 \in [1..n]\) tel que \(T_{i,j_0} \neq T_{k,j_0}\). \\[3mm]
+					\hspace*{5mm} \parbox{161mm}{
+					\bdot Si \(T_{i,j_0} = \V\), alors \(\ell_{i,j_0} = q_{j_0}\) et \(T_{k,j_0} = \F\).	Par définition de l'interprétation d'une variable, \([\ell_{i,j_0}]^{\rho^k} =  \rho^k (q_{j_0})\), or par définition de \(\rho^k\), \(\rho^k (q_{j_0}) = T_{k,j_0} = \F\) donc \([\ell_{i,j_0}]^{\rho^k} = \F\). \\[2mm]
+						%
+					\bdot Si \(T_{i,j_0} = \F\), alors \(\ell_{i,j_0} = \neg q_{j_0}\) et \(T_{k,j_0} = \V\). Par définition de l'interprétation de la négation d'une variable, \([\ell_{i,j_0}]^{\rho^k} = \overline{\rho^k (q_{j_0})}\) qui vaut, par définition de \(\rho^k\), \(\rho^k (q_{j_0}) = \overline{T_{k,j_0}} =\overline{\V} = \F\).
+					} \\[3mm]
+				Dans les deux cas, le terme d'indice \(j_0\) du produit qu'est l'interprétation de \(L^i\) par \(\rho^k\) vaut \(F\). \nt
+				Ainsi, \(\F\) étant absorbant pour \(\times\), on en déduit que \([L^i]^{\rho^k} = \F\).
+			\end{Preuve}
+			\vs{2}
+			
+			\begin{Notation}
+			Finalement, on pose \(\displaystyle D = \bigvee_{\substack{i \in [1..2^n] \\ T_{i,n+1} = \V}} L^i\). \end{Notation}
+		
+			\begin{Propriete}
+				On a alors \(D\equiv A\).
+			\end{Propriete}
+		
+			\vs{2}
+			\begin{Preuve}
+				Soit \(\rho \in \bb{B}^\cal{Q}\). On note \(I = \{i \in [1..2^n] \, | \, T_{i,n+1} = \V\}\), ainsi \(\displaystyle D = \bigwedge_{i \in I} L^i\). \\
+				De plus, par définition de l'interprétation d'une conjonction, \(\displaystyle [D]^\rho = \sum_{i \in I} \, [L^i]^\rho\). \\
+				Puisque les lignes de de \(T\) restreintes à leurs \(n\) premières colonnes couvrent \(\bb{B}^\cal{Q}\), il existe \(i_0 \in [1..2^n]\) tel que \(\rho = \rho^{i_0}\). \\[2mm]
+					%
+				\bdot Si \([A]^\rho = \V\), on a \(\V = \fbl{\rho}{A} = \fbl{\rho^{i_0}}{A} = T_{i_0,n+1}\) donc \(i_0 \in I\). \\
+				Ainsi, le terme \(\itp{L^{i_0}}{\rho}\) apparaît dans la somme qu'est \(\itp{D}{\rho}\), or par le lemme précédent, \(\itp{L^{i_0}}{\rho} = \itp{L^{i_0}}{\rho^{i_0}} = \V\) et \(\V\) étant absorbant pour \(+\), on en déduit que \(\itp{D}{\rho} = \V\), soit \(\itp{D}{\rho} = \itp{A}{\rho}\). \\[1mm]
+					%
+				\bdot Si au contraire \(\itp{A}{\rho} = \F\), alors \(T_{i_0,n+1} = \F\) donc \(i_0 \notin I\). \\
+				Autrement dit, \(\forall \, i \in I, \, i \neq i_0\) ce qui donne d'après le lemme précédent \(\itp{L^i}{\rho} = \itp{L^i}{\rho^i} = \F\). Une somme de \(\F\) valant \(\F\), on en déduit que \(\itp{D}{\rho} = \F\), soit \(\itp{D}{\rho} = \itp{A}{\rho}\).
+			\end{Preuve}
+				
+	\subsection{Mise sous FNC à partir d'une table de vérité}
+	
+		\subsubsection{Sur le même exemple}
+			
+			\eqskip{2mm}
+			On veut mettre sous FNC la formule vue au début de la section précédente, \(A = (a \vee b) \rightarrow (c \wedge a)\). Pour cela, reprenons sa table de vérité : \\[60mm]
+				%
+			En prenant cette fois-ci la conjonction des négations respectives des clauses conjonctives formées par les lignes satisfaisant \(\neg A\) (\emph{c-à-d} telles que la dernière case contienne \(\F\)), puis en distribuant la négation sur chaque clause, on obtient :
+				\[
+					A \equiv (\neg a \vee \neg b \vee c) \wedge (\neg a \vee b \vee c) \wedge (a \vee \neg b \vee \neg c) \wedge (a \vee \neg b \vee c)
+				\]
+				
+		\subsubsection{Calculer une FNC à partir d'une table de vérité}
+	
+			Soit \(A \in \FpQ\) où \(\cal{Q} = \{q_1,q_2, \! ... ,q_n\}\) et \(T\) une table de vérité de \(A\) suivant cette numérotation de \(\cal{Q}\) ; on définit comme prédécemment la famille d'environnements \((\rho^i)_{i \in [1..2^n]}\) à partir de \(T\).
+			
+			\begin{Notations}
+				Pour tout \(i \in [1..2^n]\) et \(j \in [1..n]\), on note \(r_{i,j}\) comme étant : \\
+				\hspace*{4mm} \bdot le littéral \(\neg q_j\) si \(T_{i,j} = \V\) \\
+				\hspace*{4mm} \bdot le littéral \(q_j\) si \(T_{i,j} = \F\). \\
+				%
+			Ensuite, on pose, pour tout \(i \in [1..2^n]\), \(\displaystyle R^i = \bigvee_{j=1}^n r_{i,j}\). \\
+			Enfin, on pose \(\displaystyle C = \bigwedge_{\substack{i \in [1..2^n] \\ T_{i,n+1}}} R^i\).
+			\end{Notations}
+			
+			\begin{Proprietes}
+				On a successivement : \!\begin{tabular}[t]{cl}
+					\i & \(\forall \, i \in [1..2^n], \, \forall \, j \in [1..n], \, \itp{r_{i,j}}{\rho^i} = \F\) \\
+					\ii & \(\forall \, i \in [1..2^n], \, \itp{R^i}{\rho^i} = \F\) et \(\forall \, k \in [1..2^n], \, k \neq i, \, \itp{R^i}{\rho^k} = \V\) \\
+					\iii & \(C \equiv A\)
+				\end{tabular}
+			\end{Proprietes}
+			
+			\begin{Preuve}
+				On procède sur le même principe que pour la mise sous FND.
+			\end{Preuve}
+			
+	\subsection{ Bilan sur la FNC/FND}
+		
+		\vs{-2}
+		\begin{Aretenir}
+		\bdot Certaines formules sont à la fois sous FNC et FND. \\
+		\bdot Il y a existence de la FNC/FND équivalente à une formule (on vient de le montrer !). Par \\ \listspace contre, il n'y a pas unicité de la FNC ni de la FND équivalente à une formule. \\
+		\bdot Il peut y avoir une explosion de la taille lors de la conversion (\emph{cf.} exemple ci-dessous).
+		\end{Aretenir}
+		
+		\vs{2}
+		\begin{Exemple}
+			\(\displaystyle \bigwedge_{i=1}^n (a_i^1 \vee a_i^2) = \bigvee_{(j_1,j_2, ... ,j_n) \in \{1,2\}^n} \bigwedge_{k=1}^n a_k^{j_k}\) (\emph{cf.} distributivité généralisée). \nt
+		Dans cet exemple, la transformation de FNC à FND nous fait passer d'une conjonction de \(n\) 2-clauses disjonctives à une disjonction de \(2^n\) \(n\)-clauses conjonctives.
+		\end{Exemple}
+		
+		\vs{2}
+		\begin{Exercice}
+			Voici quelques simplifications utiles ; démontrer chaque équivalence logique.
+		\end{Exercice}
+		
+		\vs{2}
+		\begin{Exercice}
+			Mettre sous FNC et FND les formules suivantes. \\
+			\hspace*{5mm} \bdot \(\bm{a)}\) \(U = (x \wedge y) \vee (z \wedge \neg z \wedge q) \vee (\neg x \wedge z)\) \\
+			\hspace*{5mm} \bdot \(\bm{b)}\) \(V = (x \wedge q) \rightarrow ((y \vee z) \wedge q)\) \\
+			\hspace*{5mm} \bdot \(\bm{c)}\) \(W = (x \wedge y) \leftrightarrow (\neg x \wedge z)\).
+		\end{Exercice}
+			
+\section{Le problème \textsf{SAT}}
+
+	\intro{
+		Dans cette section, on s'intéresse à la satisfiabilité des formules \\ (sur un ensemble de variables fini, i.e. tel que \(\card(Q) \in \bb{N}\)).}
+
+	En effet, comme déjà évoqué en introduction, une formule propositionnelle peut modéliser un problème concret dont une solution serait donnée par une environnement satisfaisant la formule.
+	
+	\vs{2}
+	\begin{Exemple}
+		Pour le Sudoku, la valeur de vérité d'une variable \(p_{i,j,k}\) peut par exemple indiquer si la case \((i,j)\) contient la valeur \(k\). L'environnement complet décrit une solution, et s'il satisfait la formule, alors c'est une solution valide.
+	\end{Exemple}
+	\vs{2}
+	
+	Mais on s'intéresse déjà au problème de décision (plus simple) de savoir si une formule est satisfiable, sans demander par quel environnement : c'est le problème \textsf{SAT}, que l'on formalise dans la section suivante.
+	
+	\vs{2}
+	\begin{Remarque}
+		Puisque la satisfiabilité d'une formule ne dépend que de sa classe, on peut résoudre le problème sur une formule ayant une forme particulière, mais il faut alors faire attention au coût de transformation.
+	\end{Remarque}
+	
+	
+	\subsection{Définitions}
+		
+		On donne ci-dessous la formalisation du problème \textsf{{SAT}} ainsi que quelques unes de ses variantes :
+			\begin{center}
+				\pbm{SAT}{\(A \in \FpQ\)}{oui si \(A\) est satisfiable, non sinon} \\[3mm]				\pbm{FND-SAT}{\(A \in \FpQ\) sous FND}{oui si \(A\) est satisfiable, non sinon} \\[3mm]	
+				\pbm{FNC-SAT}{\(A \in \FpQ\) sous FND}{oui si \(A\) est satisfiable, non sinon} \\[3mm]	
+				\pbm{3-SAT}{\(A \in \FpQ\) sous FNC avec des clauses de 3 littéraux uniquement}{oui si \(A\) est satisfiable, non sinon} \\[3mm]	
+				\pbm{2-SAT}{\(A \in \FpQ\) sous FNC avec des clauses de 3 littéraux seulement}{oui si \(A\) est satisfiable, non sinon}
+			\end{center}
+		
+	\subsection{Réductions}
+	
+		\begin{Rappel}[réduction entre problèmes]
+			On dit qu'un problème \(X\) est plus dur qu'un autre problème \(Y\), ou que \(Y\) se réduit à \(X\), si savoir résoudre \(X\) permet de résoudre facilement \(Y\) après un éventuel pré-traitement et/ou post-traitement.
+		\end{Rappel}
+		
+		\vs{4}
+		\begin{Illustration} \\[-7mm] \hs{12}
+			\begin{minipage}[h]{\linewidth}
+				\centering
+				\begin{tikzpicture}
+					\draw (-4.7,1.15) node {\(Y\)};
+					\draw[line width=1.5pt] (-5,-1.2) rectangle (7.2,0.9);
+					\draw[->][line width=0.8pt] (-5.5,0.2) -- ++(1,0);
+					\draw[line width=0.8pt] (-3.1,0.2) circle [x radius=1.6, y radius=0.5];
+					\draw[line width=0.8pt] (-3.1,0.2) node {pré-traitement};
+					\draw[->][line width=0.8pt] (-1.8,-0.1) -- ++(0,-0.4) -- ++(0.4,0);
+					\draw (-1.1,-0.5) node {\(\cal{I'}\)};
+					\draw[line width=1.5pt] (-0.45,-0.8) rectangle (0.4,-0.2);
+					\draw[->][line width=0.8pt] (-0.85,-0.5) -- ++(0.6,0);
+					\draw (-5.75,0.2) node {\(\cal{I}\)};
+					\draw (-0.1,0.05) node {\(X\)};
+					\draw[->][line width=0.8pt] (0.23,-0.5) -- ++(0.57,0);
+					\draw (1.9,-0.55) node {\(\cal{S}' = X(\cal{I}')\)};
+					\draw[->][line width=0.8pt] (3,-0.5) -- ++(0.6,0);
+					\draw[line width=0.8pt] (5.1,-0.5) circle [x radius=1.7, y radius=0.5];
+					\draw (5.1,-0.5) node {post-traitement};
+					\draw[->][line width=0.8pt] (6.63,-0.5) -- ++(0.77,0);
+					\draw (8.4,-0.5) node {\(\cal{S} = Y(\cal{I})\)};
+				\end{tikzpicture}
+			\end{minipage}
+		\end{Illustration}
+		\vs{2}
+		
+		\begin{Definition}[réduction polynomiale entre problèmes de décisions]
+			Soient \(X\) et \(Y\) deux problèmes de décision. On note \(X^+\) (resp.\! \(X^-\)) les instances positives (resp.\! négatives) de \(X\), c'est-à-dire celles pour lesquelles la solution est ``Vrai'' (resp.\! ``Faux''). On définit de même \(Y^+\) et \(Y^-\). \\[2mm]
+				%
+			Alors, on dit que \(Y\) se réduit à \(X\) en temps polynomial s'il existe une transformation \(\varphi\) calculable en temps polynomial, qui transforme toute instance de \(Y\) en une instance de \(X\) de sorte que :
+				\[
+					\forall \, \cal{I}, \, \varphi(\cal{I}) \in X^+ \Longleftrightarrow \cal{I} \in Y^+ \text{ et } \varphi(\cal{I}) \in X^- \Longleftrightarrow \cal{I} \in Y^-
+				\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Illustration}
+		\end{Illustration}
+		\vs{2} \eqskip{2mm}
+		
+		Compte tenu de ces définitions, on a les réductions suivantes : \\[2mm]
+		\bdot \textsf{{SAT}} est plus dur que \textsf{{FND-SAT}} et \textsf{{FNC-SAT}}, en effet : \\
+			\hspace*{5mm} \(\cdot\) \textsf{{FNC-SAT}} se réduit à \textsf{{SAT}} pour \(\varphi = \Id\) \\
+			\hspace*{5mm} \(\cdot\) \textsf{{FND-SAT}} se réduit à \textsf{{SAT}} pour \(\varphi = \Id\) \\[2mm]
+			%
+		\bdot \textsf{{FNC-SAT}} est plus dur que \textsf{{2-SAT}} et \textsf{{3-SAT}}, en effet : \\
+			\hspace*{5mm} \(\cdot\) \textsf{2-SAT} se réduit à \textsf{FNC-SAT} pour \(\varphi = \Id\) \\
+			\hspace*{5mm} \(\cdot\) \textsf{3-SAT} se réduit à \textsf{FNC-SAT} pour \(\varphi = \Id\) \\[2mm]
+		\bdot Inversement, \textsf{FNC-SAT} se réduit à \textsf{3-SAT}. En effet, on peut transformer toute clause de taille \(\leq 2\) d'une FNC en clause de taille 3 suivant le modèle des exemples suivants :
+			\[
+				a \equiv (a \vee a \vee a) \qquad \qquad (a \vee b) \equiv (a \vee a \vee b)
+			\]
+		De même, on transforme chaque clause de taille \(> 3\) en conjonction de clauses de taille 3 en ajoutant successivement des nouvelles variables comme suit :
+			\begin{center}
+				\((a \vee b \vee c \vee d) \text{ devient } (a \vee b \vee z) \wedge (\neg z \vee c \vee d)\) \\
+				\((a \vee b \vee c \vee d \vee e) \text{ devient } (a \vee b \vee z_1) \wedge (\neg z_1 \vee c \vee z_2) \wedge (\neg z_2 \vee d \vee e)\)
+			\end{center}
+		On justifie ce processus dans la proposition suivante.
+		%
+		\begin{Proposition}[transformations préservant la satisfiabilité]
+			Soit \(C = \ell_1 \vee \ell_2 \vee \ell_3 \vee ... \vee \ell_k\) une clause de \(\FpQ\) de taille \(k \geq 3\). \\
+			Soit \(z\) une nouvelle variable (\emph{i.e.} \(z \notin \cal{Q}\)). On pose : \\ \hspace*{5mm} \bdot \(C_1 = (\ell_1 \vee \ell_2 \vee z)\) \\
+			\hspace*{5mm} \bdot \(C_2 = (\neg z \vee \ell_3 \vee ... \vee \ell_k)\). \\[2mm]
+				%
+			Alors, on a les deux propriétés suivantes : \\
+				\hs{20} \begin{tabular}[h]{cl}
+				\i & \(\forall \, \rho \in \bb{B}^\cal{Q}, \, \big(\itp{C}{\rho} = \V \Longrightarrow (\exists \, \widetilde{\rho} \in \bb{B}^{\cal{Q} \cup \{z\}}, \, \widetilde{\rho}|_\cal{Q} \text{ et } \itp{C_1 \wedge C_2}{\widetilde{\rho}} = \V)\big)\) \\
+				\ii & \(\forall \, \widetilde{\rho} \in \bb{B}^{\cal{Q} \cup \{z\}}, \, (\itp{C_1 \wedge C_2}{\widetilde{\rho}} = \V \Longrightarrow \itp{C}{\widetilde{\rho}} = \V)\)
+				\end{tabular}
+		\end{Proposition}
+		
+		\eqskip{1mm}
+		\vs{2}
+		\begin{Preuve}
+			\i Soit \(\rho \in \bb{B}^\cal{Q}\) tel que \(\itp{C}{\rho} = \V\). Alors, comme \(\displaystyle C = \bigvee\nolimits_{i=1}^k \ell_i\) c'est-à-dire \(\displaystyle \itp{C}{\rho} = \sum\nolimits_{i=1}^k \, \itp{\ell_i}{\rho}\), il existe \(i_0 \in [1..k]\) tel que \(\itp{\ell_i}{\rho} = \V\). \nt
+				%
+				\setlength{\tabcolsep}{2.2pt}
+				\bdot Si \(\itp{\ell_1}{\rho} = \V\) ou \(\itp{\ell_2}{\rho} = \V\), on pose : 
+					\[
+						\widetilde{\rho} = \left( \! \begin{tabular}[h]{rcl}
+							\(\cal{Q} \cup \{z\}\) & \(\rightarrow\) & \(\bb{B}\) \\
+							\(q \in \cal{Q}\) & \(\mapsto\) & \(\rho(q)\) \\
+							\(z\) & \(\mapsto\) & \(\F\)
+						\end{tabular} \! \right)
+					\]
+				On a bien \(\widetilde{\rho} |_\cal{Q} = \rho\) par cette définition. De plus :
+				\[ 
+					\itp{C_1 \wedge C_2}{\widetilde{\rho}} = \itp{C_1}{\widetilde{\rho}} \times \itp{C_2}{\widetilde{\rho}} = \underbrace{\itp{\ell_1 \vee \ell_2 \vee z}{\widetilde{\rho}}}_{=\V \text{ par hypothèse}} \! \times \, \Big[ \bigvee_{i=3}^k \ell_i \vee \neg z \Big]^{\widetilde{\rho}} = \V \times \Big( \! \underbrace{ \sum_{i=3}^k \, \itp{\ell_i}{\widetilde{\rho}} + \itp{\neg z}{\widetilde{\rho}}}_{=\V \text{ car } \itp{\neg z}{\tilde{\rho}} = \overline{\itp{z}{\tilde{\rho}}} = \V} \! 
+					\Big) = \V
+				\]
+				%
+				\bdot Si \(\itp{\ell_1}{\rho} = \F\) et \(\itp{\ell_2}{\rho} = \F\), alors \(i_0 \geq 3\). On pose donc :
+					\[
+						\widetilde{\rho} = \left( \! \begin{tabular}[h]{rcl}
+							\(\cal{Q} \cup \{z\}\) & \(\rightarrow\) & \(\bb{B}\) \\
+							\(q \in \cal{Q}\) & \(\mapsto\) & \(\rho(q)\) \\
+							\(z\) & \(\mapsto\) & \(\V\)
+						\end{tabular} \! \right)
+					\]
+				On a toujours facilement \(\widetilde{\rho} |_\cal{Q} = \rho\), et on a de plus :
+					\[
+						\itp{C_1 \wedge C_2}{\widetilde{\rho}} = \itp{C_1}{\widetilde{\rho}} \times \itp{C_2}{\widetilde{\rho}} = \!\!\! \underbrace{\itp{\ell_1 \vee \ell_2 \vee \ell_3}{\widetilde{\rho}}}_{=\V \text{ par définition de } \tilde{\rho}} \!\!\!\! \times \Big[ \bigvee_{i=3}^k \ell_i \vee \neg z \Big]^{\widetilde{\rho}} = \V \times \bigg( \!\!\! \underbrace{\sum_{\substack{i=3 \\ i \neq i_0}}^k \, \itp{\ell_i}{\widetilde{\rho}} + \itp{\ell_{i_0}}{\widetilde{\rho}} + \itp{\neg z}{\widetilde{\rho}}}_{=\V \text{ car } \itp{\ell_{i_0}}{\tilde{\rho}} = \V \text{ puisque } i_0 \in [3..k]} \!\!\! \bigg) = \V
+					\]
+				Dans les deux cas, on trouve toujours une fonction qui convient.
+				\end{Preuve}
+		
+		\vs{2}
+		\begin{Remarque}
+			On a bien des transformations en temps polynomial qui préservent la satisfiabilité. Par contre, elles ne conservent pas nécessairement les classes d'équivalence pour \(\equiv\) (c'est entre autres le cas les deux derniers exemples donnés plus haut : considérer l'environnement envoyant toutes les variables sur \(\F\)).
+		\end{Remarque}
+		\vs{2}
+		
+		\begin{Remarque}
+		La même stratégie ne permet pas de réduire \textsf{FNC-SAT} à \textsf{2-SAT}. En fait, \textsf{FNC-SAT} ne se réduit pas à \textsf{2-SAT}. En effet, on verra dans l'année de Spé que : \nt
+			\hspace*{5mm} \bdot \textsf{2-SAT} se résout en temps polynomial (\emph{cf.} chapitre ``Graphes'') \\
+			\hspace*{5mm} \bdot \textsf{3-SAT} est NP-complet (\emph{cf.} théorème de Cook en 2$^{\rm{de}}$ année) \\
+			\hspace*{5mm} \bdot \textsf{FNC-SAT} est NP-complet (\emph{idem}) \nt
+		%
+		Donc, à moins que \(\rm{P} = \rm{NP}\), ces deux problèmes ne sont pas équivalents.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Remarque}
+			De même, \textsf{FNC-SAT} ne se réduit pas à \textsf{FND-SAT} et ceci pour deux raisons : \\
+			\hspace*{5mm} \bdot la transformation d'une forme à l'autre se fait en temps exponentiel (vu dans un exemple \\ \listskip plus haut) et peut aussi augmenter la taille de l'entrée de manière exponentielle \\
+			\hspace*{5mm} \bdot on verra dans la suite que \textsf{FND-SAT} se résout en temps polynomial \nt
+		%
+		Encore une fois, à moins que \(\rm{P} = \rm{NP}\), ces deux problèmes ne sont pas équivalents.
+		\end{Remarque}
+	\subsection{Modéliser des FND ou FNC au regard de la satisfiabilité}
+	
+		\subsubsection{Modéliser une FND}
+		
+			Rappelons qu'une FND est une disjonction de conjonctions. Compte tenu de ceci, d'un point de vue sémantique, on peut dire que : \\[3mm]
+				\begin{tabular}[h]{l}
+					\bdot \parbox[t]{174mm}{L'ordre des littéraux au sein des conjonctions n'est pas important, et leur multiplicité non plus, puisqu'une conjonction est satisfaite par un environnement propositionnel ssi ce dernier satisfait l'ensemble de ses termes. \\[1mm]
+					\(\bm{\rightarrow}\) L'objet mathématique adapté pour modéliser les conjonctions de littéraux un ensemble de littéraux ou bien un couple d'ensembles de variables : d'une part, celles apparaissant dans les littéraux positifs, d'autre part, celles apparaissant dans les littéraux négatifs.} \vs{5} \\
+						%
+					\bdot \parbox[t]{174mm}{De même, l'ordre et la multiplicité des conjonctions au sein de la disjonction ne sont pas importantes non plus, comme une disjonction est satisfaite par un environnement propositionnel ssi il satisfait l'un de ses termes. \\[1mm]
+					\(\bm{\rightarrow}\) L'objet mathématique adapté pour modéliser une FND est donc un ensemble de conjonctions.} \vs{5} \\
+						%
+					\bdot \parbox[t]{174mm}{Pour ce qui est de la structure de données adaptée pour la modélisation d'une FND, une liste de listes de littéraux convient.}
+				\end{tabular} \\
+			
+			\vs{2}
+			\begin{Exemples} \\
+				\(\bm{a)}\) Formule initiale : \((a \wedge b \wedge \neg c) \vee (\neg b \wedge \neg c) \vee (a \wedge c)\). \\
+				Sous forme d'ensemble d'ensembles de littéraux : \(\{\! \{a,b,\neg c\}, \{\neg b,\neg c\}, \{a,c\} \!\}\). \\
+				Sous forme d'ensemble de couples : \(\big\{\!\big(\{a,b\},\{c\}\big), \big(\emptyset,\{b,c\}\big), \big(\{a,c\},\emptyset\big)\!\big\}\). \nt
+					%
+				\(\bm{b)}\) Formule initiale : \((a \wedge b \wedge \neg a) \vee (a\wedge c\wedge \neg a) \vee (\neg b \wedge \neg c \wedge \neg b)\). \\
+				Sous forme d'ensemble d'ensembles de littéraux : \(\{\!\{a,b,\neg a\},\{a,\neg a, c\}, \{\neg b,\neg c\}\!\}\). \\
+				Sous forme d'ensemble de couples : \(\big\{\!\big(\{a,b\},\{a\}\big), \big(\{a,c\},\{a\}\big), \big(\emptyset,\{b,c\}\big)\!\big\}\).
+			\end{Exemples}
+		
+	\subsection{\textsf{FND-SAT} : un problème facile}
+		
+		Voici un algorithme que l'on propose pour la résolution de \textsf{FND-SAT} sur \(\cal{Q} = \{q_1,q_2, \!..., q_N\}\).
+		
+		\pagebreak
+		\begin{algo}{FND-SAT}{\(\big(\!(\ell_{i,j})_{i \in [1..n_j]}\big)_{j \in [1..n]}\) une famille de familles de littéraux de \(\cal{Q}\)\vs{1}}{Vrai si \(\displaystyle A = \bigvee_{j=1}^n \bigwedge_{i=1}^{n_j} \ell_{i,j}\) est satisfiable, Faux sinon}{}
+			Pour \(j\) allant de \(1\) à \(n\) \\ \Indp
+				Créer \(T\) un tableau indicé par \([1..N]\), initialisé à \(-1\) \\
+				Esaayer : \\\Indp
+					Si \(\ell_{i,j} = q_k\) alors \\ \Indp
+						si \(T[k] = -1\) alors \(T[k] \gets 1\) \\
+						sinon si \(T[k] = 0\) alors déclencher l'exception ``conj. non sat.'' \\ \Indm
+					Si \(\ell_{i,j}= \neg q_k\) alors \\ \Indp
+						si \(T[k] = -1\) alors \(T[k] \gets 0\) \\
+						sinon si \(T[k] = 1\) alors déclencher l'exception ``conj. non sat.'' \Indm
+					Retourner Vrai \\ \Indm
+				Rattraper ``conj. non sat'' \\ \Indm
+			Retourner Faux
+		\end{algo}
+		
+		
+	\subsection{Puissance d'encodage de \textsf{SAT}}
+	
+		\subsubsection{Modélisation -- exemple du solitaire}
+			
+			
+			\intro{Dans cette sous-section, on s'intéresse la modélisation d'un exemple de problème concret à l'aide de formules logique. Plus précisément, on veut pouvoir savoir, à partir d'un état initial quelconque du jeu du solitaire, s'il est possible ou non de gagner la partie.}
+			
+			\vs{-2}
+			On rappelle d'abord brièvement le principe du jeu : initialement, on a un damier carré de \(m\times m\) cases dont chacune contient soit une pierre bleue (\textcolor{blue}{b}), soit une pierre rouge (\textcolor{red}{r}). \nt
+				%
+			Le but du jeu est d'enlever des pierres de manière à avoir, au final, un damier tel que : \\
+				\hs{5} \bdot sur chaque colonne, toutes les pierres sont de même couleur \\
+				\hs{5} \bdot sur chaque ligne, il y a au moins une pierre. \nll
+				%
+			Formalisons le problème de décision consistant à savoir si une partie donnée peut être gagnée :
+			
+			\begin{center}
+				\pbm{JEU}{\(m\in\bb{N}^*\) la taille du damier \\
+					\entspace \(B\subseteq [1..m]^2\) l'ensemble des cases initialement bleues \\
+					\entspace \(R\subseteq[1..m]^2\backslash B\) celui des cases initialement rouges \\[-4mm]
+				}{Vrai s'il existe \(B'\subseteq B\)$^{(1)}$ et \(R'\subseteq R\)$^{(2)}$ tels que : \\
+					\entspace \hs{3}\begin{tabular}[h]{l}
+						\bdot \(\forall\,i\in[1..m],\, \{i\}\times [1..m] \cap (B' \cup R') \neq \emptyset\)$^{(3)}$ \\
+						\bdot \(\forall\,j\in[1..m], [1..m]\times \{j\} \cap B' = \emptyset \text{ ou } [1..m]\times \{j\} \cap R' = \emptyset\)$^{(4)}$
+					\end{tabular}
+				}
+			\end{center} \eqskip{2mm}\vs{2}
+		
+			Réduisons maintenant ce problème à \textsf{3-SAT}. Soit \((m,B,R)\) une instance de \textsf{JEU}. \\
+			On cherche à construire, en temps polynomial, une FNC \(A\) telle que :
+				\[
+					A\in \text{\textsf{3-SAT}}^+ \text{ ssi } (m,B,R) \in \text{\textsf{JEU}}^+
+				\]
+			c'est-à-dire telle que \(A\) est satisfiable ssi il existe \(B'\subseteq B\) et \(R'\subseteq R\) vérifiant les conditions précédentes. \nll
+				%
+			Pour chaque \((i,j)\in[1..m]^2\), on introduit deux variables : \\
+				\hs{5} \bdot \(b'_{i,j}\), modélisant \((i,j)\in B'\) \\
+				\hs{5} \bdot \(r'_{i,j}\), modélisant \((i,j)\in R'\). \nt
+				%
+			On modélise ensuite les quatre contraintes précédentes :
+				\begin{align*}
+					& (1) : A^1_{m,B,R} := \bigwedge_{(i,j)\in[1..m]^2\backslash B} \neg b'_{i,j} \\
+					& (2) : A^2_{m,B,R} := \bigwedge_{(i,j)\in[1..m]^2\backslash R} \neg r'_{i,j} \\
+					& (3) : A^3_{m,B,R} := \bigwedge_{i=1}^m \bigvee_{j=1}^m (b'_{i,j} \vee r'_{i,j}) \\
+					& (4) : A^4_{m,B,R} := \bigwedge_{j=1}^m \bigwedge_{(i,i')\in[1..m]^2} (\neg b'_{i,j}) \vee (\neg r'_{i',j}) \equiv \bigwedge_{j=1}^m \left( \!\bigg(\bigwedge_{i=1}^m \neg b'_{i,j} \bigg) \vee \bigg(\bigwedge_{i=1}^m \neg r'_{i,j}\bigg)\!\right)
+				\end{align*}
+			On note \(A_{m,B,R}\) la conjonction des \((A^k_{m,B,R})_{k\in[1..4]}\), qui est bien une FNC. \\
+			On note par ailleurs \(\cal{Q} = \{b'_{i,j},r'_{i,j}\,|\, (i,j)\in[1..m]^2\}\).
+			
+			\begin{Propriete}
+				\(A_{m,B,R}\) est satisfiable ssi le jeu \((m,B,R)\) est gagnable.
+			\end{Propriete}
+			
+			\vs{2}
+			\begin{Preuve}
+				\impright Supposons que \(A_{m,B,R}\) est satisfiable. Il existe \(\rho\in\bb{B}^\cal{Q}\) tel que \(\itp{A}{\rho} = \V\). \\
+				On note alors : \!\begin{tabular}[t]{l}
+					\bdot \(B' = \{(i,j)\in [1..m]^2\,|\,\rho(b'_{i,j}) = \V\}\) \\
+					\bdot \(R' = \{(i,j)\in [1..m]^2\,|\,\rho(r'_{i,j}) = \V\}\)
+				\end{tabular} \nt
+					%
+				Par définition de l'interprétation d'une conjonction, on déduit de \(\itp{A_{m,B,R}}{\rho} = \V\) que pour tout \(k\in[1..4]\), \(\itp{A^k_{m,B,R}}{\rho} = \V\). \nt
+					%
+				\bdot En particulier, \(\itp{\ambrk{1}}{\rho} = \V\) donc :
+					\[\forall\,(i,j)\in[1..m]^2\backslash B,\,\itp{\neg b'_{i,j}}{\rho} = \V \text{ soit } \itp{b'_{i,j}}{\rho} = \F \text{ donc } (i,j)\notin B'\]
+				Ainsi, \([1..m]^2\backslash B = B^\complement \subseteq (B')^\complement\) et donc \(B' \subseteq B\). De même, puisque \(\itp{\ambrk{2}}{\rho} = \V\), \(R' \subseteq R\). \\[3mm]
+					%
+				\bdot Soit ensuite \(j_0\in [1..m]\). \eqskip{2mm}\\
+				Supposons par l'absurde qu'il existe \((i_1,i_2)\in[1..m]^2\) tel que \((i_1,j_0)\in B'\) et \((i_2,j_0)\in R'\). Alors, \(\itp{b'_{i_1,j_0}}{\rho} = \V\) et \(\itp{r'_{i_2,j_0}}{\rho} = \V\) c'est-à-dire \(\itp{\neg b'_{i_1,j_0}}{\rho} = \F\) et \(\itp{\neg r'_{i_2,j_0}}{\rho} = \F\), donc \(\itp{\neg b'_{i_1,j_0} \vee \neg r'_{i_2,j_0}} = \F\).\\
+				Dans ce cas, on a :
+					\[
+						\itp{\ambrk{4}}{\rho} = \bigg[\bigwedge_{j\in[1..m]} \bigwedge_{(i,i')\in[1..m]^2} (\neg b'_{i,j} \vee \neg r'_{i',j})\bigg]^\rho = \F
+					\]
+				Or, \(\itp{\ambrk{3}}{\rho} = \V\) puisque \(\itp{\ambr}{\rho} = \V\) donc on a une contradiction. \nt
+					%
+				Ainsi, il n'existe pas deux lignes de couleurs différentes sur la colonne \(j_0\). Ceci valant pour tout \(j_0\in[1..m]\), on en déduit que \((B',R')\) satisfait la condition sur les colonnes. \\[3mm]
+					%
+				\bdot Enfin, soit \(i_0 \in[1..m]\). Supposons par l'absurde que \(\forall\,j\in[1..n],\,(i_0,j)\notin B'\cup R'\). \\
+				Alors, pour tout \(j\in[1..m]\), on a : \begin{tabular}[t]{l}
+					\(\cdot\) \(\itp{b'_{i_0,j}}{\rho} = \rho(b'_{i_0,j}) = \F \) car \((i_0,j) \notin B'\) \\
+					\(\cdot\) \(\itp{r'_{i_0,j}}{\rho} = \rho(r'_{i_0,j}) = \F \) car \((i_0,j) \notin R'\), \end{tabular} \eqskip{2mm}\\[1mm]
+				ce qui donne \(\itp{b'_{i_0,j} \vee r'_{i_0,j}}{\rho} = \F\) et donc \(\displaystyle \big[\bigvee\nolimits_{j=1}^m (b'_{i_0,j} \vee r'_{i_0,j})\big]^\rho = \F\). Par conséquent :
+					\[
+						\itp{\ambrk{3}}{\rho} = \bigg[\bigwedge_{i=1}^m \bigvee_{j=1}^m (b'_{i,j} \vee r'_{i,j})\bigg]^\rho = \F
+					\]
+				Or c'est impossible puisque comme \(\itp{\ambr}{\rho} = \V\), on a nécessairement \(\itp{\ambrk{3}}{\rho} = \V\). \nt
+					%
+				Ainsi sur la ligne \(i_0\), il existe \(j_0\in[1..m]\) tel que \((i_0,j_0) \in B'\) ou \((i_0,j_0) \in R'\) : il y a bien au moins une pierre sur cette ligne. Comme c'est vrai quel que soit \(i_0\in[1..m]\), \((B',R')\) vérifie aussi la propriété sur les lignes. \\[3mm]
+					%
+				\underline{Conclusion :} On a bien \((m,B,R) \in\text{\textsf{JEU}}^+\). \nll
+					%
+				\impleft Réciproquement, montrons que si \((m,B,R)\in\text{\textsf{JEU}}^+\), alors \(\ambr \in \text{\textsf{FNC-SAT}}^+\). \\
+				Supposons que \((m,B,R)\) est gagnable : il existe donc \((B',R')\) une solution de ce jeu. On pose alors :
+					\[
+						\rho = \funn{\cal{Q}}{\bb{B}}{b'_{i,j}}{
+							\left\{ \begin{tabular}[h]{l}
+								\(\V\) si \((i,j)\in B'\) \\
+								\(\F\) sinon
+							\end{tabular} \right. \vs{1}
+						}{r'_{i,j}}{
+							\left\{ \begin{tabular}[h]{l}
+							\(\V\) si \((i,j)\in R'\) \\
+							\(\F\) sinon
+						\end{tabular} \right.
+						}
+					\]
+				Il faut montrer que \(\forall\,k\in[1..4]\), \(\itp{\ambr^k}{\rho} = \V\).
+			\end{Preuve}
+			
+			\vs{2}
+			\begin{Exercice}
+				Terminer la preuve précédente.
+			\end{Exercice}
+			
+			\vs{2}
+			\begin{Exercice}
+				(bonus) Inversement, réduire \textsf{3-SAT} à \textsf{JEU}.
+			\end{Exercice}
+			
+			\begin{Aretenir}
+				La puissance d'encodage de \textsf{3-SAT}.
+			\end{Aretenir}
+
+	\subsection{Algorithme de Quine}
+	
+		\subsubsection{Substitutions}
+			
+			\vs{-2}
+			\eqskip{3mm}
+			\begin{Definition}[support d'une fonction de \({\cal{Q}}\) dans $\FpQ$]
+				Soit \(\sigma \in \cal{F}(\cal{Q},\FpQ)\). On appelle support de \(\sigma\), noté \(\rm{supp}(\sigma)\), l'ensemble des variables que \(\sigma\) n'envoie pas sur la formule réduite à elle-même :
+					\[
+						\rm{supp}(\sigma) = \{q \in \cal{Q} \, | \, \sigma(q) \neq \Var(q)\}
+					\]
+			\end{Definition}
+			
+			\begin{Definition}[substitution]
+				Soit \(\sigma \in \cal{F}(\cal{Q},\FpQ)\). On dit que \(\sigma\) est une substitution si \(\card \hspace{0.2mm}(\rm{supp}(\sigma)) \in \bb{N}\). \\
+				Dans ce cas, si \(\rm{supp}(\sigma) = \{q_1,q_2, \!...,q_n\}\), on note :
+					\[
+						\sigma = [q_1 \mapsto \sigma(q_1), q_2 \mapsto \sigma(q_2), \ldots, q_n \mapsto \sigma(q_n)]
+					\]
+			\end{Definition} \setlength{\tabcolsep}{2.2pt}
+			
+			\vs{4}
+			\begin{Exemple}
+			 Pour \(\sigma =
+				\left( \begin{tabular}[h]{rcl}
+					\(\{x,y\}\) & \(\rightarrow\) & \(\bb{F}_p(\{x,y\})\) \\
+					\(x\) & \(\mapsto\) & \(x\) \\
+					\(y\) & \(\mapsto\) & \(\neg x\)
+				\end{tabular} \right)
+				\), on a \(\rm{supp}(\sigma) = \{y\}\) et donc \(\sigma = [y \mapsto \neg x]\).
+			\end{Exemple}
+			
+			\pagebreak
+			\eqskip{3mm}
+			\begin{Definition}[application d'une substitution]
+				Soit \(\sigma \in \cal{F}(\cal{Q}, \FpQ)\) une substitution. On appelle application de la substitution \(\sigma\) la fonction suivante :
+					\[
+						\text{\bdot} \![\sigma] = \left( \begin{tabular}[h]{rcl}
+							\(\FpQ\) & \(\rightarrow\) & \(\FpQ\) \\
+							\(\top\) & \(\mapsto\) & \(\top\) \\
+							\(\bot\) & \(\mapsto\) & \(\bot\) \\
+							\(q\) & \(\mapsto\) & \(\sigma(q)\) \\
+							\(\neg A\) & \(\mapsto\) & \(\neg (A[\sigma])\) \\
+							\(A \,\alpha\, B\) & \(\mapsto\) & \(A[\sigma] \,\alpha\, B[\sigma]\)
+						\end{tabular} \right)
+					\]
+				où \(\alpha\) désigne toujours un symbole quelconque de \(\{\vee,\wedge,\rightarrow,\leftrightarrow\}\).
+			\end{Definition}
+			
+			\vs{2}
+			\begin{Exercice}
+			Trois personnes \(a\), \(b\) et \(c\) veulent passer au tableau, selon les règles suivantes : \\
+			\hs{5} \bdot Si \(a\) passe, alors \(b\) ne passe pas. \\
+			\hs{5} \bdot Si \(b\) passe, alors \(a\) et \(c\) passent. \\
+			\hs{5} \bdot Si \(c\) passe, alors \(a\) ou \(b\) ne passe pas. \\[2mm]
+			\textbf{1)} Modéliser ces affirmations avec des variables de la logique. \\
+			\textbf{2)} Peut-on affirmer que \(a\) passe forcément ? que \(b\) ne passe pas ?
+			\end{Exercice}
+			
+			\vs{2}
+			\begin{Correction}
+			\end{Correction}
+			\vs{2}
+			
+			\begin{Definition}[composée de substitutions]
+				Soit \(\sigma_1\) et \(\sigma_2\) deux substitutions. On note \(\sigma_1 \cdot \sigma_2\) et on appelle composée de \(\sigma_1\) et \(\sigma_2\) la fonction suivante :
+					\[
+						\sigma_1 \cdot \sigma_2 = \left( \begin{tabular}[h]{rcl}
+							\(\cal{Q}\) & \(\rightarrow\) & \(\FpQ\) \\
+							\(q\) & \(\mapsto\) & \(\sigma_2(q)[\sigma_1]\)
+						\end{tabular} \right)
+					\]
+			\end{Definition}
+			
+			\begin{Propriete}[associativité de la composée de substitutions]
+				La composée de substitutions est associative, c'est-à-dire :
+					\begin{align*}
+						\forall \, (\sigma_1,\sigma_2,\sigma_3) \in \cal{F}(\cal{Q},\FpQ)^3 & \text{ tel que } \forall \, i \in [1..3], \, \card \hspace{0.2mm}(\rm{supp}(\sigma_i)) \in \bb{N}, \\
+					(\sigma_1 \cdot \sigma_2) & \cdot \sigma_3 = \sigma_1 \cdot (\sigma_2 \cdot \sigma_3)
+					\end{align*}
+			\end{Propriete}
+			
+			\colsep{1.5pt}
+			\begin{Proprietes}[caractère interne de \(\cdot\), neutre, stabilité du support]
+					\begin{tabular}[h]{cl}
+						\i & La composée de deux substitutions est encore une substitution (\emph{i.e.} \(\cdot\) est interne). \\
+						\ii & \(\forall \, \sigma_1,\sigma_2 \text{ des substitutions}, \, \rm{supp}(\sigma_1 \cdot \sigma_2) \subseteq \rm{supp}(\sigma_1) \cup \rm{supp}(\sigma_2)\). \\[2mm]
+						\iii & L'application \(id = \left( \begin{tabular}[h]{rcl}
+							\(\cal{Q}\) & \(\rightarrow\) & \(\FpQ\) \\
+							\(q\) & \(\mapsto\) & \(\Var(q)\)
+						\end{tabular} \right)\!
+						\text{ est le neutre pour la loi \(\cdot\) (en effet, \(\text{\bdot} \![id] = \Id_{\FpQ}\))}\).
+					\end{tabular}
+			\end{Proprietes}
+			
+			\vs{2}
+			\begin{Remarque}
+				Toutes les substitutions ne sont pas symétrisables pour \(\cdot\) : l'ensemble des substitutions muni de la composition forme donc un monoïde, mais pas un groupe.
+			\end{Remarque}
+			\vs{2}
+			
+			\subsubsection{Description de l'algorithme}
+			
+			L'algorithme de Quine permet de vérifier la satisfiabilité d'une formule \(A\in\FpQ\)en passant par des substitutions et des simplifications, selon le principe suivant : \nt
+				\hs{5} \bdot on substitue à une variable \(x\) quelconque la formule \(\top\) \\
+				\hs{5} \bdot on teste (récursivement, c'est-à-dire en continuant à effectuer des substitutions sur d'autres \\ \listskip variables) si la formule obtenue après simplification est satisfiable, voire une tautologie \\
+				\hs{5} \bdot si c'est le cas, alors tout environnement \(\rho\) satisfaisant, prolongé par \(x \mapsto \V\), satisfera \(A\) \\
+				\hs{5} \bdot sinon, on substitue à \(x\) la formule \(\bot\) pour effectuer les mêmes tests récursifs \\
+				\hs{5} \bdot si en faisant cela on aboutit à une formule satisfiable par un environnement \(\rho\), alors le pro- \\ \listskip longement \(x\mapsto \F\) donnera un environnement satisfaisant \(A\) \\
+				\hs{5} \bdot dans le cas contraire, on en conclut que \(A\) ne peut être satisfiable. \nll
+					%
+			Voir le fichier ``\texttt{algo-quine.ml}'' pour une implémentation en OCaml de cet algorithme.
+				
+		\subsubsection{Règles de simplification}
+			
+			Comme l'algorithme de Quine se base en partie sur la simplification de formules en formules équivalentes plus simples, il est important de savoir identifier quand une formule peut être simplifiée. \nt
+				%
+			Voici donc des règles de simplification, valables pour n'importe quelle formule \(A \in \FpQ\) :
+			\begin{center}
+				\colsep{30pt}
+				\begin{tabular}[h]{r|l}
+					\(\neg \top \equiv \bot\) & \(A \rightarrow \bot \equiv \neg A\) \\
+					\(\neg \bot \equiv \top\) & \(A \rightarrow \top \equiv \top\) \\
+					\(A \wedge \top \equiv \top \wedge A \equiv A\) & \(\bot \rightarrow A \equiv \top\) \\
+					\(A \wedge \bot \equiv \bot \wedge A \equiv \bot\) & \(\top \rightarrow A \equiv A\) \\
+					\(A \vee \top \equiv \top \vee A \equiv \top\) & \(A \leftrightarrow \top \equiv \top \leftrightarrow A \equiv A\) \\
+					\(A \vee \bot \equiv \bot \vee A \equiv A\) & \(A \leftrightarrow \bot \equiv \bot \leftrightarrow A \equiv \neg A\) \\
+					\(\neg\neg A \equiv A\) & \(A \rightarrow A \equiv \top\)
+				\end{tabular}
+			\end{center}
+			
+			\colsep{1.5pt}
+			\eqskip{0mm}
+			\begin{Proprietes}[autres simplifications]
+				Soit \((A,A',B,B') \in \FpQ^4\). \\
+				Si \(A \equiv A'\) et \(B \equiv B'\), alors on a :
+					\!\begin{tabular}[t]{cl}
+						\i & \(\neg A \equiv \neg A'\) \\
+						\ii & \(A \,\alpha\, B \equiv A' \,\alpha\, B' \text{ pour } \alpha \in \{\wedge,\vee,\rightarrow,\leftrightarrow\}\)
+					\end{tabular}
+			\end{Proprietes}
+			
+			\vs{2}
+			\begin{Exercice}
+				Vérifier la satisfiabilité des formules suivantes : \\
+				\hspace*{5mm} \bdot \(\bm{a)}\) \(A = \big((a \rightarrow b) \wedge (b \rightarrow c)\big) \rightarrow (a \rightarrow c)\) \\
+				\hspace*{5mm} \bdot \(\bm{b)}\) \(B = \Big(\!\big(s \rightarrow (b \vee t)\big) \wedge \Big(\!\big((b \vee a) \rightarrow (r \wedge m)\big) \wedge \neg r\Big)\!\Big) \rightarrow (s \rightarrow t)\).
+			\end{Exercice}
+			
+			\vs{2}
+			\begin{Correction}
+			\end{Correction}
+\end{document}

@@ -1,0 +1,203 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}canvas.h\PYGZdq{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}dispo.h\PYGZdq{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}gen\PYGZhy{}algo.h\PYGZdq{}}
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}display.h\PYGZdq{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}interactions.h\PYGZdq{}}
+
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{main}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{argc}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{char}\PYG{+w}{ }\PYG{n}{argv}\PYG{p}{[}\PYG{p}{]}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// initialize srand}
+\PYG{+w}{	}\PYG{n}{srand}\PYG{p}{(}\PYG{n}{time}\PYG{p}{(}\PYG{n+nb}{NULL}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// initialize and configure SDL}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}Window}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Window}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{NULL}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{NULL}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Init}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}INIT\PYGZus{}VIDEO}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n}{SDL\PYGZus{}Log}\PYG{+w}{ }\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{ERROR : SDL initialization failed \PYGZgt{} \PYGZpc{}s}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}GetError}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{exit}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{EXIT\PYGZus{}FAILURE}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{Window}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}CreateWindow}\PYG{+w}{ }\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}WINDOWPOS\PYGZus{}CENTERED}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}WINDOWPOS\PYGZus{}CENTERED}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{1920}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{1080}\PYG{p}{,}
+\PYG{+w}{	}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}WINDOW\PYGZus{}MAXIMIZED}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Window}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{NULL}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n}{SDL\PYGZus{}Log}\PYG{+w}{ }\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{ERROR : SDL window creation failed \PYGZgt{} \PYGZpc{}s}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}GetError}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{exit}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{EXIT\PYGZus{}FAILURE}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{Renderer}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}CreateRenderer}\PYG{p}{(}\PYG{n}{Window}\PYG{p}{,}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{,}\PYG{n}{SDL\PYGZus{}RENDERER\PYGZus{}SOFTWARE}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{NULL}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n}{SDL\PYGZus{}Log}\PYG{+w}{ }\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{ERROR : SDL renderer creation failed \PYGZgt{} \PYGZpc{}s}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}GetError}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{exit}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{EXIT\PYGZus{}FAILURE}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}bool}\PYG{+w}{ }\PYG{n}{PRG\PYGZus{}RUN}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}TRUE}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}SetRenderDrawBlendMode}\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{n}{SDL\PYGZus{}BLENDMODE\PYGZus{}ADD}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderPresent}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{RendererGENALGO}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{KeepProportion}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{MutateProportion}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// initialize canvas and attributes}
+\PYG{+w}{	}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{CREATE\PYGZus{}CANVAS}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{cCellSizePixels}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{CurrentServiceClass}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{currentEntertainType}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// declare/initialize test disposition and population}
+\PYG{+w}{	}\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{TestDispo}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{CREATE\PYGZus{}CANVAS\PYGZus{}DISPOSITION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{MainCanvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{individual}\PYG{+w}{ }\PYG{n}{TestIndiv}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{individual}\PYG{+w}{ }\PYG{n}{TestIndiv\PYGZus{}bis}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{population}\PYG{+w}{ }\PYG{n}{TestPopl}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// declare mouse interaction variables}
+\PYG{+w}{	}\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n}{IsMouseButtonClicked}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{MouseX}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MouseY}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// declare drawing and filling varibales}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{DrawRed}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{DrawGreen}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{DrawBlue}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Fill\PYGZus{}row}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Fill\PYGZus{}column}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}Event}\PYG{+w}{ }\PYG{n}{Event}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// program execution}
+\PYG{+w}{	}\PYG{k}{while}\PYG{p}{(}\PYG{n}{PRG\PYGZus{}RUN}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}PollEvent}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{Event}\PYG{p}{)}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k}{switch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Event}\PYG{p}{.}\PYG{n}{type}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{k}{case}\PYG{+w}{ }\PYG{p}{(}\PYG{n+no}{SDL\PYGZus{}KEYDOWN}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{k}{switch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Event}\PYG{p}{.}\PYG{n}{key}\PYG{p}{.}\PYG{n}{keysym}\PYG{p}{.}\PYG{n}{sym}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}q}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}CLEAR\PYGZus{}SCREEN}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}w}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}CYCLE\PYGZus{}SERVICE\PYGZus{}CLASS\PYGZus{}PREV}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{CurrentServiceClass}\PYG{p}{,}
+\PYG{+w}{					}\PYG{o}{\PYGZam{}}\PYG{n}{DrawRed}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{DrawBlue}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{DrawGreen}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}e}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}CYCLE\PYGZus{}SERVICE\PYGZus{}CLASS\PYGZus{}NEXT}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{CurrentServiceClass}\PYG{p}{,}
+\PYG{+w}{					}\PYG{o}{\PYGZam{}}\PYG{n}{DrawRed}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{DrawBlue}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{DrawGreen}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}r}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}RERENDER\PYGZus{}SERVICES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}t}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}CALCULATE\PYGZus{}AND\PYGZus{}DISPLAY\PYGZus{}ATTRACTIVENESSES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}
+\PYG{+w}{					}\PYG{n}{MainCanvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}y}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}DISPLAY\PYGZus{}ATTRACTIVENESSES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}f}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}FILL\PYGZus{}SERVICE}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{MouseX}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{MouseY}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{,}
+\PYG{+w}{					}\PYG{o}{\PYGZam{}}\PYG{n}{Fill\PYGZus{}row}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Fill\PYGZus{}column}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{CurrentServiceClass}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}u}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}INITIALIZE\PYGZus{}DISPOSITION\PYGZus{}AND\PYGZus{}DISPLAY\PYGZus{}HOMES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}
+\PYG{+w}{					}\PYG{n}{MainCanvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{TestDispo}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}i}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}CALCULATE\PYGZus{}AND\PYGZus{}DISPLAY\PYGZus{}DENSITIES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}
+\PYG{+w}{					}\PYG{n}{MainCanvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{TestDispo}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}o}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}INITIALIZE\PYGZus{}AND\PYGZus{}SORT\PYGZus{}POPULATION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{MainCanvas}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{TestPopl}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}p}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}DISPLAY\PYGZus{}POPULATION\PYGZus{}INDIVIDUAL\PYGZus{}DESC\PYGZus{}SCORE}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{,}
+\PYG{+w}{					}\PYG{n}{TestPopl}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}a}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}INITIALIZE\PYGZus{}AND\PYGZus{}DISPLAY\PYGZus{}INIDIVIDUAL}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{MainCanvas}\PYG{p}{,}
+\PYG{+w}{					}\PYG{n}{TestDispo}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{TestIndiv}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}s}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}MUTATE\PYGZus{}AND\PYGZus{}DISPLAY\PYGZus{}INDIVIDUAL}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{TestIndiv}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{c+cm}{/* case SDLK\PYGZus{}d :}
+\PYG{c+cm}{					USER\PYGZus{}RENEW\PYGZus{}POPULATION (MainCanvas, TestPopl);}
+\PYG{c+cm}{					continue; */}\PYG{+w}{	}
+\PYG{+w}{					}\PYG{c+cm}{/* case SDLK\PYGZus{}g :}
+\PYG{c+cm}{					USER\PYGZus{}LAUNCH\PYGZus{}GENETIC\PYGZus{}ALGORITHM (Renderer, MainCanvas);}
+\PYG{c+cm}{					continue; */}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}h}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}CALCULATE\PYGZus{}AND\PYGZus{}DISPLAY\PYGZus{}ENTROPIES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{,}
+\PYG{+w}{					}\PYG{n}{TestDispo}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}j}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}COMPUTE\PYGZus{}AND\PYGZus{}DISPLAY\PYGZus{}HEIGHTS}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}k}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}DISPLAY\PYGZus{}TERRAIN}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}l}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}GENETIC\PYGZus{}ALGORITHM}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}z}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}INITIALIZE\PYGZus{}POPULATION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{MainCanvas}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{TestPopl}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{KeepProportion}\PYG{p}{,}
+\PYG{+w}{					}\PYG{o}{\PYGZam{}}\PYG{n}{MutateProportion}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}x}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}GENETIC\PYGZus{}ALGORITHM\PYGZus{}STEP}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{MainCanvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{TestPopl}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{KeepProportion}\PYG{p}{,}
+\PYG{+w}{					}\PYG{n}{MutateProportion}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}c}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}INITIALIZE\PYGZus{}AND\PYGZus{}DISPLAY\PYGZus{}INDIVIDUAL\PYGZus{}AND\PYGZus{}DISPO}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{,}
+\PYG{+w}{					}\PYG{o}{\PYGZam{}}\PYG{n}{TestIndiv}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}v}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}INITIALIZE\PYGZus{}AND\PYGZus{}DISPLAY\PYGZus{}INDIVIDUAL\PYGZus{}AND\PYGZus{}DISPO}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{,}
+\PYG{+w}{					}\PYG{o}{\PYGZam{}}\PYG{n}{TestIndiv\PYGZus{}bis}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDLK\PYGZus{}b}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{					}\PYG{n}{USER\PYGZus{}CROSS\PYGZus{}AND\PYGZus{}DISPLAY\PYGZus{}INDIVIDUALS}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{,}
+\PYG{+w}{					}\PYG{o}{\PYGZam{}}\PYG{n}{TestIndiv}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{TestIndiv\PYGZus{}bis}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{					}
+\PYG{+w}{					}\PYG{k}{default}\PYG{o}{:}
+\PYG{+w}{					}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{k}{case}\PYG{+w}{ }\PYG{p}{(}\PYG{n+no}{SDL\PYGZus{}MOUSEBUTTONDOWN}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{				}\PYG{n}{IsMouseButtonClicked}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{true}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{k}{case}\PYG{+w}{ }\PYG{p}{(}\PYG{n+no}{SDL\PYGZus{}MOUSEBUTTONUP}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{				}\PYG{n}{IsMouseButtonClicked}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{k}{case}\PYG{+w}{ }\PYG{p}{(}\PYG{n+no}{SDL\PYGZus{}MOUSEMOTION}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{:}
+\PYG{+w}{				}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{IsMouseButtonClicked}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{USER\PYGZus{}DRAW\PYGZus{}SERVICE}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{DrawRed}\PYG{p}{,}
+\PYG{+w}{				}\PYG{o}{\PYGZam{}}\PYG{n}{DrawBlue}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{DrawGreen}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{MouseX}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{MouseY}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MainCanvas}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Fill\PYGZus{}row}\PYG{p}{,}
+\PYG{+w}{				}\PYG{o}{\PYGZam{}}\PYG{n}{Fill\PYGZus{}column}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{CurrentServiceClass}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{k}{case}\PYG{+w}{ }\PYG{n+no}{SDL\PYGZus{}QUIT}\PYG{p}{:}
+\PYG{+w}{				}\PYG{n}{PRG\PYGZus{}RUN}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}FALSE}\PYG{p}{;}
+\PYG{+w}{				}\PYG{n}{SDL\PYGZus{}DestroyRenderer}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{n}{SDL\PYGZus{}DestroyWindow}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Window}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k}{default}\PYG{o}{:}
+\PYG{+w}{				}\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{EXIT\PYGZus{}SUCCESS}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

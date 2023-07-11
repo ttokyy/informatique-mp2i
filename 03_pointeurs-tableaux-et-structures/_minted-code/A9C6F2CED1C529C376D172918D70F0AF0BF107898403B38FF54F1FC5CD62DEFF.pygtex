@@ -1,0 +1,77 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{ifndef GENALGO\PYGZus{}H}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{define GENALGO\PYGZus{}H}
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}canvas.h\PYGZdq{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}dispo.h\PYGZdq{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}terrain.h\PYGZdq{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}display.h\PYGZdq{}}
+
+
+\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{individual\PYGZus{}s}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{dispo}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{potential\PYGZus{}exploitation\PYGZus{}ratio}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{density\PYGZus{}score}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{attractiveness\PYGZus{}score}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{entropy\PYGZus{}score}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cost\PYGZus{}penalty}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{total\PYGZus{}score}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+
+\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{vpopulation\PYGZus{}s}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{num\PYGZus{}individuals}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{individual\PYGZus{}s}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{individualsA}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{sorted\PYGZus{}individual\PYGZus{}indices\PYGZus{}score}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+
+
+\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{individual\PYGZus{}s}\PYG{+w}{ }\PYG{n}{individual}\PYG{p}{;}
+\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{vpopulation\PYGZus{}s}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{population}\PYG{p}{;}
+
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cOptimalDensityToMaxDensityRatio}\PYG{p}{;}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cScoreFactorWeights}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{p}{;}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cMutationHomeDisplacementRadius}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{//add: pixels}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{RendererGENALGO}\PYG{p}{;}
+
+\PYG{c+c1}{// double F\PYGZus{}CELL\PYGZus{}ATTRACTIVENESS\PYGZus{}EXPLOITATION (canvas Canvas, disposition Dispo);}
+
+\PYG{c+c1}{// elementary score functions}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}DENSITY\PYGZus{}SCORE\PYGZus{}FROM\PYGZus{}UNIT}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{unit}\PYG{+w}{ }\PYG{n}{Unit}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{MaxDensity}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}ATTRACTIVENESS\PYGZus{}SCORE\PYGZus{}FROM\PYGZus{}UNIT\PYGZus{}CELL}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{unit}\PYG{+w}{ }\PYG{n}{Unit}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cell}\PYG{+w}{ }\PYG{n}{Cell}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}ENTROPY\PYGZus{}SCORE}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{unit}\PYG{+w}{ }\PYG{n}{Unit}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// generating and evaluating individuals}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{INITIALIZE\PYGZus{}INDIVIDUAL}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{individual}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pIndiv}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{CALCULATE\PYGZus{}SCORES\PYGZus{}OF\PYGZus{}INDIVIDUAL}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{individual}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pIndiv}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// invert}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{c+c1}{// argument order}
+
+\PYG{c+c1}{// creating populations and ensuring correctness}
+\PYG{n}{population}\PYG{+w}{ }\PYG{n+nf}{CREATE\PYGZus{}POPULATION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{PopSize}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SORT\PYGZus{}INDIVIDUAL\PYGZus{}INDICES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{population}\PYG{+w}{ }\PYG{n}{Popl}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// genetic processes}
+\PYG{n}{individual}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{MUTATE\PYGZus{}INDIVIDUAL}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{individual}\PYG{+w}{ }\PYG{n}{Indiv}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{ProportionMutatedUnits}\PYG{p}{)}\PYG{p}{;}
+\PYG{n}{individual}\PYG{o}{*}\PYG{+w}{ }\PYG{n+nf}{CROSS\PYGZus{}INDIVIDUALS}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{individual}\PYG{+w}{ }\PYG{n}{Parent1}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{individual}\PYG{+w}{ }\PYG{n}{Parent2}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{MaxProportionOfFirst}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{StdDeviation}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{RENEW\PYGZus{}POPULATION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{population}\PYG{+w}{ }\PYG{n}{Popl}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{KeepProportion}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{MutateProportion}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{CrossProportion}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+cm}{/* population GENERATE\PYGZus{}RANDOM\PYGZus{}POPULATION (canvas Canvas, int PopSize, int NumHomes);}
+\PYG{c+cm}{population SELECT\PYGZus{}FITTEST\PYGZus{}INDIVIDUALS (population Popl);}
+\PYG{c+cm}{individual* MUTATE\PYGZus{}INDIVIDUAL (canvas Canvas, individual Indiv, double ProportionMutatedUnits); */}
+
+\PYG{c+c1}{// void ITERATE\PYGZus{}POPULATION\PYGZus{}RENEWAL (canvas Canvas, population Popl, double ConservationProportion);}
+
+
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{FREE\PYGZus{}INDIVIDUAL}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{individual}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pIndiv}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{endif}
+\end{Verbatim}

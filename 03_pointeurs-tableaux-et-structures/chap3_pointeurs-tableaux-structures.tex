@@ -1,0 +1,280 @@
+\input{../commands_alt.tex}
+
+\begin{document}
+	
+\title{Pointeurs, tableaux et structures}
+
+\section{Pointeurs}
+
+	\subsection{Adresses}
+	
+		La mémoire est composée de bits qui enregistrent la valeur 0 ou 1, à la suite les uns des autres.
+		Elle est découpée en paquets de 8 bits appelés octets, dont chacun est repérable grâce à une adresse. \nll
+			%
+		Lorsqu'une variable est déclarée, une zone mémoire lui est réservée pour le stockage de sa valeur. Cette zone correspond à un certain nombre d'octets consécutifs, ce nombre étant fixé par le type de la variable. On appelle alors adresse de la variable l'adresse du premier octet de la zone qui lui est réservée.
+		
+		\vs{2}
+		\begin{Remarque}
+			En particulier, une variable a donc une adresse avant d'avoir une valeur, c'est-à-dire d'être initialisée.
+		\end{Remarque}
+	
+		\vs{2}
+		En C, l'adresse d'une variable \texttt{var} s'obtient par \cc{&var}. \\
+		Comme il s'agit d'une valeur assez grande, on l'affiche grâce au spécificateur de format \texttt{\%d}.
+		
+		\vs{2}
+		\begin{Exemple}
+			
+		\end{Exemple}
+	
+	\subsection{Pointeurs}
+		
+		\vs{-2}
+		\begin{Definition}[pointeur en C]
+			Un pointeur est une variable dont la valeur est une adresse mémoire. Si la valeur d'un pointeur \cc{p} est l'adresse d'une variable \cc{v}, alors on dit que \cc{p} pointe sur \cc{v}. \nt
+			Le type d'un pointeur est \cc{t*}, où \cc{t} est le type de la zone mémoire dont il enregistre l'adresse. \\
+			La taille de la zone mémoire à considérer est \cc{sizeof(t*)}.
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Exemples}
+			
+		\end{Exemples}
+	
+		\vs{2}
+		\begin{Remarque}
+			Pour utiliser la fonction \cc{sizeof}, il faut d'abord faire : \mintinline{c}{#include <limits.h>}.
+		\end{Remarque}
+	
+	\subsection{Déréférencement}
+	
+		Pour récupérer ou bien modifier la valeur enrigistrée dans la zone mémoire indiquée par un pointeur \cc{p}, on utilise \cc{*p}.
+		
+		\vs{2}
+		\begin{Exemple}
+			
+		\end{Exemple}
+	
+		\vs{2}
+		\begin{Remarque}
+			Si \cc{p} est de type \cc{t*}, alors \cc{*p} est de type \cc{t}. De plus, si \cc{var} est une variable, alors \cc{*(&var)} est équivalent à \cc{var}.
+		\end{Remarque}
+	
+	\subsection{Passage par référence}
+		
+		\vs{-2}
+		\begin{Definition}[passage par référence]
+		Comme les arguments des autres types, les pointeurs sont passés par valeurs à toute fonction, c'est-à-dire qu'à l'appel de la fonctio, une copie locale du pointeur est créée. \nll
+			%
+		Par contre, si un pointeur \cc{p} passé en argument pointe sur une variable \cc{v}, les réaffectations de \cc{*p} modifient la valeur de \cc{v} (c'est-à-dire celle enregistrée à l'adresse de \cc{p}) et cette modification est observable en-dehors de la fonction. \nt
+			%
+		On parle cette-fois de passage par référence.
+		\end{Definition}
+		
+\section{Tableau statique}
+
+	\subsection{Tableau simple}
+	 	
+	 	On donne ci-dessous les opérations de base permettant de manipuler les tableaux simples :
+			\begin{center}
+				\begin{tabular}[h]{r|l}
+					déclaration & \cc{t tab[n]} \\
+					déclaration et initialisation & \cc{t tab[n] = {val@$_1$@,...,val@$_n$@}} \\
+					accès & \cc{tab[i]} ou \cc{*(tab+i)} (hors-programme)
+				\end{tabular}
+			\end{center}
+		
+		\vs{3}
+		\begin{Remarque}
+			Un tableau d'éléments de type \cc{t} est en fait un pointeur vers le premier de ces éléments : le type d'un tel tableau est donc \cc{t*}. Cela justifie la notation \cc{*(tab+i)}, qui signifie tout simplement que l'on se décale de \(i\) ``cases'' dans la mémoire, cases dont la taille en octets dépendra de \cc{t}, puis que l'on affiche la valeur enregistrée dans la case d'arrivée. \nt
+				%
+			Attention cependant, \cc{*(tab+i)} et \cc{*tab+i} ne sont pas équivalentes.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Remarque}
+			Si l'on veut initialiser un tableau comme présenté ci-dessus, l'initialisation doit obligatoirement se faire au même moment que la déclaration. Sinon, il faudra allouer de l'espace en mémoire (\emph{cf.} \cc{malloc} plus loin) puis modifier une par une les valeurs stockées dans les cases du tableau en utilisant \cc{tab[i]}.
+		\end{Remarque}	
+		
+		\vs{2}
+		\begin{Remarque}
+			Lorsque l'on déclare un tableau, il est toujours préférable de donner directement une taille explicite, c'est-à-dire un entier, plutôt qu'une variable (en particulier, on ne peut pas avoir des tableaux de taille variable). \nt
+				%
+			Par ailleurs, on ne peut pas récupérer la taille d'un tableau : il faudra donc prendre celle-ci en argument dans les fonctions, et donc possiblement créer une structure pour contenir le tableau et sa longueur (\emph{cf.} plus loin).
+		\end{Remarque}
+		
+		\begin{Aretenir}
+			Si \cc{p} est un pointeur de type \cc{t*} et \cc{i} est de type \cc{int} et positif, alors \cc{p[i] = *(p+i)}. \\
+			En particulier, \cc{*p = *(p+0) = p[0]}. \nt
+				%
+			Les tableaux sont des pointeurs constants, on ne peut pas les modifier (\emph{i.e.} affecter à \cc{tab} une autre adresse mémoire).
+		\end{Aretenir}
+	
+		\vs{2}
+		\begin{Illustration}
+		\end{Illustration}
+	
+	\subsection{Chaîne de caractères}
+	
+		Les chaînes de caractères sont représentées en mémoire par des tableaux statiques (simples) de caractères dont le dernier élément est le caractère nul \cc{'\0'} (d'où leur nom de type, \cc{char*}).
+		
+		\vs{2}
+		\begin{Exemple}
+		\end{Exemple}
+		\vs{2}
+		
+		Pour manipuler ces tableaux, on utilise des pointeurs de type \cc{char*}. Outre le dernier élément qui indique la fin de la chaîne, ces tableaux ont la particularité de pouvoir être initialisées et modifiées grâce à une chaîne de caractères mise entre guillemets :
+			\begin{C}
+					char* s = "chaîne de caractères quelconque"
+			\end{C}
+		
+		\vs{4}
+		Lors de l'affectation d'une chaîne explicite \(c\) de longueur \(l\) à une variable \cc{s} de type \cc{char*} : \nt
+			\hs{5} \bdot un tableau de \(l+1\) \cc{char} est réservé en mémoire (dans le tas, \emph{cf.} plus loin), de taille \(l+1\) \\ \hs{5} \listspace octets (ce qui correspond à \cc{(l+1)*sizeof(char)} \(l+1\)). \\
+			\hs{5} \bdot les éléments d'indices 0 à \(l-1\) de ce tableau sont initialisés grâce aux caractères de \(c\) \\
+			\hs{5} \bdot le dernier élément est initialisé au caractère nul \cc{'\0'}, son indice est alors \(l\) \\
+			\hs{5} \bdot la valeur de \cc{s} est modifiée pour pointer vers la première case du tableau ainsi créé.
+		
+		\vs{3}
+		\begin{Remarque}
+			Un pointeur uniquement déclaré mais non initialisé a pour valeur \cc{NULL} en C.
+		\end{Remarque}
+	
+		\vs{2}
+		\begin{Remarque}
+			Lorsqu'on déclare \cc{char* s}, 8 octets sont réservés en mémoire pour stocker une adresse, alors que lorsque l'on déclare \cc{char s[N]}, \(N\) octets sont réservés pour \(N\) caractères de type \cc{char}. \nt
+				%
+			Une autre différence entre ces deux déclarations réside dans la fait que la deuxième ne place pas le caractère nul tout seul : il faut donc bien veiller à l'ajouter manuellement en fin de tableau afin d'éviter des affichages étranges (\emph{cf.} remarque suivantes) ou des erreurs dans les fonctions.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Remarque}
+			Le spécificateur de format \texttt{\%s} est donc particulier : à partir d'un pointeur, il affiche toutes les valeurs rencontrées jusqu'à trouver \cc{'\0'}. Il est également possible d'afficher, plutôt que la valeur de la chaîne enregistrée, la valeur de \cc{s} en tant que pointeur (qui sera donc un entier) avec \texttt{\%lu}.
+		\end{Remarque}
+	
+	\subsection{Tableau 2D}
+	
+		Pour manipuler une famille de \(N\times M\) valeurs de type \cc{t} notée \((v_{i,j})_{(i,j)\in[0..N[\times[0..M[}\), on peut utiliser un tableau statique à 2 dimensions. On le déclare par : \cc{t tab[N][M]}. \nt
+			%
+		Pour accéder à l'élément de la case \((i,j)\in[0..N-1]\times[0..M-1]\), on utilise : \cc{tab[i][j]}. \nt
+			%
+		On peut aussi l'initialiser explicitement au moment de sa déclaration par :
+			\begin{C}
+					t tab[N][M] = {{v@$_{0,0}$@,v@$_{0,1}$@,...,v@$_{0,M-1}$@}},
+								   {v@$_{1,0}$@,v@$_{1,1}$@,...,v@$_{0,M-1}$@}},
+							   			  @$\vdots$@
+								   {v@$_{N-1,0}$@,v@$_{N-1,1}$@,...,v@$_{N-1,M-1}$@}
+								  }
+			\end{C}
+		
+		\vs{3}
+		\begin{Remarque}
+			Un tableau à 2 dimensions contenant des éléments de type \cc{t} est de type \cc{t**}.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Exemple}
+		\end{Exemple}
+		
+	\subsection{Tableaux de pointeurs}
+	
+		La déclaration se fait comme pour déclarer un tableau simple, à ceci près que le type des éléments sera de la forme \cc{t*} pour \cc{t} un type quelconque : \cc{t* tab[N]}.
+		
+		\vs{3}
+		\begin{Exemple}
+		\end{Exemple}
+	
+	\subsection{Tableaux de chaînes de caractères}
+	
+		\subsubsection{Arguments pour la fonction \texttt{main}}
+		
+			Afin de passer des paramètres à un programme au moment de l'exécution, on code la fonction \cc{main} avec deux arguments : \cc{argc} de type \cc{int}, et \cc{argv} de type \cc{char* []} (ce sera un tableau de chaînes). \nt
+				%
+			\`A l'exécution, ces arguments sont initalisés de sorte que : \\
+				\hs{5} \bdot \cc{argc} est le nombre de mots dans la ligne de commande qui a lancé cette exécution \\
+				\hs{5} \bdot \(\forall\,i\in[0..\rm{argc}[\), \cc{argv[i]} pointe vers une zone mémoire où est inscrit le \(i\)-ième mot sur cette \\ \hs{5} \listspace ligne de commande.
+			
+			\vs{2}
+			\begin{Remarque}
+				\cc{argc} signifie ``argument count'' et \cc{argv} signifie ``argument vector''.
+			\end{Remarque}
+		
+			\vs{2}
+			\begin{Remarque}
+				Il n'est jamais intéressant de récupérer \cc{argv[0]} puisqu'il s'agit du nom de l'exécutable.
+			\end{Remarque}
+		
+\section{Structures}
+
+	En C, les structures permettent de rassembler dans un même objet plusieurs variables, éventuellement de types différents. On peut les voir comme des ```tableaux à cases hétérogènes'''.
+	
+	\subsection{Déclaration d'une nouvelle structure}
+	
+		Définir une nouvelle structure revient à définir un nouveau type. Pour cela, on déclare le nombre et le type que chaque occurence de cette structure rassemblera. De plus, on donne un nom à chaque champ en vue d'accéder aux valeurs par la suite. \nt
+			%
+		La syntaxe de cette déclaration est :
+			\begin{C}
+								struct nom{
+									t@$_1$@ champ@$_1$@;
+									t@$_2$@ champ@$_2$@;
+									     @$\vdots$@
+									t@$_n$@ champ@$_n$@;
+								};
+									
+			\end{C}
+		
+		\vs{2}
+		\begin{Exemple}
+		\end{Exemple}
+	
+	\subsection{Nouvelle occurence d'une structure}
+	
+		On définit une nouvelle occurence d'une structure \cc{nom} par : \cc{struct nom var;}. \\
+		\cc{nom} est le nom de la structure, et \cc{var} celui de la variable. \nt
+			%
+		On peut directement l'initialiser avec la syntaxe suivante :
+			\begin{C}
+						struct nom var = {val@$_1$@,val@$_2$@,...,val@$_n$@};
+			\end{C}
+		
+	\subsection{Accès aux champs d'une occurence}
+	
+		Si \cc{var} est une occurence d'une structure \cc{nom}, alors on accède à son champ \cc{c} avec \cc{var.c}.
+		
+\section{Pile et tas}
+
+	\subsection{Distinction entre pile et tas}
+	
+		Lors de l'exécution d'un programme, la mémoire est principalement séparée en deux zones : \\
+			\hs{5} \bdot la pile pour stocker les variables, qui seront désallouées automatiquement \\
+			\hs{5} \bdot le tas pour le reste (en particulier, ce seront des zones qu'il faudra désallouer manuellement).
+		
+		\vs{2}
+		\begin{Illustration}
+		\end{Illustration}
+	
+	\subsection{Dans la pile}
+	
+		\`A chaque appel de fonction sont ajoutées sur la pile des cases mémoire pour chacune des variables locales à la fonction. On ne maîtrise pas l'interclassement de ces cases. \`A la sortie de la fonction, cet espace mémoire est libéré.
+		
+	\subsection{Accès au tas}
+		
+		On peut réserver un espace mémoire de \(N\) octets consécutifs dans le tas par \cc{malloc(N)}. \\
+		En particulier, pour réserver \(M\) cases de type \cc{t}, on fait :
+			\begin{C}
+						  t* p = (t*)malloc(sizeof(t)*M);
+			\end{C}
+		On libère cette zone mémoire par : \cc{free(p)}. \nt
+			%
+		Entre l'allocation et la libération ou désallocation, on accède à une case de la zone mémoire grâce à \cc{p[i]}, pour \(i\in[0..M-1]\) : \cc{p[i]} est alors de type \cc{t}.
+		
+		\vs{2}
+		\begin{Remarque}
+			Ces fonctions sont dans la librairie \cc{stdlib.h} (et \cc{limits.h} pour \cc{sizeof}).
+		\end{Remarque}
+	
+		\vs{2}
+		\begin{Remarque}
+			En réalité, il ne faut jamais faire \cc{malloc(N)} tout seul car on ne peut ni récupérer l'adresse de la zone mémoire allouée, ni désallouer cette dernière.
+		\end{Remarque}
+\end{document}

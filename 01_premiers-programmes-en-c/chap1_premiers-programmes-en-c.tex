@@ -1,0 +1,370 @@
+\input{../commands_alt.tex}
+
+%\makeatletter
+%\@namedef{ver@framed.sty}{9999/12/31}
+%\@namedef{opt@framed.sty}{}
+%\makeatother
+
+%\usepackage{minted}
+%\usemintedstyle{perldoc}
+
+%\newminted[C]{c}{
+%	escapeinside=@@,
+%	tabsize=4
+%}
+
+\begin{document}
+	
+\title{Premiers programmes en C}
+
+\section{Du code source à l'exécution}
+		
+		\eqskip{2mm}
+		On utilisera un éditeur de texte simple (de type \textsl{gedit}) pour écrire le code source dans un fichier avec l'extension \texttt{.c}. Le code sera compilé avec \textsl{gcc}, lancé en ligne de commande dans un terminal (ou console) qui interprète des commandes écrites en \textsl{bash}.
+		
+	\subsection{Utilisation de \textsl{bash}}
+		
+		On donne ci-dessous quelques commandes utiles dans un terminal :
+		\begin{center}
+			\begin{tabular}[h]{r|l}
+				\mintinline{bash}{cd ..} & remonter au dossier précédent \\
+				\mintinline{bash}{cd dossier} & accéder à un dossier contenu dans le dossier courant \\
+				\mintinline{bash}{ls} & obtenir la liste des fichiers du dossier courant \\
+				\mintinline{bash}{echo texte} & afficher du texte \\
+				\mintinline{bash}{echo $VAR} & afficher la valeur d'une variable (exemples : \mintinline{bash}{SHELL}, \mintinline{bash}{PATH}, etc.)
+			\end{tabular}
+		\end{center}
+	\subsection{Structure d'un programme}
+	
+		La structure de base d'un programme en C est la suivante :
+			\vs{1}
+			\begin{minted}[tabsize=4]{c}
+						#include <librairie.h>
+						int main(){
+							instructions
+							//commentaire sur une ligne
+							/*commentaire sur plusieurs lignes*/
+							return 0;
+						}
+			\end{minted}
+			\vs{1}
+			
+		La directive \mintinline{c}{#include <lib.h>} permet d'inclure les déclarations de fonctions contenues dans le fichier \texttt{lib.h}. Les définitions de telles fonctions sont alors contenues dans un fichier \texttt{lib.c}. \nll
+			%
+		Ensuite, un programme en C contient toujours une fonction \cc{main}, qui est le point d'entrée du programme. Pour nous, son type de retour (ou type de sortie) est \cc{int}, et par convention elle retourne \cc{0}, valeur que l'on ne cherchera jamais à récupérer.
+		Dans un premier temps, cette fonction ne prend pas d'arguments (\emph{cf.} chapitre 3 -- ``pointeurs, tableaux et structures'').
+		
+			\vs{2}
+			\begin{Remarque}
+				La fonction \cc{main} doit être placée après la déclaration de toutes les fonctions auxquelles elle fait appel.
+			\end{Remarque}
+		
+	\subsection{Compilation}
+	
+		La compilation (simple) d'un fichier source se fait comme suit : \mintinline{bash}{gcc code.c -o exe}. \nt
+			%
+		L'opération de compilation : \\
+			\hs{5} \bdot gère l'inclusion des déclarations des libraires (les \mintinline{c}{#include}) \\
+			\hs{5} \bdot vérifie que tous les identificateurs utilisés (noms de fonctions, de variables ou de types) sont \\ \hs{5} \listspace bien déclarés préalablement \\
+			\hs{5} \bdot détecte les erreurs de syntaxe \\
+			\hs{5} \bdot vérifie la cohérence des types dans les appels de fonction, dans les affectations de variable, et \\ \hs{5} \listspace autour des opérateurs \\
+			\hs{5} \bdot vérifie l'existence de la définition d'une fonction \cc{main} de type de retour \cc{int} \\
+			\hs{5} \bdot produit un fichier exécutable (ici, \texttt{exe}) qui correspond à l'exécution de cette fonction \cc{main}
+			
+	\subsection{Exécution}
+		L'exécution d'un fichier exécutable se fait via la commande : \bash{./exe}.
+		
+\section{Quelques types de base}
+
+	\subsection{Types}
+		
+		Le tableau ci-dessous donne un récapitulatif des types les plus fréquemment recontrés en C. \\[3mm]	\renewcommand{\arraystretch}{1.2}
+		\begin{tabular}[h]{l|p{50mm}|p{50mm}|p{40mm}l}
+			Type \(T\) & Valeurs possibles & Remarques & \raggedright Opérateurs internes (\(T\,\alpha\,T \rightarrow T\)) &\\ \hline
+			\cc{int} & \raggedright \([-2^{31}..2^{31}[\) (sur 32 bits) & Il existe d'autres types pour les entiers (\emph{cf.} chapitre 2 -- ``codage des nombres'') & \raggedright \cc{+}, \cc{*}, \cc{-} (binaire), \cc{-} (unaire), \cc{/} (division entière), \texttt{\%} (modulo) &\\ \hline
+			\cc{float} & \raggedright \emph{cf.} chapitre 2 -- ``codage des nombres'' & Si l'une des deux opérandes est de type \cc{float} et l'autre de type \cc{int}, c'est l'opération pour les \cc{float} qui s'applique & \raggedright \cc{+}, \cc{*}, \cc{-} (binaire), \cc{-} (unaire), \cc{/} (division réelle) &\\ \hline
+			\cc{bool} & \cc{true} et \cc{false} & \raggedright Il faut inclure la librairie correspondante en tapant \mintinline{c}{#include <stdbool.h>} & \raggedright \cc{!} (négation, unaire), \cc{&&} (conjonction ``et''), \cc{||} (disjonction ``ou'') &\\ \hline
+			\cc{char} & \raggedright minuscules, majuscules, chiffres, symboles et autres caractères, \texttt{\textbackslash n} (nouvelle ligne), \texttt{\textbackslash t} (tabulation), \texttt{\textbackslash b} (retour en arrière), \texttt{\textbackslash 0} (caractère nul) & \raggedright On utilise des guillemets simples pour les initialiser (par exemple \cc{'a'})&\\ \hline
+			\cc{char*} & chaînes de caractères & \raggedright On utilise des guillemets doubles (par exemple \cc{"salut"}) & 
+		\end{tabular}
+	
+	\subsection{Opérateurs de comparaison}
+		Les opérateurs de comparaison (\(T \,\alpha\, T \rightarrow\) \cc{bool}) sont des opérateurs binaires, \emph{i.e.} agissant sur deux valeurs du même type, et leur sortie est booléenne. En-voici les principaux :
+			\begin{center}
+				\begin{tabular}[h]{r|l}
+					\cc{==} & teste l'égalité \\
+					\cc{!=} & teste la différence \\
+					\cc{>=} & teste la supériorité large \\
+					\cc{<=} & teste l'infériorité large \\
+					\cc{>} & teste la supériorité stricte \\
+					\cc{<} & teste l'infériorité stricte
+				\end{tabular}
+			\end{center}
+		
+		\begin{Remarque}
+			On peut écrire de manière équivalente \cc{a!=b} ou \cc{!(a==b)}.
+		\end{Remarque}
+	
+\section{Affichage et saisie}
+
+	Afin de réaliser l'affichage et la saisie, on utilise la librairie standard : \mintinline{c}{#include <stdio.lib>}. \\
+	La partie \cc{std} signifie ``standard'', et \cc{io} signifie ``in-out''.
+	
+	\subsection{La fonction \texttt{printf}}
+	
+	La fonction \cc{printf} affiche une chaîne de caractères dont des portions peuvent être variables au sens où elles sont fixées seulement à l'exécution. On indique ces portions par des spécificateurs de format qui dépendent du type de l'expression à afficher :
+		\begin{center}
+			\begin{tabular}[h]{r|l}
+				\texttt{\%d} & pour les \cc{int} \\
+				\texttt{\%f} & pour les \cc{float} \\
+				\texttt{\%c} & pour les \cc{char} \\
+				\texttt{\%s} & pour les \cc{char*} \\
+			\end{tabular}
+		\end{center}
+	La chaîne de caractères contenant les spécificateurs de format s'appelle une chaîne de contrôle. \nll
+		%
+	Le nombre d'arguments de \texttt{printf} est \(1+n\) où \(n\) est le nombre de spécificateurs de format contenus dans son premier argument (qui est une chaîne de contrôle). On l'appelle en tapant :
+		%
+	\begin{align*} \mintinline[escapeinside=@@]{c}{printf("chaîne de contrôle",val@$_1$@,val@$_2$@,...,val@$_n$@)} \end{align*} où la chaîne de contrôle contient \(n\) fois le symbole \%.
+	
+	\subsection{La fonction \texttt{scanf}}
+	
+		La fonction \cc{scanf} premet de récupérer une valeur tapée par l'utilisateur. Elle prend en argument une chaîne de caractères contenant le spécificateur de format correspondant au type de la valeur que l'on souhaite enregistrer, ainsi que l'adresse d'une variable existante (\emph{i.e.} déjà déclarée). \nll Lorsqu'elle est appelée, elle stocke la valeur saisie dans cette variable, et ce en écrasant son éventuelle valeur précédente (elle réalise donc un passage par référence : \emph{cf.} chapitre 3 -- ``pointeurs, tableaux et structures'') :
+			\begin{C}
+								type var;
+								scanf("%t",&var);
+			\end{C}
+		où \cc{type} est un type et \texttt{\%t} est le spécificateur de format associé.
+
+\section{Fonctions}
+
+	\subsection{Syntaxe}
+	
+		\subsubsection{Définition}
+		La définition d'une fonction se fait de la manière suivante :
+			\vs{1}
+			\begin{C}
+				typesortie nomfonction (t@$_1$@ var@$_1$@,t@$_2$@ var@$_2$@,...,t@$_n$@ var@$_n$@){
+					instructions
+					return exp;
+				}
+			\end{C}
+			\vs{1}
+		où \cc{var}$_1$,...,\cc{var}$_n$ sont les arguments, \cc{t}$_1$,...,\cc{t}$_n$ leurs types respectifs, et où \cc{exp} est de type \cc{typesortie}. \nll
+			%
+		Dans la partie \texttt{instructions}, on peut : \\
+			\hs{5} \bdot créer des variables locales, au début par convention \\
+			\hs{5} \bdot modifier les variables localces, réaliser des opérations, des tests, des affichages, des saisies... \\ \hs{5} \listspace dans ce qu'on appelle le corps de la fonction.
+		
+		\vs{2}
+		\begin{Remarque}
+			Si le type de sortie est \cc{void}, la fonction ne doit rien retourner. On n'écrit donc pas la dernière ligne du modèle précédent.
+		\end{Remarque}
+			
+		\subsubsection{Appel}
+		
+		L'appel à une fonction ayant \(n\) arguments de types \cc{t}$_1$,...,\cc{t}$_n$ se fait comme suit :
+			\begin{C}
+						nomfonction (exp@$_1$@,exp@$_2$@,...,exp@$_n$@)
+			\end{C}
+		\`A l'exécution de cet appel, chaque expression est évaluée et la valeur obtenue est stockée dans une variable locale à la fonction (qui est supprimée à la fin de l'appel) nommée \cc{var}$_1$,\cc{var}$_2$,...,\cc{var}$_n$ :
+			\begin{C}
+									t@$_1$@ var@$_1$@ = exp@$_1$@
+									t@$_2$@ var@$_2$@ = exp@$_2$@
+										@$\vdots$@
+									t@$_n$@ var@$_n$@ = exp@$_n$@
+			\end{C}
+		On parle de passage par valeurs. Ainsi, si \cc{exp}$_i$ est une variable, toute instruction à l'intérieur de la fonction qui modifierait la valeur de \cc{var}$_i$ laissera inchangée une telle variable.
+		
+		\vs{2}
+		\begin{Remarque}
+			Si la fonction est de type \cc{void}, alors cet appel correspond à une instruction.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Remarque}
+			Dans un code source, on évitera toujours autant que possible d'avoir des variables globales, privilégiant plutôt les variables locales, c'est-à-dire déclarée es à l'intérieur des fonctions (y compris la fonction \cc{main}).
+		\end{Remarque}
+	
+	\subsection{Jeu de test}
+	
+		Afin de ``vérifier'' si les fonctions que l'on écrit renvoient bien les résultats voulus, il est possible de réaliser des jeux de tests grâce à la fonction \cc{assert} de la librairie assert : \mintinline{c}{#include <assert.h>}. \nll
+			%
+		Elle prend pour unique argument une expression booléenne. Par exemple pour une fonction :
+			\begin{C}
+				assert (nomfonction(exp@$_1$@,exp@$_2$@,...,exp@$_n$@) == exp_sortie)	
+			\end{C}
+		Si la fonction est de type de sortie booléen, on peut (et on préférera) écrire : \\
+			\hs{5} \bdot \mintinline[escapeinside=@@]{c}{assert (nomfonction(e@$_1$@,e@$_2$@,...,e@$_n$@))} pour tester si elle retourne bien \cc{true} \\
+			\hs{5} \bdot \mintinline[escapeinside=@@]{c}{assert (!nomfonction(e@$_1$@,e@$_2$@,...,e@$_n$@))} pour vérifier qu'elle retourne bien \cc{false}.	
+		
+		\vs{2}
+		\begin{Remarque}
+			Ces jeux de tests nécessiteront parfois des descriptions sous formes de commentaires, par exemple s'il n'est pas évident de savoir ce que l'on teste précisément ou bien à quel résultat on s'attend.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Remarque}
+			En général, on évite d'utiliser les opérateurs \cc{&&} et \cc{||} dans les \cc{assert}.
+		\end{Remarque}
+	
+		\vs{2}
+		\begin{Remarque}
+			Notons par ailleurs que l'on ne peut pas faire de jeu de test pour une fonction de type de sortie \cc{void}. Il faudra dans ces cas se contenter de vérifier les éventuels affichages ou modifications de la mémoire qu'elle produit, y compris en utilisant des \cc{assert} sur d'autres objets que la fonction elle-même, lorsque cela est possible.
+		\end{Remarque}
+\section{Branchement conditionnel}
+
+	Les branches conditionnelles permet de réaliser des instructions selon que des conditions choisies au préalable sont vérifiées ou non. Elle prennent la forme suivante :
+	\vs{1}
+	\begin{C}
+								if(cond@$_a$@){
+									instructions_si@$_a$@
+								}
+								else if(cond@$_b$@){
+									instructions_si@$_b$@
+								}
+								else{
+									intructions_sinon
+								}
+	\end{C}
+	\vs{1}
+	où \texttt{cond}$_a$ et \texttt{cond}$_b$ sont des expressions booléennes.
+	
+	\vs{3}
+	\begin{Remarque}
+		Bien évidemment, on peut écrire des branches conditionnelles avec autant de conditions ``alternatives'' que l'on souhaite.
+	\end{Remarque}
+	
+	\vs{2}
+	\begin{Remarque}
+		Au contraire, il est possible de n'avoir aucune condition alternative, \emph{i.e.} de ne pas mettre de branche \cc{else}. Si de plus la réalisation de la condition ne conduit qu'à une seule instruction, on peut omettre les accolades et taper tout simplement : \cc{if(cond) instruction}. 
+	\end{Remarque}
+
+\section{Boucles \texttt{while}}
+
+	\subsection{Syntaxe}
+	
+		Les boucles \cc{while} ou ``tant que'' en C utilisent la syntaxe suivante :
+			\begin{C}
+								while (cond){
+									instructions	
+								}
+			\end{C}
+		où \cc{cond} est une expression de type \cc{bool}.
+		
+	\subsection{Simulation de boucle}
+		
+		\vs{-2}
+		\begin{Definition}[simulation de boucle]
+			Une simulation de boucle est un tableau qui représente l'exécution d'une boucle avec des valeurs fixées pour les variables qui ne sont pas modifiées dans la boucle. Plus précisément : \\
+			%
+			\hs{5} \bdot la première colonne indique le tour de boucle, et par convention 0 représente la situation initiale \\
+			\hs{5} \bdot à cette colonne, on ajoute ensuite une colonne par variable modifiée dans la boucle, dans l'ordre de leur première modification dans la boucle \\
+			\hs{5} \bdot chaque ligne donne les valeurs de ces variables à la fin du tour de boucle
+		\end{Definition}
+	
+	\subsection{Preuve de terminaison et de correction d'algorithmes}
+	
+		\subsubsection{Définitions}
+			
+			\vs{-2}
+			\begin{Definition}[terminaison]
+				On dit qu'un algorithme ou une fonction termine si pour toute famille d'arguments valide, l'appel de la fonction consiste en un nombre fini d'instructions.
+			\end{Definition}
+		
+			\begin{Definition}[correction]
+				On dit qu'un algorithme ou une fonction est correct(e) si elle termine et que pour toute famille d'arguments valide, la sortie est celle attendue.
+			\end{Definition}
+			
+			\begin{Definition}[variant de boucle]
+				Un variant de boucle est une expression écrite avec les variables de boucle (et éventuellement d'autres variables localces de la fonction) et qui est à valeurs dans un ensemble ordonné bien fondé, \emph{i.e.} dans lequel il n'existe pas de suite infinie et strictement décroissante, (\emph{cf.} chapitre 8 -- ``ordre et induction'').
+			\end{Definition}
+				
+				\vs{2}
+				\begin{Remarque}
+					On utilise typiquement l'ensemble ordonné bien fondé \((\bb{N},\leq)\) ou bien \((\bb{Z}^-,\geq)\) qui lui est équivalent, mais il existe évidemment existe d'autres ensembles bien fondés (qui par ailleurs ne contiennent pas nécessairement des nombres : \emph{cf.} chapitre 8 -- ``ordre et induction'').
+				\end{Remarque}
+		
+			\begin{Definition}[invariant de boucle]
+				Un invariant de boucle est une expression booléenne écrite avec les variables de la boucle (et éventuellement des variables locales à la fonction) et qui est évaluée à vrai à chaque tour de boucle pour n'importe quel appel à la fonction avec des arguments valides.
+			\end{Definition}
+		
+		\subsubsection{Schéma de preuve}
+		
+			En pratique, lorsque l'on veut montrer la terminaison d'un algorithme ou d'une fonction comportant une boucle, on procède comme suit : \nt
+				\hs{5} \bdot on fixe les valeurs des arguments \\
+				\hs{5} \bdot on suppose par l'absurde que l'appel de la fonction sur ces arguments ne termine pas \\
+				\hs{5} \bdot on introduit les suites des valeurs prises par les variables à chaque tour de boucle \\
+				\hs{5} \bdot on décrit la variation (strictement croissante ou décroissante) de la suite à l'aide des instructions du corps de la boucle et de la condition initiale, et on justifie qu'elle est à valeurs entières \\
+				\hs{5} \bdot grâce à la condition de boucle, on montre que cette suite est majorée ou minorée \\
+				\hs{5} \bdot on conclut alors en disant que c'est absurde. \nll
+				%
+			Ensuite, la terminaison ayant été démontrée (ou admise, auquel cas il faut fixer les arguments puisque ce n'est pas déjà fait), on prouve que la fonction est correcte grâce à un invariant, qui se montre par récurrence, et selon le schéma suivant : \nt
+				\hs{5} \bdot on considère le nombre de tours de boucles effectués par l'appel \\
+				\hs{5} \bdot on introduit les suites finies des valeurs prises par les variables intervenant dans l'invariant \\
+				\hs{5} \bdot on introduit la propriété à démontrer par récurrence (\(\cal{P}_k\), \(\cal{H}_k\), etc.) \\
+				\hs{5} \bdot on effectue l'initialisation avec les instructions écrites avant la boucle \\
+				\hs{5} \bdot on effectue l'hérédité grâce au corps de la boucle \\
+				\hs{5} \bdot on conclut par récurrence \\
+				\hs{5} \bdot on utilise la propriété ainsi démontrée au dernier rang et la condition de boucle pour expliciter la valeur de la variable qui nous intéresse au dernier rang \\
+				\hs{5} \bdot on conclut sur la correction de l'algorithme.
+			
+			\vs{2}
+			\begin{Exemples}
+				\emph{cf.} annexe ``exemples de preuves de terminaison et de correction''.
+			\end{Exemples}
+				
+%		\subsubsection{Exemple 1 : division euclidienne}
+%		
+%			\begin{Rappel}[division euclidienne]
+%				Soit \((a,b)\in\bb{Z}\times\bb{Z}^*\). Il existe un unique couple \((q,r)\in\bb{Z}\times[0..|b|[\) tel que \(a=bq+r\). \\
+%				\bdot \(q\) est appelé quotient dans la division euclidienne de \(a\) par \(b\) \\
+%				\bdot \(r\) est appelé reste de la division euclidienne de \(a\) par \(b\) ou encore reste de \(a\) modulo \(b\).
+%			\end{Rappel}
+%		
+%			On considère à présent le code suivant, comportant deux fonctions \cc{quotient} et \cc{reste} :
+%				\begin{C}
+%		#include <stdio.h>
+%		#include <assert.h>			
+%		
+%		int quotient (int a,int b){
+%			// hyp: a>=0 && b>0
+%			// retourne le quotient de la division euclidienne de a par b
+%			int q = 0;
+%			int r = a;
+%			while (r >= b){ // inv: a = bq+r
+%				q = q+1;
+%				r = r-b;
+%			}
+%			return q;
+%		}
+%		int reste (int a,int b){
+%			// hyp: a>=0 && b>0
+%			// retourne le reste de la division euclidienne de a par b
+%			int r = a;
+%			while (r>=b){
+%				r = r-b;
+%			}
+%			return r;				
+%		}
+%				\end{C}
+%			
+%%			\plabel{$\bm{*}$ Simulation de la boucle \texttt{while} dans l'appel \cc{quotient(13,3)}} \\	
+%%				\begin{tabular}[h]{|c|c|c|} \hline
+%%					Tour & \cc{r} & \cc{q} \\ \hline
+%%					0 & 13 & 0 \\ \hline
+%%					1 & 10 & 1 \\ \hline
+%%					2 & 7 & 2 \\ \hline
+%%					3 & 4 & 3 \\ \hline
+%%					4 (sortie) & 1 & 4 \\ \hline
+%%				\end{tabular}
+%%			
+%%			\begin{Remarque}
+%%				\'A chaque tour, on observe que \(a=bq+r\) : cette égalité est donc un invariant de boucle.
+%%			\end{Remarque}
+%		
+%		Montrons par exemple que la fonction \cc{quotient} renvoie bien le quotient d'une division euclidienne d'entiers naturels. \nll
+%			%
+%		Soit \((a,b)\in\bb{N}\times\bb{N}^*\). Par l'absurde, on suppose que l'appel \cc{quotient(a,b)} ne termine pas
+
+\end{document}

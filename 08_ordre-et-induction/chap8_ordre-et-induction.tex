@@ -1,0 +1,681 @@
+\input{../commands_alt.tex}
+\usepackage{euscript}
+\newcommand{\Min}{\escr{M}\rm{in}} 
+\newcommand{\Maj}{\escr{M}\rm{aj}}
+\newcommand{\escr}[1]{\EuScript{#1}}
+
+\newcommand{\constr}[2]{|_{#2}^{#1}}
+\newcommand{\varconstr}[2]{|_{\scriptscriptstyle #2}^{\scriptscriptstyle #1}}
+
+% stolen code
+\makeatletter
+\DeclareRobustCommand{\ubigcup}{\DOTSB\mathop{\,\ubigcup@\,}\slimits@}
+\DeclareRobustCommand{\dbigcap}{\DOTSB\mathop{\,\dbigcap@\,}\slimits@}
+
+\newcommand{\ubigcup@}{\mathpalette\ubigcup@@\relax}
+\newcommand{\ubigcup@@}[2]{%
+	\begingroup
+	\sbox\z@{$\m@th#1\bigcup$}%
+	\sbox\tw@{$\m@th#1\uparrow$}%
+	\copy\z@
+	\mkern-6.3mu\ifx#1\scriptscriptstyle\mkern0.3mu\fi
+	\dimen@=\dimexpr\ht\z@-\ht\tw@
+	\ifx#1\displaystyle\else
+	\ifx#1\scriptscriptstyle\advance\dimen@ 0.5pt\else
+	\advance\dimen@ 1pt
+	\fi\fi
+	\raisebox{\dimen@}[0pt][0pt]{\rlap{\copy\tw@}}%
+	\mkern6.3mu\ifx#1\scriptscriptstyle\mkern-0.3mu\fi
+	\endgroup
+}
+\newcommand{\dbigcap@}{\mathpalette\dbigcap@@\relax}
+\newcommand{\dbigcap@@}[2]{%
+	\begingroup
+	\sbox\z@{$\m@th#1\bigcap$}%
+	\sbox\tw@{$\m@th#1\downarrow$}%
+	\copy\z@
+	\mkern-6.3mu\ifx#1\scriptscriptstyle\mkern0.3mu\fi
+	\dimen@=\dimexpr\dp\z@-\dp\tw@
+	\ifx#1\displaystyle\else
+	\ifx#1\scriptscriptstyle\advance\dimen@ 0.5pt\else
+	\advance\dimen@ 1pt
+	\fi\fi
+	\raisebox{-\dimen@}[0pt][0pt]{\rlap{\copy\tw@}}%
+	\mkern6.3mu\ifx#1\scriptscriptstyle\mkern-0.3mu\fi
+	\endgroup
+}
+
+\makeatother
+
+
+\begin{document}
+
+\title{Ordre et induction}
+
+	\section{Relations}
+	
+		\subsection{En général}
+			
+			\begin{Definition}[relation \(n\)-aire]
+				Soient \(X \neq \emptyset\) et \(n \in \bb{N}^*\). On dit que \(\cal{R}\) est une relation \(n\)-aire sur \(X\) ssi \(\cal{R} \subseteq X^n\). \nt
+				L'entier \(n\) est alors appelé arité de la relation. \\
+				De plus, si \((x_i)_{i \in [1..n]} \in \cal{R}\), on dit que les éléments \(x_1\), \(x_2\),..., \(x_n\) vérifient la relation \(\cal{R}\).
+			\end{Definition}
+			
+			\vs{2}
+			\begin{Exemples}
+				\hs{-2}\begin{tabular}[t]{l}
+					\bdot \(\cal{R}_1 = \{(a,b) \in \bb{Z}^2 \,|\, a \equiv b \ [3]\}\). \\
+					\bdot \(\cal{R}_2 = \{(a,b,c) \in \bb{R}^3 \,|\, a+b = c\}\) est une relation ternaire sur \(\bb{R}\).
+				\end{tabular} \nt
+					On a par exemple \((1,2,3) \in \cal{R}_1\), mais \((1,3,2) \notin \cal{R}_1\).
+			\end{Exemples}
+		
+			\begin{Definitions}[relations binaires, vocabulaire et propriétés]
+				Soit \(X \neq \emptyset\) et \(\cal{R}\) est une relation binaire sur \(X\). Pour \((x,y) \in X^2\), on note \(x \,\cal{R}\, y\) ssi \((x,y) \in \cal{R}^2\) c'est-à-dire \(x\) et \(y\) vérifient \(\cal{R}\). Alors, on dira que : \\
+					\hs{5} \bdot \(\cal{R}\) est réflexive ssi \(\forall \,x \in X\), \(x \,\cal{R}\, x\). \\
+					\hs{5} \bdot \(\cal{R}\) est symétrique ssi \(\forall \,(x,y) \in X^2\), \(x \,\cal{R}\, y \iff y \,\cal{R}\, x\). \\
+					\hs{5} \bdot \(\cal{R}\) est antisymétrique ssi \(\forall \,(x,y) \in X^2\), \(x \,\cal{R}\, y \text{ et } y \,\cal{R}\, x \Longrightarrow x = y\). \\
+					\hs{5} \bdot \(\cal{R}\) est transitive ssi \(\forall \,(x,y,z) \in X^3\), \(x \,\cal{R}\, y \text{ et } y \,\cal{R}\, z \Longrightarrow x \,\cal{R}\, z\).
+			\end{Definitions}
+		
+			\begin{Definitions}[relation d'équivalence, relation d'ordre]
+				Soit \(\cal{R}\) une relation binaire sur un ensemble \(X\) non vide. Alors : \\
+					\hs{5} \bdot \(\cal{R}\) est une relation d'ordre ssi \(\cal{R}\) est réflexive, antisymétrique et transitive. \\
+					\hs{5} \bdot \(\cal{R}\) est une relation d'équivalence ssi \(\cal{R}\) est réflexive, symétrique et transitive.
+			\end{Definitions}
+		
+			\begin{Definition}[relation induite]
+				Soit \(\cal{R}\) une relation binaire sur un ensemble \(X\) non vide et \(Y \subseteq X\) avec \(Y \neq \emptyset\). Alors, \(\cal{P} = \cal{R} \cap Y^2\) définit une relation binaire sur \(Y\) qui a les mêmes propriétés que \(\cal{R}\) (au sens des quatre définies précédemment), et que l'on appellera parfois relation induite par \(\cal{R}\) sur \(Y\).
+			\end{Definition}
+		
+		\vs{2}
+		\eqskip{2mm}
+		\begin{Exercice}
+			Soit \(X \neq \emptyset\) un ensemble et \(\cal{R}\) une relation binaire sur \(X\). On note : \nt
+			\hspace*{5mm} \bdot \(\cal{R}_r = \cal{R} \cup \{(x,x) \,|\, x \in X\}\) \\
+			\hspace*{5mm} \bdot \(\cal{R}_s = \cal{R} \cup \{(x,y) \,|\, (y,x) \in \cal{R}\}\) \\[-2mm]
+			\hspace*{5mm} \bdot \(\displaystyle \cal{R}_t = \bigcup_{n\in\bb{N}^*} \cal{R}_n\) où \(\cal{R}_1 = \cal{R}\) et \(\forall \,n\in\bb{N}^*\), \(\cal{R}_{n+1} = \cal{R}_n \cup \bigg\{(x,z)\in X^2 \,\bigg|\, \exists\,y \in X, \!\! \begin{tabular}[h]{l}
+				\((x,y)\in \cal{R}\) \\[-0.5mm]
+				\((y,z)\in \cal{R}_n\)
+			\end{tabular} \!\!\bigg\}\) \\[3mm]
+		Montrer que \(\cal{R}_r\) est réflexive, \(\cal{R}_s\) symétrique et \(\cal{R}_t\) transitive. Pour la transitivité, on pourra en particulier utiliser le lemme suivant après l'avoir démontré :
+		
+			\[
+				\forall\,n \in \bb{N}^*, \, \cal{R}_n = \Bigg\{ \!(x,z) \in X^2\,\Bigg|\, \exists \,n' \leq n, \,\exists \,(y_i)_{i\in[0..n']} \in X^{n'} \text{ tels que :} \!\begin{tabular}[h]{l}
+					\(y_0 = x\) \\[-0.5mm]
+					\(y_{n'} = z\) \\
+					\(\forall\, i\in [0..n'[, \,y_i \,\cal{R}\, y_{i+1}\)
+				\end{tabular} \!\!\Bigg\}
+			\]
+		\end{Exercice}
+				
+				
+	\subsection{Relations d'équivalence}
+		
+		\intro{On considère un ensemble \(X \neq \emptyset\) et \(\cal{R}\) une relation d'équivalence sur \(X\).}
+		
+		\vs{-4}
+		\eqskip{2mm}
+		\begin{Definition}[classes d'équivalence]
+		Pour \(x \in X\), on définit la classe d'équivalence de \(x\) pour la relation \(\cal{R}\), notée \([x]\) ou \(\dot{x}\), par :
+			\[
+				[x] = \dot{x} = \{y \in X \,|\, x \,\cal{R}\, y\}
+			\]
+		\end{Definition}
+		
+		\vs{2}
+		\uplabel{Propriété :} Pour \((x,y) \in X^2\), soit \(y \in \dot{x}\) auquel cas \(\dot{x} = \dot{y}\), ou bien \(y \notin \dot{x}\) auquel cas \(\dot{x} \cap \dot{y} = \emptyset\).
+		
+		\begin{Corollaire}[espace quotient] L'ensemble \(\{\dot{x} \,|\, x \in X\}\) des classes d'équivalences de la relation \(\cal{R}\) forme une partition de \(X\). On l'appelle ensemble quotient ou espace quotient de \(X\) par la relation \(\cal{R}\) et on le note \(X/\cal{R}\).
+		\end{Corollaire}
+		
+		\eqskip{2mm}
+		\begin{Definition}[passage au quotient]
+			Soit \(X\) et \(Y\) deux ensembles, \(f \in \escr{F}(X,Y)\) et \(\cal{R}\) une relation d'équivalence sur \(X\). \\
+			On dit que \(f\) passe au quotient si elle est constante sur les classes d'équivalence, c'est-à-dire :
+				\[
+					\forall \,(x,x') \in X^2, \,x \,\cal{R}\, x' \text{)} \Longrightarrow f(x) = f(x')
+				\]
+			ou encore, de manière totalement équivalente :
+				\[
+					\forall \,(x,x'),\,\dot{x} = \dot{x}' \Longrightarrow f(x) = f(x')
+				\]
+			
+			\eqskip{3mm}
+			\setlength{\tabcolsep}{2.2pt}
+			Si \(f\) passe au quotient, on peut définir sur l'espace quotient la fonction :
+				\[
+					\bar{f} =
+					\left( \begin{tabular}[h]{rcl}
+					\(X/\cal{R}\) & \(\rightarrow\) &\(Y\) \\
+					\(\dot{x}\) & \(\mapsto\) & \(f(x)\)
+					\end{tabular} \right)
+				\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Passer de \(f\) à \(\bar{f}\) permet de ``gagner en injectivité'', au sens où l'on ``regroupe'' tous les antécédents d'un élément donné de l'ensemble d'arrivée dans une seule classe. Attention cependant, \(\bar{f}\) n'est pas nécessairement injective pour autant.
+		\end{Remarque}
+		
+		\vs{2}
+		\uplabel{Propriété :} Pour toute fonction \(f \in \escr{F}(X,Y)\) passant au quotient, on a \(f(X) = \bar{f}(X/\cal{R})\).
+		
+	
+	\subsection{Relations d'ordre}
+		
+		\intro{On considère \((X,\leqslant)\) un ensemble ordonné (i.e. muni d'une relation d'ordre notée \(\leqslant\)), \\ ainsi que \(Y \subseteq X\). On note de plus \((Y,\leqslant)\) l'ensemble ordonné induit.}
+		
+		\vs{-4}
+		\subsubsection{\'Elements particuliers}
+			
+			\pagebreak
+			\begin{Definitions}[majorants et minorants]
+				Soit \(x \in X\) quelconque. \\
+					\hs{5} \bdot \(x\) est un minorant de \(Y\) ssi \(\forall \,y \in Y\), \(x \leqslant y\). \\
+					\hs{5} \bdot \(x\) est un majorant de \(Y\) ssi \(\forall \,y \in Y\), \(y \leqslant x\). \nt
+					%
+				Dans la suite de ce cours, on notera pour \(Z\) un ensemble quelconque, \(\Min(Z)\) l'ensemble de ses minorants et \(\Maj(Z)\) son ensemble de majorants. Alors : \\
+					\hs{5} \bdot \(Y\) est majoré s'il admet un majorant (\emph{i.e.} \(\Min(Y) \neq \emptyset\)) \\
+					\hs{5} \bdot \(Y\) est minoré s'il admet un minorant (\emph{i.e.} \(\Maj(Y) \neq \emptyset\)) \\
+					\hs{5} \bdot \(Y\) est borné s'il est à la fois majoré et minoré.
+			\end{Definitions}
+			
+			\eqskip{2mm}
+			\begin{Definitions}[minimalité, maximalité, plus grand et plus petit élément]
+				Soit \(x \in X\) et \(y\in Y\). Alors : \\
+					\hs{5} \bdot \(x\) est un plus petit élément de \(Y\) ssi \(x\) est un minorant de \(Y\) et \(x \in Y\). \\
+					\hs{5} \bdot \(x\) est un plus grand élément de \(Y\) ssi \(x\) est un majorant de \(Y\) et \(x \in Y\). \\
+					\hs{5} \bdot \(y\) est minimal (dans \(Y\)) ssi il n'y a pas d'autre élément plus petit, autrement dit :
+					\[
+						\forall \,y' \in Y,\, y' \leqslant y \Longrightarrow y' = y \text{ ou encore } \forall \,y' \in Y, y' \neq y \Longrightarrow y' \nleqslant y
+					\]
+					\hs{5} \bdot \(y\) est maximal (dans \(Y\)) ssi il n'y a pas d'autre élément plus petit, c'est-à-dire :
+				\[
+					\forall \,y' \in Y,\, y \leqslant y' \Longrightarrow y' = y \text{ soit encore } \forall \,y' \in Y, y' \neq y \Longrightarrow y \nleqslant y'
+				\]
+			\end{Definitions}
+			
+			\begin{Propriete}[unicité du minimum/maxmimum]
+				Si \(Y\) admet un plus petit élément (resp.\! un plus grand élément), alors il est unique : on l'appelle dans ce cas minimum (resp.\! maximum) de \(Y\) et on le note \(\min(Y)\) (resp.\! \(\max(Y)\)).
+			\end{Propriete}
+			
+			\vs{2}
+			\begin{Remarque}
+				En revanche, il n'y a pas toujours unicité des éléments minimaux et maximaux.
+			\end{Remarque}
+			
+			\begin{Definition}[bornes supérieure et inférieure]
+				On dit que : \\
+				\hs{5} \bdot \(Y\) admet une borne supérieure si \(\Maj(Y)\) admet un plus petit élément, noté alors \(\sup(Y)\). \\
+				\hs{5} \bdot \(Y\) admet une borne inférieure si \(\Min(Y)\) admet un plus grand élément, qu'on note \(\inf(Y)\). \nt
+					%
+				On a donc, lorsque cela existe, \(\sup(Y) = \min(\Maj(Y))\) et \(\inf(Y) = \max(\Min(Y))\).
+			\end{Definition}
+			
+			\vs{2}
+			\begin{Remarque}
+				Les bornes inférieure et supérieure d'un ensemble n'appartiennent pas nécessairement à cet ensemble, et elles n'existent pas toujours non plus. Prenons par exemple \(Y = \{u_n\,|\,n\in\bb{N}\}\) où on a défini \(u = (\lfloor 10^n\sqrt{2}\rfloor/10^n)_{n\in\bb{N}}\) : \(Y\) n'a pas de borne sup dans \(\bb{Q}\), mais elle en a une dans \(\bb{R}\) qui vaut \(\lim_{n\to+\infty} u_n = \sqrt{2}\).
+			\end{Remarque}
+			
+		\subsubsection{Ordre total}
+		
+			\begin{Definition}[relation d'ordre totale]
+				Une relation d'ordre \(\cal{R}\) sur \(X\) est dite totale ssi \(\forall \,(x,y) \in X^2\), \(x \,\cal{R}\, y\) ou \(y \,\cal{R}\, x\).
+			\end{Definition}
+			
+			\eqskip{2mm}
+			\begin{Propriete}
+				Si \(\leqslant\) est une relation d'ordre totale sur \(Y\), alors :
+					\begin{align*}
+						\forall \,y \in Y, \,\, & y \text{ minimal dans } Y \Longrightarrow y \text{ plus petit élément de } Y \\[-1mm]
+						& y \text{ maximal dans } Y \Longrightarrow y \text{ plus grand élément de } Y
+					\end{align*}
+			\end{Propriete}
+				%
+			\begin{Preuve}
+				Soit \(y \in Y\). Supposons que \(y\) soit minimal dans \(Y\), \emph{i.e.} \(\forall \,y' \in Y\), \(y \neq y' \Longrightarrow y' \nleqslant y\). \nt
+				\bdot Soit alors \(y' \in Y\backslash\{y\}\). Comme l'ordre est total, \(y \leq y'\) ou \(y' \leqslant y\), or \(y' \nleqslant y\) donc on a \(y \leqslant y'\). \\
+				\bdot De plus, \(y \leq y\) par réflexivité. \nt
+				On a donc \(\forall \,y' \in Y\), \(y \leqslant y'\), ce qui prouve que \(y\) est bien le plus petit élément de \(Y\). La démonstration est identique pour la seconde implication.
+			\end{Preuve}
+			
+			\vs{2}
+			\begin{Remarque}
+				 Il est immédiat que les implications réciproques sont vraies, même lorsque \(\leqslant\) n'est pas une relation d'ordre totale : ainsi, pour un ordre total, être minimal ou maximal est exactement équivalent à être le minimum ou le maximum.
+			\end{Remarque}
+			
+			\begin{Corollaire}[unicité de l'élément minimal/maximal]
+				Si l'ordre \(\leqslant\) est total, il y a unicité des éléments minimaux et maximaux (en cas d'existence).
+			\end{Corollaire}
+				%
+			
+		
+		\subsubsection{Ordre bien fondé}
+		
+			\intro{\((X,\leqslant)\) et \((Y,\preccurlyeq)\) désignent maintenant deux ensembles ordonnés quelconques.}
+			
+			\vs{-4}
+			\begin{Notation}[ordre strict]
+				Pour \((x,x') \in X^2\), on note \(x < x'\) ssi \(x \leqslant x'\) et \(x \neq x'\). \\
+				On définit de même la notation \(y \prec y'\) pour \(y,y'\) des éléments de \(Y\).
+			\end{Notation}
+			
+			\begin{Definitions}[croissance, croissance stricte]
+				Soit \(f \in \escr{F}(X,Y)\). \\
+					\hs{5} \bdot \(f\) est croissante ssi \(\forall \,(x,x') \in X^2\), \(x \leqslant x' \Longrightarrow f(x) \preccurlyeq f(x')\). \\
+					\hs{5} \bdot \(f\) est strictement croissante ssi \(\forall \,(x,x') \in X^2\), \(x < x' \Longrightarrow f(x) \prec f(x')\). \\[2mm]
+					%
+				On étend ces définitions aux suites de \(X^\bb{N}\) vues comme des fonctions de \((\bb{N},\leq)\) vers \((X,\leqslant)\), \(\leq\) désignant l'ordre usuel sur les réels.
+			\end{Definitions}
+			
+			\vs{2}
+			\setlength{\tabcolsep}{2.2pt}
+			\eqskip{2mm}
+			\begin{Exemple} Considérons la fonction :
+				\[
+					id = \left( \begin{tabular}[h]{rcl}
+					\((\bb{N}^*,|)\) & \(\rightarrow\) & \((\bb{N}^*,\leq)\) \\
+					\(n\) & \(\mapsto\) & \(n\)
+				\end{tabular} \right)
+				\]
+				Elle est croissante car \(\forall \,(a,b) \in (\bb{N}^*)^2\), \(a|b \Longrightarrow a \leq b\). \\
+				En fait, elle est même strictement croissante puisqu'elle est injective.
+			 \end{Exemple}
+			 	%
+			 \vs{2}
+			 \eqskip{1mm}
+			\begin{Exercice}
+				Pour \(f \in \escr{F}(X,Y)\), montrer l'implication :
+					\[X \text{ ordre total et } f \text{ strictement croissante} \Longrightarrow f \text{ injective}\]
+				et trouver un contre-exemple quand l'ordre n'est pas total.
+			\end{Exercice}
+			\vs{2}
+				%
+			\hs{5}\plabel{Correction :}
+					Pour le contre-exemple, on peut considérer l'une des fonctions suivantes :
+						\[f = \left( \begin{tabular}[h]{rcl}
+						\((\bb{N}^*,|)\) & \(\rightarrow\) & \((\bb{N},\leq)\) \\
+						\(n\) & \(\mapsto\) & \(\lfloor n/2 \rfloor\)
+					\end{tabular} \right) \text{ et } g = \left( \begin{tabular}{rcl}
+						\((\bb{N}^*,|)\) & \(\rightarrow\) & \((\bb{N},\leq)\) \\
+						\(n\) & \(\mapsto\) & \(\card \big\{d \in \bb{N} \,\big|\, d|n\big\}\)
+					\end{tabular} \right)\]
+			
+			\vs{-1}
+			\begin{Definition}[ordre bien fondé]
+				On dit que l'ordre \(\leqslant\) est bien fondé sur \(X\) ssi \(\forall\,A \, \subseteq X\) non vide, \(A\) admet un élément minimal.
+			\end{Definition}
+			
+			\vs{1}
+			\begin{Propriete}[caractérisation séquentielle des ordres bien fondés]
+				L'ordre \(\leqslant\) est bien fondé ssi il n'existe aucune suite de \(X^\bb{N}\) strictement décroissante pour \(\leqslant\).
+			\end{Propriete}
+			
+			\vs{2}
+			\begin{Preuve}
+				\(\bm{(\Rightarrow) :}\) Supposons que \((X,\leqslant)\) est bien fondé et supposons par l'absurde qu'il existe une suite \((u_n)_{n\in\bb{N}} \in X^\bb{N}\) strictement décroissante. On pose alors \(A = \{u_n \,|\, n\in\bb{N}\} \subseteq X\). \nt
+				\(A \neq \emptyset\) donc il existe \(a^*\) un élément minimal de \(A\). Par définition de \(A\), il existe \(n^* \in \bb{N}\) tel que \(a^* = u_{n^*}\). De plus, par stricte décroissance de \(u\), on a \(u_{n^*+1} < u_{n^*} = a^*\). \nt
+				Or, \(u_{n^*+1} \in A\), ce qui contredit la minimalité de \(a^*\). \\[3mm]
+					%
+				\(\bm{(\Leftarrow) :}\) Montrons plutôt la contraposée : supposons que \((X,\leqslant)\) n'est pas bien fondé. \\
+				Par définition, il existe donc \(A \subseteq X\) non vide tel que \(A\) n'admet aucun élément minimal. \nt
+				Comme \(A \neq \emptyset\), il existe \(a_0 \in A\). \(a_0\) n'est pas minimal donc il existe \(a_1 \in A\) tel que \(a_1 < a_0\).
+				De même, \(a_1\) n'est pas minimal donc il existe \(a_2 \in A\) tel que \(a_2 < a_1\), et ainsi de suite. \nt
+				En réitérant ce processus, on construit une suite \((a_n)_{n\in\bb{N}}\) de \(A^\bb{N} \subseteq X^\bb{N}\) qui est bien strictement décroissante.
+			\end{Preuve}
+			\vs{2}
+			
+			\begin{Exemples} \bdot \((\bb{Z},\leq)\) n'est pas bien fondé (prendre \((-n)_{n\in\bb{N}}\)). \\
+				\hspace*{23mm} \bdot \((\bb{R}^+,\leq)\) non plus (prendre \((1/n)_{n\in\bb{N}}\)). \\
+				\hspace*{23mm} \bdot \((\bb{N},\leq)\) est bien fondé (\emph{cf.} principe de descente infinie de Fermat). \\
+				\hspace*{23mm} \bdot \((\bb{N},|)\) est lui aussi bien fondé.
+			\end{Exemples}
+			
+			\vs{2}
+			\begin{Remarque} Si \(X\) est fini, alors \((X,\leqslant)\) est automatiquement bien fondé.
+			\end{Remarque}
+			
+			
+		\subsubsection{Ordres produit et lexicographique}
+		
+			\intro{Soit \(n \in \bb{N}^*\) et \((X_i,\leqslant_i)_{i\in[1..n]}\) une famille d'ensembles ordonnés. On note \(\displaystyle Y = \prod_{i=1}^n X_i\).}
+			
+			\eqskip{2mm}
+			\vs{-4}
+			\begin{Definition}[ordre produit]
+				La relation \(\cal{R}\) définie sur \(Y\) par :
+					\[
+						\forall \,(a,b) \in Y^2, \,a \,\cal{R}\, b \iff \forall \,i \in [1..n], a_i \leqslant_i b_i
+					\]
+				est une relation d'ordre appelée ordre produit des \(\leqslant_i\) sur \(Y\).
+			\end{Definition}
+			
+			\begin{Definition}[ordre lexicographique]
+				La relation \(\cal{R}'\) définie sur \(Y\) par :
+				\begin{align*}
+					\forall \,(a,b) \in Y^2, \,a \,\cal{R}'\, b & \iff a=b \text{ ou } \exists \, j \in [1..n] \text{ tel que } (\forall \,i \in [1..j[, \,a_j = b_j \text{ et } a_i <_j b_i)
+				\end{align*}
+				est une relation d'ordre sur \(Y\) appelée ordre lexicographique sur \(Y\).
+			\end{Definition}
+				%
+			\begin{Remarque}
+				De manière alternative, on peut définir l'ordre lexicographique sur \(Y\) par :
+				\[
+					\forall \,(a,b) \in Y^2, \,a \,\cal{R}'\, b \iff \exists \,j \in [1..n+1], \, \forall \,i \in [1..j[, \,a_i = b_i \text{ et } (j = n+1 \text{ ou } a_j <_j b_j)
+				\]
+				Les deux définitions sont alors équivalentes, à condition de donner du sens à la proposition ``\(j = n+1 \text{ ou } a_j <_j b_j\)'' : il s'agit d'une évaluation paresseuse (en effet \(\leqslant_{n+1}\) n'a pas été défini).
+			\end{Remarque}
+				%
+			\begin{Exemple}
+				\bdot \((0,1,3) < (0,1,4)\) pour les ordres produit \emph{et} lexicographique sur \(\bb{N}^3\). \\
+				\hspace*{21.2mm} \bdot \((\texttt{a},2) < (\texttt{b},1)\) pour l'ordre lexicographique sur \(\Sigma \times \bb{N}\), \(\Sigma\) étant l'alphabet usuel
+			\end{Exemple}
+			
+			
+			\begin{Rappel}[ensemble des mots mots sur un alphabet]
+				Soit \(\Sigma\) un alphabet, c'est-à-dire un ensemble non vide et fini de caractères. On note :
+					\[
+						\displaystyle \Sigma^* = \bigcup_{n \in \bb{N}} \Sigma^n
+					\]
+				où \(\Sigma^n\) est l'ensemble des mots de longueur \(n\) sur \(\Sigma\), c'est-à-dire des suites finies de \(n\)	éléments de \(\Sigma\) (on a en particulier \(\Sigma^0 = \varepsilon\) où \(\varepsilon\) est le mot vide). \nt
+				\(\Sigma^*\) est l'ensemble des mots sur \(\Sigma\).
+			\end{Rappel}
+			
+			\eqskip{3mm}
+			\begin{Definition}[ordre alphabétique sur les mots]
+				Si \((\Sigma, \leqslant_\Sigma)\) est un ensemble ordonné, alors la relation \(\cal{R}\) définie sur \(\Sigma^*\) par :
+					\begin{align*}
+						\forall \,(u,v) \in (\Sigma^*)^2, \,u \,\cal{R}\, v & \iff \exists \,j \in \bb{N} \text{ vérifiant } j \leq |u|+1 \text{ et } j \leq |v|+1 \text{, tel que } \\[-1mm]
+						\forall \,i \in [1..j[, \,u_i = v_i &\text{ et } \big(j = |u|+1 \text{ ou } (j \leq |u| \text{ et } j \leq |v| \text{ et } u_j <_{\Sigma} v_j) \big)
+					\end{align*}
+				est une relation d'ordre sur \(\Sigma^*\). 
+			\end{Definition}
+			
+			\vs{2}
+			\begin{Remarque}
+				Pour cette relation d'ordre, on a \(\varepsilon = \min(\Sigma^*)\). \\
+				En effet, \(\forall \,u \in \Sigma^*\), pour \(j=1\), \(j=|\varepsilon|+1\) et \(j \leq |u|+1\) et \([i..j[ \ = [1..1[ \ = \emptyset\) donc \(\varepsilon \,\cal{R}\, u\).
+			\end{Remarque}
+			
+			
+\section{Induction}
+
+	\subsection{Induction bien fondée}
+		
+		\vs{-2} \eqskip{2mm}
+		\begin{Proposition}[principe d'induction bien fondée]
+			Soit \((X,\leqslant)\) un ensemble ordonné non vide et \(\cal{P}\) une propriété sur \(X\). \\
+				%
+			Si \(\leqslant\) est un ordre bien fondé, alors on a la proposition suivante :
+				\[
+					\big(\forall \,x \in X, (\forall \,y \in X, y < x \Longrightarrow \cal{P}(y)) \Longrightarrow \cal{P}(x)\big) \Longrightarrow \forall \,x \in X, \, \cal{P}(x)
+				\]
+		\end{Proposition}
+		
+		\eqskip{2mm}
+		\begin{Preuve}
+			Notons \(\cal{H}(x)\) la proposition ``\((\forall \,y \in X, y < x \Longrightarrow \cal{P}(y)) \Longrightarrow \cal{P}(x)\big)\)''. Supposons alors que l'ordre \(\leqslant\) est bien fondé et que \(\forall\,x\in X\), \(\cal{H}(x)\) et montrons que \(\forall\,x\in X\), \(\cal{P}(x)\). \nt
+				%
+			Soit \(Y = \{x\in X \,|\, x \text{ ne vérifie pas } \cal{P}\}\), supposons par l'absurde que \(Y \neq \emptyset\). \\
+			Puisque \((X,\leqslant)\) est bien fondé, \(Y\) admet un élément minimal \(x_0\), qui vérifie :
+				\[\{x \in Y \,|\, x < x_0\} = \{x \in X \,|\, x < x_0\} \cap Y = \emptyset\]
+				%
+			Ainsi, \(\{x \in X\,|\,x < x_0\} \subseteq Y^{\bm{c}}\), autrement dit :
+				\[\forall \,x \in X,\, x < x_0 \Longrightarrow \cal{P}(x)\]
+			Par \(\cal{H}(x_0)\), on a donc \(\cal{P}(x_0)\) soit \(x_0 \notin Y\) : contradiction, donc \(Y = \emptyset\) d'où la propriété.
+		\end{Preuve}
+		
+		\vs{2}
+		\begin{Remarque}
+			C'est une sorte de ``généralisation'' du principe de récurrence. En pratique, on montre d'abord que \(\cal{P}\) est vérifiée par les éléments minimaux (en effet si \(z\) est minimal, on a \(\cal{H}(z) \iff \cal{P}(z)\)), puis on montre \(\cal{H}(x)\) pour tout élément \(x\) non minimal.
+		\end{Remarque}
+		
+		
+	\subsection{Construction d'un ensemble par induction}
+		
+		\subsubsection{Construction}
+			
+			\vs{-2}
+			\begin{Definition}[règle de construction]
+				On appelle règle de construction la donnée : \\
+					\hspace*{5mm} \bdot d'un symbole \(\cal{S}\) \\
+					\hspace*{5mm} \bdot d'un entier \(r \in \bb{N}\) (appelé arité de la règle) \\
+					\hspace*{5mm} \bdot d'un ensemble non vide \(P\). \\[2mm]
+					%
+				On notera \(\cal{S}\constr{r}{P}\) une telle règle (attention, cette notaion n'est pas universelle). De plus, on dira que \(\cal{S}\constr{r}{P}\) est une règle de base si \(r=0\), et que c'est une règle d'induction si \(r>0\).
+			\end{Definition}
+				%
+			\renewcommand{\arraystretch}{0.8}
+			\begin{Proposition}[ensemble construit par induction]
+				Soit \(\scr{C}\) un ensemble de règles de construction avec des symboles que l'on suppose être deux à deux distincts. On note : \\
+					\hs{5} \bdot \(\scr{B}\) l'ensemble des règles de base de \(\scr{C}\) \\
+					\hs{5} \bdot \(\scr{I}\) l'ensemble des règles d'induction de \(\scr{C}\). \nt
+					%
+				Si \(\scr{B} \neq \emptyset\), alors on peut définir : \\
+						\hs{5} \(\text{\bdot} X_0 = \big\{(\cal{S},p) \,|\, \cal{S}\constr{0}{P}\in \scr{B}, \, p\in P\,\big\}\) \\
+						\hs{5} \(\displaystyle \text{\bdot} \forall\,n\in\bb{N}, \, X_{n+1} = X_n \cup \Bigg\{(\cal{S},p,x_1,x_2, \!...,x_r) \, \Bigg| \,
+							\begin{tabular}[h]{l}
+								\(\cal{S}\constr{r}{P} \in \scr{I}\) \\
+								\(p \in P\) \\
+								\(\forall\, i \in [1..r], \, x_i \in X_n\)
+							\end{tabular} \Bigg\} \) \\
+						\hs{5} \(\displaystyle \text{\bdot} X = \ubigcup_{n\in\bb{N}}X_n\) (union croissante) \nt
+				\(X\) alors l'ensemble construit par induction à partir des règles de \(\scr{C}\). \vspace{-0.5mm}
+			\end{Proposition}
+			\renewcommand{\arraystretch}{1}
+			
+			\vs{2}
+			\begin{Remarque}
+				Si \(\scr{I} \neq \emptyset\), alors \(X\) est de cardinal infini. La réciproque est en revanche fausse. \vspace{1mm}
+			\end{Remarque}
+			
+			
+		\subsubsection{Hauteur des termes}
+		
+			\intro{
+				\textit{On considère par la suite un ensemble \(X\) défini comme ci-dessus, \\ ainsi que les ensembles \(\scr{C}\), \(\scr{B}\), \(\scr{I}\) et \((X_n)_{n\in\bb{N}}\) associés.}
+			}
+			
+			\vs{-4}
+			\colsep{2.2pt}
+			\eqskip{3mm}
+			\begin{Definition}[hauteur des éléments]
+				Soit \(x\in X\). Par définition de \(X\), il existe \(n_0\in\bb{N}\) tel que \(x\in X_{n_0}\). Ainsi, \(\{n\in\bb{N} \,|\, x\in X_n\}\) est une partie non vide de \(\bb{N}\) donc admet à ce titre un minimum. \nt
+					%
+				On définit alors la hauteur des termes de \(X\) grâce à la fonction suivante :
+					\setlength{\tabcolsep}{2.2pt}
+					\[
+						h = \left( \begin{tabular}[h]{rcl}
+							\(X\) & \(\rightarrow\) & \(\bb{N}\) \\
+							\(x\) & \(\mapsto\) & \(\min \,\{n\in \bb{N} \,|\, x\in X_n\}\)
+						\end{tabular} \right)
+					\]
+			\end{Definition}
+			
+			\vs{2}
+			\begin{Remarque}
+				Si \(x\in X_{n_0}\), alors \(h(x) \leq n_0\).
+			\end{Remarque}
+			
+			\colsep{1.5pt}
+			\begin{Propriete}[propriétés de la hauteur]
+				On a : \!\begin{tabular}[t]{cl}
+					\i & \(X_0 = \{x \in X \,|\, h(x) = 0\}\) \\
+					\ii & \(\forall\,n \in \bb{N}^*\), \(\{x\in X \,|\, h(x) = n\} = X_n\backslash X_{n-1}\)
+				\end{tabular}
+			\end{Propriete}
+				%
+			\begin{Preuve}
+			\end{Preuve}
+		\subsubsection{Relation d'ordre sur un ensemble construit par induction}
+			
+			\eqskip{2mm}
+			\begin{Notation}
+				On définit la relation \(\cal{R}\) sur \(X\) par :
+				\begin{align*}
+					\forall\,(a,b)\in X^2, \, a\,\cal{R}\, b & \iff \exists\, \cal{S}\constr{r}{P}\in \scr{I}, \,\exists \,p \in P, \,\exists\,(x_i)_{i\in[1..r]} \in X^r \text{ tels que} \\
+					b = &\:(\cal{S},p,x_1,\!...,x_r) \text{ et } \exists\, i\in[1..r], \, a=x_i
+				\end{align*}
+			\end{Notation}
+			
+			\vs{2}
+			\begin{Remarque}
+				\(\forall\,(x,y)\in X^2\), on a \(x \,\cal{R}\, y \Longrightarrow h(y) \geq h(x)+1\).
+			\end{Remarque}
+			
+			\begin{Propriete}[ordre bien fondé associé à la construction par induction]
+				On note maintenant \(\leqslant_X\) la clôture transitive réflexive de \(\cal{R}\) :
+					\[
+						\displaystyle \leqslant_X \: = \bigcup_{n\in\bb{N}} \cal{R}^n
+					\]
+				Alors : \!\begin{tabular}[t]{cl}
+					\i & \(\leqslant_X\) est une relation d'ordre \\
+					\ii & cet ordre est total, autrement dit \((X,\leqslant_X)\) est un ensemble ordonné bien fondé.
+				\end{tabular}
+			\end{Propriete}
+			
+			\vs{2}
+			\begin{Preuve}
+				\i \(\leqslant_X\) est déjà réflexive et transtitive, reste donc à montrer qu'elle est antisymétrique. \\[2mm]
+						%
+					Soit \((x,y) \in X^2\). On suppose que \(x \leqslant_X y\) et \(y \leqslant_X x\). Alors en gardant les notations de l'annexe ``construire la clôture transitive d'une relation binaire'', il existe : \\
+						\hs{5} \bdot \(n_1\in\bb{N}\) tel que \(x \,\cal{R}^{n_1}\, y\), \emph{i.e.} \(x \overset{n_1}{\longrightarrow} y\) \\
+						\hs{5} \bdot \(n_2\in\bb{N}\) tel que \(y \,\cal{R}^{n_2}\, x\), \emph{i.e.} \(y \overset{n_2}{\longrightarrow} x\). \\
+					On a dans ce cas (\emph{cf.} annexe, propriété) \(x \overset{n_1+n_2}{\xrightarrow{\hspace*{9mm}}} y\) et donc, en itérant la remarque précédente,
+						\[
+							h(x) \geq h(y) + n_1 \geq h(x) + n_1 + n_2
+						\]
+					d'où on déduit \(n_1+n_2 \leq 0\). Or, \((n_1,n_2)\in\bb{N}^2\) donc \(n_1=n_2=0\). \\
+					Ainsi, on a en particulier \(x \,\cal{R}^0\, y\) (et \(y \,\cal{R}^0 \,x\)) donc \(x=y\) : \(\leqslant_X\) est bien antisymétrique. \\[3mm]
+					%
+				\ii Montrons maintenant que l'ordre \(\leqslant_X\) est bien fondé sur \(X\). \nt
+					Par l'absurde, supposons qu'il existe \((x_n)_{n\in\bb{N}} \in X^\bb{N}\) strictement décroissante. Alors, \((h(x_n))_{n\in\bb{N}}\) est aussi strictement décroissante. \nt
+						%
+					En effet, pour \((x,x')\in X^2\) tels que \(x<_X x'\), il existe \(n\in\bb{N}\) tel que \(x \,\cal{R}^n\, x\), c'est-à-dire \(x \overset{n}{\longrightarrow} x'\). Comme \(x \neq x'\), \((x,x') \notin \cal{R}^0\) donc \(n>0\). En itérant la remarque, on a donc
+						\[
+							h(x') \geq h(x) + n \geq h(x)+1 > h(x)
+						\]
+					ce qui prouve que \(h\) est croissante de \((X,\leqslant_X)\) dans \((\bb{N},\leq)\). \\[2mm]
+						%
+					Or, \((\bb{N},\leq)\) est bien fondé, donc \((h(x_n))_{n\in\bb{N}}\) ne peut être strictement décroissante : il y a contradiction, ce qui prouve que \((X,\leqslant_X)\) est bien fondé.
+			\end{Preuve}
+			
+			\begin{Aretenir}
+				Un ensemble construit par induction est naturellement muni d'une relation d'ordre bien fondée.
+			\end{Aretenir}
+			
+		\subsubsection{Preuve par induction sur un ensemble construit par induction}
+		
+			Puisqu'un un ensmeble construit par induction est muni d'une relation d'ordre bien fondée, on peut utiliser le principe d'induction bien fondée pour démontrer des propriétés sur cet ensemble. \\[2mm]
+				%
+			En pratique, cela se décline souvent comme dans la propriété qui suit.
+			
+			\eqskip{1mm}
+			\begin{Proposition}[preuve par induction]
+				Soit \(\cal{P}\) une propriété sur \(X\). Si :
+					\begin{align*}
+						& \text{\bdot} \forall\,\cal{S}\constr{0}{P}\in\scr{B},\, \forall\,p\in P, \, \cal{P}(\cal{S},p) \text{ est vraie } \\[-0.5mm]
+						& \text{\bdot} \forall\,\cal{S}\constr{r}{P}\in \scr{I}, \,\forall\, p\in P, \,\forall\,(x_i)_{i\in[1..r]} \in X^r, \, (\forall\, i\in [1..r], \cal{P}(x_i)) \Longrightarrow \cal{P}(\cal{S},p,x_1,\!...,x_r)
+					\end{align*}alors \(\cal{P}(x)\) est vérifiée par tout \(x\in X\).
+			\end{Proposition}
+			
+			\vs{2}
+			\begin{Preuve}
+			\end{Preuve}
+			
+			
+		\subsubsection{Définition de fonctions par induction}
+		
+			Sur un ensemble défini par induction, on peut définir une fonction de manière récursive, pourvu qu'on décrive : \\
+				\hspace*{5mm} \bdot d'une part, explicitement, comment elle opère sur les termes de base \\
+				\hspace*{5mm} \bdot d'autre part, comment elle opère sur les termes composés en supposant qu'on sait comment\\\hspace*{5mm} \listspace elle opère sur ses sous-termes.
+			
+			\eqskip{2mm}
+			\begin{Notations}
+				Soit \((f_R)_{R\in\scr{C}}\) une famille de fonctions. \\
+				\hs{5} \bdot si \(\cal{S}\constr{r}{P}\), on notera plutôt \(f_\cal{S}\) au lieu de \(f_R\), notation claire et sans ambiguïté puisque les \\ \listskip symboles sont supposés distincts pour deux règles distinctes. \\
+				\hs{5} \bdot de plus, pour \(x\in X\) on dira ``\(x\) s'écrit \((\cal{S},p,x_1,\!...,x_r)\)'' pour désigner la propriété :
+					\[
+						\exists\, R=\cal{S}\constr{r}{P} \in \scr{C},\,\exists \,p\in P,\,\exists\, (x_i)_{i\in[1..r]} \in X^r, x=(\cal{S},p,x_1,\!...,x_r)
+					\]
+			\end{Notations}
+				%
+			\begin{Definition}[fonction récursivement compatible avec une famille de fonctions]
+				Soit \((f_R)_{R\in\scr{C}}\) une famille de fonctions. Pour \(Z \subseteq X\) et \(g \in \escr{F}(Z,Y)\), on dit que \(g\) est récursivement compatible avec les \((f_R)_{R\in\scr{C}}\) ssi :
+				\[
+				\forall\, z\in Z,\, z \text{ s'écrit } (\cal{S},p,z_1,\!...,z_r) \text{ avec } (z_1,\!...,z_r) \in Z^r \Longrightarrow g(z) = f_\cal{S}(p,g(z_1),\!...,g(z_r))
+				\]
+			\end{Definition}
+			
+			\eqskip{1mm}
+			\begin{Propriete}[existence et unicité de la fonction récursivement compatible]
+				Soit \(Y\) un ensemble et \((f_R)_{R\in\scr{C}}\) une famille de fonctions telle que :
+					\begin{align*}
+						& \text{\bdot si } R = \cal{S}\constr{r}{P} \in \scr{B}, \, f_R \in \escr{F}(P,Y) \\[-0.5mm]
+						& \text{\bdot si } R = \cal{S}\constr{r}{P} \in \scr{I},\, f_R \in \escr{F}(P \times Y^r,Y)
+					\end{align*}
+				Il existe une unique fonction \(f \in \escr{F}(X,Y)\) telle que : \eqskip{2mm}
+					\[
+					\forall\,x\in X, \, \text{``\(x\) s'écrit \((\cal{S},p,x_1,\!...,x_r)\)''} \Longrightarrow f(x) = f_R(p,f(x_1),f(x_2),\!...,f(x_r))
+					\]
+				c'est-à-dire qui soit récursivement compatible avec les \((f_R)_{R\in\scr{C}}\).
+			\end{Propriete}
+			
+			\eqskip{2mm}
+			\setlength{\tabcolsep}{2.2pt}
+			\begin{Preuve}
+					\i Montrons l'\emph{existence} de cette fonction. On pose : \\
+						\hs{5} \bdot \(f_0 = \left( \begin{tabular}[h]{rcl}
+						\(X_0\) & \(\rightarrow\) & \(Y\) \\
+						\(x\) & \(\mapsto\) & \(f_\cal{S}(p)\) où \(x\) s'écrit \((\cal{S},p)\) avec \(\cal{S}\constr{0}{P} \in \scr{B}\) et \(p\in P\)
+					\end{tabular} \right)\) \nt
+					\hs{5} \bdot \(\forall\,n\in\bb{N}\), \(\displaystyle f_{n+1} = \left( \begin{tabular}[h]{rcl}
+						\(X_{n+1}\) & \(\rightarrow\) & \(Y\) \\
+						\(x\) & \(\mapsto\) &
+							\(\!\left\{ \! \begin{tabular}[h]{l}
+								\(f_n(x)\) si \(x \in X_n\) \\[2mm]
+								\parbox{89mm}{\(f_\cal{S}(p,f_n(x_1),\!...,f_n(x_r)\) sinon, \colsep{1.5pt} \\[-5mm] où \(x\) s'écrit \((\cal{S},p,x_1,\!...,x_r)\) avec $\left\{
+								\begin{tabular}[h]{l}
+									\,\(\cal{S}\constr{r}{P} \in \scr{I}\) \\
+									\,\(p \in P\) \\
+									\,\((x_i)_{i\in[1..r]} \in X_n^r\)
+								\end{tabular} \right.$}
+							\end{tabular} \right.\)
+					\end{tabular} \right)\) \nt
+						%
+					On remarque que pour \(n\in\bb{N}\), \(f_{n+1}|_{X_n} = f_n\) donc par récurrence élémentaire on a \(\forall\,m\geq n\), \(f_m|_{X_n} = f_n\). On peut donc définir :
+						\[
+							f = \left( \begin{tabular}[h]{rcl}
+								\(X\) & \(\rightarrow\) & \(Y\) \\
+								\(x\) & \(\mapsto\) & \(f_n(x)\) si \(x \in X_n\)
+							\end{tabular} \right)
+						\]
+					Montrons que \(f\) est récursivement compatible avec les \((f_R)_{R\in\scr{C}}\) : soit \(x\in X\). \\
+							\bdot Si \(x \in X_0\), alors \(x\) s'écrit \((\cal{S},p)\) avec \(\cal{S}\constr{0}{P} \in \scr{B}\) et \(p\in P\). Alors, comme \(x\in X_0\), \[f(x)=f_0(x)=f_\cal{S}(p)\]
+								%
+							\bdot Si \(x\in X_n\) avec \(n\in\bb{N}^*\), il existe \(\cal{S}\constr{r}{P} \in\scr{I}, \,p\in P\) ainsi que \((x_i)_{i\in[1..r]} \in (X_{n-1})^r\) tels que \(x=(\cal{S},p,x_1,\!...,x_r)\). On a alors :
+								\begin{align*}
+									f(x) & = f_n(x) \text{ car } x\in X_n \\
+										& = f_\cal{S}(p,f_{n-1}(x_1),\!...,f_{n-1}(x_r)) \\
+										& = f_\cal{S}(p,f(x_1),\!...,f(x_r)) \text{ car } \forall\,i\in [1..r], \,x_i\in X_{n-1} \text{ donc } f_{n-1}(x_i) = f(x_i)
+								\end{align*}
+					\(f\) est donc récursivement compatible avec les \((f_R)_{R\in\scr{C}}\) (elle l'est en fait par construction). \\[3mm]
+						%
+					\ii Montrons à présent l'\emph{unicité} : suppose qu'il existe \(g \in \escr{F}(X,Y)\) récursivement compatible avec les \((f_R)_{R\in\scr{C}}\) et montrons par induction la propriété : \(\cal{P}(x)\) : ``\(f(x) = g(x)\)''. \nt
+						\bdot Soit \(R=\cal{S}\constr{r}{P} \in \scr{B}\) et \(p\in P\). \\
+						Alors, \(f(\cal{S},p) = g(\cal{S},p) = f_\cal{S}(p)\) car \(f\) et \(g\) sont toutes les deux récursivement compatibles avec les \((f_R)_{R\in\scr{C}}\), \(\cal{P}(S,p)\) est donc vraie. Ainsi, \(\forall\,x_0 \in X_0\), \(\cal{P}(x_0)\) est vraie. \nt
+							%
+						\bdot Soit \(R=\cal{S}\constr{r}{P} \in \scr{I}\), \(p\in P\) et \((x_i)_{i\in[1..r]} \in X^r\). On suppose que \(\forall\,i\in [1..r]\), \(\cal{P}(x_i)\) est vraie. Alors, on a :
+							\begin{align*}
+								f((\cal{S},p,x_1,\!...,x_r)) & = f_\cal{S}(S,p,f(x_1),\!...,f(x_r)) \text{ car } f \text{ est récursivement compatible} \\
+								& = f_\cal{S}(p,g(x_1),\!...,g(x_r)) \text{ car } \forall\,i\in [1..r], \,\cal{P}(x_i) \\
+								& = g((\cal{S},p,x_1,\!...,x_r)) \text{ car } g \text{ est récursivement compatible}
+							\end{align*}
+						d'où \(\cal{P}((\cal{S},p,x_1,\!...,x_r))\). \\[2mm]
+							%
+						Par principe d'induction, on en déduit \(\forall\, x \in X\), \(f(x) = g(x)\), d'où l'unicité de \(f\).
+			\end{Preuve}
+		
+\end{document}

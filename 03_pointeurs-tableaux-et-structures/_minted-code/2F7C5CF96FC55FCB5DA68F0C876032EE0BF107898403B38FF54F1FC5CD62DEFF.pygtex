@@ -1,0 +1,269 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}display.h\PYGZdq{}}
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{1920}\PYG{p}{,}\PYG{l+m+mi}{1080}\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cGridlineColor}\PYG{p}{[}\PYG{l+m+mi}{4}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{255}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{255}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{255}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{30}\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cServiceDisplayColors}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{239}\PYG{p}{,}\PYG{l+m+mi}{149}\PYG{p}{,}\PYG{l+m+mi}{91}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{157}\PYG{p}{,}\PYG{l+m+mi}{197}\PYG{p}{,}\PYG{l+m+mi}{105}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{52}\PYG{p}{,}\PYG{l+m+mi}{167}\PYG{p}{,}\PYG{l+m+mi}{80}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{122}\PYG{p}{,}\PYG{l+m+mi}{185}\PYG{p}{,}\PYG{l+m+mi}{190}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{136}\PYG{p}{,}\PYG{l+m+mi}{113}\PYG{p}{,}\PYG{l+m+mi}{158}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{133}\PYG{p}{,}\PYG{l+m+mi}{30}\PYG{p}{,}\PYG{l+m+mi}{42}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{100}\PYG{p}{,}\PYG{l+m+mi}{23}\PYG{p}{,}\PYG{l+m+mi}{17}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cTerrainDisplayColors}\PYG{p}{[}\PYG{l+m+mi}{9}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{36}\PYG{p}{,}\PYG{l+m+mi}{172}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{l+m+mi}{177}\PYG{p}{,}\PYG{l+m+mi}{249}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{51}\PYG{p}{,}\PYG{l+m+mi}{236}\PYG{p}{,}\PYG{l+m+mi}{56}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{139}\PYG{p}{,}\PYG{l+m+mi}{218}\PYG{p}{,}\PYG{l+m+mi}{45}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{165}\PYG{p}{,}\PYG{l+m+mi}{180}\PYG{p}{,}\PYG{l+m+mi}{55}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{162}\PYG{p}{,}\PYG{l+m+mi}{128}\PYG{p}{,}\PYG{l+m+mi}{49}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{149}\PYG{p}{,}\PYG{l+m+mi}{117}\PYG{p}{,}\PYG{l+m+mi}{71}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{190}\PYG{p}{,}\PYG{l+m+mi}{173}\PYG{p}{,}\PYG{l+m+mi}{136}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{229}\PYG{p}{,}\PYG{l+m+mi}{240}\PYG{p}{,}\PYG{l+m+mi}{245}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cTerrainCosts}\PYG{p}{[}\PYG{l+m+mi}{9}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{l+m+mi}{2000}\PYG{p}{,}\PYG{l+m+mi}{1900}\PYG{p}{,}\PYG{l+m+mi}{80}\PYG{p}{,}\PYG{l+m+mi}{50}\PYG{p}{,}\PYG{l+m+mi}{60}\PYG{p}{,}\PYG{l+m+mi}{90}\PYG{p}{,}\PYG{l+m+mi}{120}\PYG{p}{,}\PYG{l+m+mi}{160}\PYG{p}{,}\PYG{l+m+mi}{230}\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cDeepWaterHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0.25}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cShallowWaterHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0.28}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cLowGrassHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0.38}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cNormalGrassHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0.52}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cHighGrassHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0.65}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cHillsHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0.75}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cLowMountainsHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0.85}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cElevatedMountainsHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0.92}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cMountainPeaksHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{;}
+
+\PYG{c+c1}{// hyp: 0 \PYGZlt{}= class \PYGZlt{} cNumServiceClasses}
+\PYG{c+c1}{// assigns to pRed, pGreen and pBlue the color coordinates of service class class\PYGZsq{}s}
+\PYG{c+c1}{// display color as determined by cServiceDisplayColors}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{ASSIGN\PYGZus{}COLOR\PYGZus{}OF\PYGZus{}SERVICE\PYGZus{}CLASS}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pRed}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pGreen}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pBlue}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{o}{*}\PYG{n}{pRed}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cServiceDisplayColors}\PYG{p}{[}\PYG{n}{class}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{;}
+\PYG{+w}{	}\PYG{o}{*}\PYG{n}{pGreen}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cServiceDisplayColors}\PYG{p}{[}\PYG{n}{class}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{;}
+\PYG{+w}{	}\PYG{o}{*}\PYG{n}{pBlue}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cServiceDisplayColors}\PYG{p}{[}\PYG{n}{class}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// hyp : 0 \PYGZlt{}= type \PYGZlt{} 9}
+\PYG{c+c1}{// assigns to pRed, pGreen and pBlue the color values of terrain type type\PYGZsq{}s display}
+\PYG{c+c1}{// color as determined by cTerrainDisplayColors}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{ASSIGN\PYGZus{}COLOR\PYGZus{}OF\PYGZus{}TERRAIN\PYGZus{}TYPE}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{type}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pRed}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pGreen}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pBlue}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{o}{*}\PYG{n}{pRed}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cTerrainDisplayColors}\PYG{p}{[}\PYG{n}{type}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{;}
+\PYG{+w}{	}\PYG{o}{*}\PYG{n}{pGreen}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cTerrainDisplayColors}\PYG{p}{[}\PYG{n}{type}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{;}
+\PYG{+w}{	}\PYG{o}{*}\PYG{n}{pBlue}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cTerrainDisplayColors}\PYG{p}{[}\PYG{n}{type}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{TERRAIN\PYGZus{}TYPE\PYGZus{}OF\PYGZus{}HEIGHT}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Height}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cDeepWaterHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cShallowWaterHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cLowGrassHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cNormalGrassHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{3}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cHighGrassHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{4}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cHillsHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{5}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cLowMountainsHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{6}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cElevatedMountainsHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{7}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Height}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cMountainPeaksHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{8}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// displays Canvas\PYGZsq{}s grid with lines of color coordinates cGridlineColor}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DisplayCanvasGrid}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}SetRenderDrawColor}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cGridlineColor}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cGridlineColor}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{,}
+\PYG{+w}{	}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{cGridlineColor}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cGridlineColor}\PYG{p}{[}\PYG{l+m+mi}{3}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{c+c1}{// draw horizontal lines}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderDrawLine}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{*}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cell\PYGZus{}size}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{*}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cell\PYGZus{}size}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{c+c1}{// draw vertical lines}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderDrawLine}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{*}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cell\PYGZus{}size}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{*}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cell\PYGZus{}size}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderPresent}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// fills each Canvas\PYGZhy{}\PYGZgt{}cellsA[i][j].fill\PYGZus{}square in cyan with an opacity proprtional to the}
+\PYG{c+c1}{// terrain height at said cell}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DisplayTerrainHeights}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{CyanValue}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mf}{255.}\PYG{o}{*}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{terrain\PYGZus{}height}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}SetRenderDrawColor}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{CyanValue}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{CyanValue}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{255}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}RenderFillRect}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{fill\PYGZus{}square}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderPresent}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// displays the individual values of Canvas\PYGZhy{}\PYGZgt{}cellsA[i][j].attractiveness in red,}
+\PYG{c+c1}{// with brighter shades corresponding to higher attractiveness levels}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DisplayCellAttractivenesses}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{RedBlueValue}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{attractiveness}\PYG{o}{*}\PYG{p}{(}\PYG{l+m+mf}{255.}\PYG{o}{/}\PYG{l+m+mf}{1000.}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{RedBlueValue}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{n}{SDL\PYGZus{}SetRenderDrawColor}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{n}{RedBlueValue}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{255}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{				}\PYG{k}{else}
+\PYG{+w}{				}\PYG{n}{SDL\PYGZus{}SetRenderDrawColor}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{RedBlueValue}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{255}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{n}{SDL\PYGZus{}RenderFillRect}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{fill\PYGZus{}square}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderPresent}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// fills each Canvas\PYGZhy{}\PYGZgt{}cellsA[i][j].fill\PYGZus{}square in green with an opacity proportional}
+\PYG{c+c1}{// to the local densities, i.e. Dispo\PYGZhy{}\PYGZgt{}unitsA[i][j].local\PYGZus{}density}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DisplayUnitDensities}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{GreenValue}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mf}{255.0}\PYG{o}{*}\PYG{p}{(}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}density}\PYG{p}{)}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{o}{/}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}density}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}SetRenderDrawColor}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{GreenValue}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{255}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}RenderFillRect}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{fill\PYGZus{}square}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderPresent}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// fills each Canvas\PYGZhy{}\PYGZgt{}cellsA[i][j].fill\PYGZus{}square in magenta with an opacity proportional}
+\PYG{c+c1}{// to the local entropy value stored in Dispo\PYGZhy{}\PYGZgt{}unitsA[i][j]}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DisplayUnitEntropies}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{MaxEntropy}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{log}\PYG{p}{(}\PYG{n}{cCellHomeLimit}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{MagentaValue}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mf}{255.0}\PYG{o}{*}\PYG{p}{(}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}entropy}\PYG{p}{)}\PYG{o}{/}\PYG{n}{MaxEntropy}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}SetRenderDrawColor}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MagentaValue}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{MagentaValue}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{255}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}RenderFillRect}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{fill\PYGZus{}square}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderPresent}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// renders the services which have been drawn and filled on Canvas}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}RenderExistingServices}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{l\PYGZus{}list}\PYG{+w}{ }\PYG{n}{BorderPixels}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{service\PYGZus{}border\PYGZus{}pixelsL}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{l\PYGZus{}list}\PYG{+w}{ }\PYG{n}{InteriorCells}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{service\PYGZus{}interior\PYGZus{}cellsL}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Red}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Green}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Blue}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// render borders}
+\PYG{+w}{	}\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{BorderPixels}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{NULL}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{ASSIGN\PYGZus{}COLOR\PYGZus{}OF\PYGZus{}SERVICE\PYGZus{}CLASS}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{BorderPixels}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{spec}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Red}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Green}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Blue}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{SDL\PYGZus{}SetRenderDrawColor}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Red}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Green}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Blue}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{255}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{ASSIGN\PYGZus{}CELL\PYGZus{}OF\PYGZus{}PIXEL}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{j}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{BorderPixels}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{x}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{BorderPixels}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{y}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{SDL\PYGZus{}RenderFillRect}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{fill\PYGZus{}square}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{BorderPixels}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{BorderPixels}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{c+c1}{// render interiors}
+\PYG{+w}{	}\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{InteriorCells}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{NULL}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{ASSIGN\PYGZus{}COLOR\PYGZus{}OF\PYGZus{}SERVICE\PYGZus{}CLASS}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{InteriorCells}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{spec}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Red}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Green}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Blue}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{SDL\PYGZus{}SetRenderDrawColor}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Red}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Green}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Blue}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{255}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{SDL\PYGZus{}RenderFillRect}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{InteriorCells}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{x}\PYG{p}{]}\PYG{p}{[}\PYG{n}{InteriorCells}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{y}\PYG{p}{]}\PYG{p}{.}\PYG{n}{fill\PYGZus{}square}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{InteriorCells}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{InteriorCells}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{next}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderPresent}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// colors each cell Canvas\PYGZhy{}\PYGZgt{}cellsA[i][j] in white with an opacity proportional to}
+\PYG{c+c1}{// the number of homes contained in Dispo\PYGZhy{}\PYGZgt{}unitsA[i][j]}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}RenderExistingHomes}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{WhiteValue}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mf}{255.0}\PYG{o}{*}\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{p}{)}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{o}{/}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{cCellHomeLimit}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}SetRenderDrawColor}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{WhiteValue}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{WhiteValue}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{WhiteValue}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{255}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}RenderFillRect}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{fill\PYGZus{}square}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderPresent}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}RenderTerrain}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Red}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Green}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Blue}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{+w}{ }\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{TerrainType}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{TERRAIN\PYGZus{}TYPE\PYGZus{}OF\PYGZus{}HEIGHT}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{terrain\PYGZus{}height}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{ASSIGN\PYGZus{}COLOR\PYGZus{}OF\PYGZus{}TERRAIN\PYGZus{}TYPE}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{TerrainType}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Red}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Green}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Blue}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}SetRenderDrawColor}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Red}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Green}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Blue}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{50}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}RenderFillRect}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{fill\PYGZus{}square}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}RenderPresent}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// hyp: the current SDL render draw color is the display color of service class class}
+\PYG{c+c1}{// \PYGZam{}\PYGZam{} cell (i,j) of Canvas is surrounded by a closed boundary of the same class}
+\PYG{c+c1}{// if Canvas\PYGZhy{}\PYGZgt{}cellsA[i][j] is a valid cell, fills it, marks it as occupied by service class}
+\PYG{c+c1}{// class and adds it to updates Canvas\PYGZhy{}\PYGZgt{}service\PYGZus{}interior\PYGZus{}cellsL}
+\PYG{c+c1}{// then, applies itself recursively on all neighboring cells which have not yet been}
+\PYG{c+c1}{// marked as occupied by class, i.e. which have yet to be filled}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}FloodFillService}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SDL\PYGZus{}Renderer}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{IS\PYGZus{}CELL\PYGZus{}IN\PYGZus{}CANVAS}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{c+c1}{// fill starting cell and update canvas cell attributes and service interiors list}
+\PYG{+w}{		}\PYG{n}{SDL\PYGZus{}RenderFillRect}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{fill\PYGZus{}square}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{l\PYGZus{}insert}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{service\PYGZus{}interior\PYGZus{}cellsL}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{c+c1}{// recursive calls to all four neighboring cells}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}FloodFillService}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}FloodFillService}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}FloodFillService}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{!}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{SDL\PYGZus{}FloodFillService}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Renderer}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// literally does nothing (made for convenience and ease of operation of SDL keypress}
+\PYG{c+c1}{// registers)}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SDL\PYGZus{}DoNothing}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{void}\PYG{p}{)}\PYG{p}{\PYGZob{}}\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

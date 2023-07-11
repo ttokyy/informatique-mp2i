@@ -1,0 +1,881 @@
+\input{../commands_alt.tex}
+% \usepackage{stmaryrd}
+\DeclareMathSymbol{\shortminus}{\mathbin}{AMSa}{"39}
+\newcommand{\constr}[2]{|_{#2}^{#1}}
+\newcommand{\varconstr}[2]{|_{\scriptscriptstyle #2}^{\scriptscriptstyle #1}}
+\newcommand{\noset}{\{\! \shortminus \!\}}
+\newcommand{\AB}{\scr{A}_{\!B}}
+\newcommand{\ABS}{\scr{A}_{\!B}(\cal{S})}
+\newcommand{\ABE}{\scr{A}_{\!B}(\cal{E})}
+%\newcommand{\Bij}{\EuScript{B}\hs{-0.3}i\!j}
+\newcommand{\Bij}{\scr{B} \hspace{-0.5mm} i \! j}
+\newcommand{\AdtqS}{\scr{A}_{2,3,4}(\cal{S})}
+
+\usepackage{euscript}
+
+\newcommand{\V}{\rm{V}}
+\newcommand{\N}{N}
+\DeclareMathOperator{\ch}{ch}
+\DeclareMathOperator{\et}{et}
+\DeclareMathOperator{\prof}{prof}
+\DeclareMathOperator{\uni}{uni}
+
+\renewcommand{\parallel}{\,/\hs{-1}/\,}
+
+\begin{document}
+	
+\title{Structures de données arborescentes}
+
+\section{Introduction et motivations}
+
+	\subsection{Un arbre pour un objet}
+		
+		Pour les éléments d'un ensemble construit par induction, il est approprié d'utiliser une représentation par arbres puisque ces objets ont intrinsèquement une structure arborescente.
+		
+		\vs{2}
+		\begin{Exemples}
+			On peut par exemple citer : \\
+			\bdot les expressions booléennes, qui sont construites par induction à partir des constructeurs : \vs{-1} \begin{center}
+				\(\caml{true} \constr{0}{\noset}\), \(\caml{false} \constr{0}{\noset}\), \(\rm{var} \constr{0}{\Sigma^*}\), \(\caml{not} \constr{1}{\noset}\), \(\text{\texttt{\&\&}} \constr{2}{\noset}\), \(\text{\texttt{||}} \constr{2}{\noset}\)
+			\end{center}
+				%
+			\vs{-1}
+			\bdot les expressions arithmétiques en OCaml (\emph{cf.} DM n°2, partie 2 -- ``expressions arithmétiques'') \\
+				%
+			\bdot les expressions de type en OCaml, qui peuvent être simples ou composées comme l'illustrent \\
+			\listspace les deux arbres ci-dessous :
+		\end{Exemples}
+	
+	\subsection{Un arbre pour une collection d'objets}
+	
+		On cherche à stocker une collection d'objets sans multiplicité et dont l'ordre relatif n'est pas significatif (typiquement à la manière d'un ensemble au sens mathématique). On suppose que les éléments sont tous de même type \texttt{elem} et qu'ils sont identifiés de manière unique par une clé (c'est-à-dire une sous-partie de l'élément permettent l'identification).
+		
+		\vs{2}
+		\begin{Remarque}
+			Un élément de type \caml{elem} est donc supposé contenir lui-même sa clé : celle-ci peut être vue comme un diminutif de l'élément, et on la déduit facilement si l'on a l'élément.
+		\end{Remarque}
+		
+		\subsubsection{La structure d'ensemble}
+		
+			On peut s'intéresser par exemple à la structures de données abstraite d'ensemble :
+				%
+			\begin{center}
+				\uplabel{ensemble}
+				\begin{tabular}[t]{|l}
+					\bdot \textsf{creer\_ens\_vide} : () \(\to\) \caml{ens} \\
+					\bdot \textsf{est\_ens\_vide} : \caml{ens} \(\to\) \caml{bool} \\
+					\bdot \textsf{appartient} : \caml{ens} \(\times\) \caml{cle} \(\to\) \caml{bool} \\
+					\bdot \textsf{trouve\_elem} : \caml{ens} \(\times\) \caml{cle} \(\to\) \caml{elem} \\
+					\bdot \textsf{ajoute\_elem} : \caml{ens} \(\times\) \caml{elem} \(\to\) \caml{ens} / () \\
+					\bdot \textsf{supprime\_elem} : \caml{ens} \(\times\) \caml{cle} \(\to\) \caml{ens} / ()
+				\end{tabular}
+			\end{center}
+			\vs{1}
+			
+			En-voici quelques implémentations possibles, avec leurs complexités pour les fonctions élémentaires. \nt
+				\plabel{\(*\) Implémentation par liste} \\
+					\hs{5} \bdot recherche : \(\Theta(n)\) \\
+					\hs{5} \bdot appartenance : \(\Theta(n)\) \\
+					\hs{5} \bdot suppression : \(\Theta(n)\) (\(\Theta(n)\) pour trouver l'élément et \(\Theta(1)\) pour le supprimer) \\
+					\hs{5} \bdot ajout : \(\Theta(1)\) \nt
+					%
+				\plabel{\(*\) Implémentation par tableau trié} -- si l'ensemble des valeurs de type \caml{cle} est ordonné \\
+					\hs{5} \bdot recherche : \(\Theta(\log(n))\) \\
+					\hs{5} \bdot appartenance : \(\Theta(\log(n))\) \\
+					\hs{5} \bdot suppression : \(\Theta(n)\) \\
+					\hs{5} \bdot ajout : \(\Theta(n)\) \nt
+					%
+				\plabel{\(*\) Implémentation par arbres binaires de recherche (ABR)} -- \emph{cf.} plus loin dans ce chapitre \\
+					\hs{5} \bdot recherche : \(\Theta(\log(n))\) au mieux$^{(*)}$ \\
+					\hs{5} \bdot appartenance : \(\Theta(\log(n))\) au mieux$^{(*)}$ \\
+					\hs{5} \bdot suppression : \(\Theta(\log(n))\) \\
+					\hs{5} \bdot ajout : \(\Theta(\log(n))\)
+			
+			\vs{3}
+			\begin{Remarque}
+				L'opération de recherche et le test appartenance dans un ABR est en \(\Theta(\log(n))\)$^{(*)}$ si l'arbre est globalement complet, \emph{i.e.} son hauteur est logarithmique par rapport à son nombre de n\oe uds (\emph{cf.} TD n°9).
+			\end{Remarque}
+			\vs{2}
+			
+			Après comparaison de ces différentes complexités, on observe que selon le contexte, une certaine implémentation sera plus efficace ou adaptée qu'une autre. Plus précisément : \\
+				\hs{5} \bdot l'implémentation par liste est mieux adaptée pour un ensemble dans lequel on ne cherche pas \\ \hs{5} \listspace à effectuer de recherche ou de vérification d'appartenance. \\
+				\hs{5} \bdot celle par tableau trié est adaptée aux ensembles stables, c'est-à-dire peu sujets à modification \nt
+				%
+			En revanche, les arbres semblent, dans les bonnes conditions, permettre de rassembler les deux avantages précédents, ce qui justifie que nous nous y intéresserons dans la partie suivante.
+			
+		\subsubsection{La structure de tas}
+	
+			On peut également se pencher sur la structure de données abstraite de tas, qui n'est qu'un cas particulier de la structure de file de priorité. Les éléments sont alors munis d'une priorité.
+			
+			\begin{center}
+				\uplabel{tas}
+				\begin{tabular}[t]{|l}
+					\bdot \textsf{creer\_tas\_vide} : () \(\to\) \caml{tas} \\
+					\bdot \textsf{est\_tas\_vide} : \caml{tas} \(\to\) \caml{bool} \\
+					\bdot \textsf{min} : \caml{tas} \(\to\) \caml{elem} \\
+					\bdot \textsf{ajout} : \caml{tas} \(\times\) \caml{elem} \(\to\) \caml{tas} / () \\
+					\bdot \textsf{supprime\_min} : \caml{tas} \(\to\) \caml{tas} / ()
+				\end{tabular}
+			\end{center}
+			\vs{4}
+			
+			\begin{Remarque}
+				Ce qu'on appelle minimum d'un tas n'est pas l'élément de clé minimum, mais celui de priorité minimum.
+			\end{Remarque}
+		
+\section{Arbres binaires}
+
+	\subsection{Définition de l'ensemble \(\bm{\AB}\)}		
+		
+		\vs{-2}
+		\begin{Definition}[ensemble des arbres étiquetés par un ensmeble]
+			Soit \(\cal{S}\) un ensemble. On définit l'ensemble des arbres binaires étiquetés par \(\cal{S}\), noté \(\AB(\cal{S})\), comme l'ensemble construit par induction à partir des règles de construction : \\
+				\hs{5} \bdot \(\V \constr{0}{\noset}\) (arbre vide) \\
+				\hs{5} \bdot \(\N \constr{2}{\cal{S}}\) (n\oe ud binaire) \\
+				%
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Exemple}
+			Pour \(\cal{S} = \{1,2,3,4\}\), les arbres suivants sont des éléments de \(\AB(\cal{S})\) : \\
+				\(t_0 = (\V,\_\,)\) \\
+				\(t_1 = (\N,1,(\V,\_\,),(\V,\_\,))\) \\
+				\(t_2 = \big(\hs{-0.3}\N,1,\big(\N,2,(\V,\_\,),(\V,\_\,)\big),\big(\hs{-0.3}\N,3,(\N,4,(\V,\_\,),(\V,\_\,)),(\V,\_\,)\big)\hs{-0.3}\big)\).
+		\end{Exemple}
+		
+		\vs{2}
+		\begin{Remarque}
+			En français, \(\AB(\cal{S})\) est le plus petit ensemble qui contient l'arbre vide \(\V\), ainsi que l'arbre \(\N(x,g,d)\) pour tout \(x\in\cal{S}\) et \((g,d) \in \AB(\cal{S})^2\).
+		\end{Remarque}
+	
+	\subsection{Feuilles}
+	
+		\intro{On fixe \(\cal{S}\) un ensemble d'étiquettes pour tout le reste de cette partie.}
+		
+		\vs{-4}
+		\begin{Definition}[arbre réduit à une feuille]
+			Soit \(t\in\AB(\cal{S})\). On dit que \(t\) est réduit à une feuille s'il existe \(x\in\cal{S}\) tel que \(t = \N(x,\V,\V)\).
+		\end{Definition}
+	
+		\begin{Proprietes}[éléments minimaux de $\AB(\cal{S})$ et $\AB(\cal{S})\backslash\{\V\}$]
+			Notons \(\leqslant\) la relation d'ordre sur \(\AB(\cal{S})\) associée à sa définition inductive. Alors : \nt \colsep{1.5pt}
+				\hs{5}\begin{tabular}[h]{cl}
+					\i & \(\V\) est le seul élément minimal de \((\AB(\cal{S}),\leqslant)\) \\
+					\ii & les éléments minimaux de \((\AB(\cal{S})\backslash\{V\},\leqslant)\) sont des feuilles \\
+					\iii & réciproquement, toutes les feuilles sont des éléments minimaux de \((\AB(\cal{S})\backslash\{V\},\leqslant)\).
+				\end{tabular}
+		\end{Proprietes}
+			
+			\vs{2}
+			\eqskip{2mm}
+			\begin{Preuve}
+				\\[-4mm]
+				\ii Soit \(t\in\AB(\cal{S})\backslash\{V\}\). Il existe \(x\in\cal{S}\), \((g,d)\in\AB(\cal{S})^2\) tels que \(t = \N(x,g,d)\). \\
+				On suppose que \(t\) est minimal dans \(\AB(\cal{S})\backslash\{V\}\). Si on note \(\cal{R}\) la relation dont \(\leqslant\) est la clôture réflexive transitive (\emph{cf.} chapitre 8 -- ``ordre et induction''), alors on a : \colsep{1.5pt}
+					\[
+						\left\{\begin{tabular}[h]{l} \(g \,\cal{R}\, t\) \\ \(d \,\cal{R}\, t\)\end{tabular}\right. \text{ donc } \left\{\begin{tabular}[h]{l} \(g \leqslant t\) \\ \(d \leqslant t\)\end{tabular}\right.
+					\]
+				De plus, \(g,d \neq t\) donc on a \(g < t\) et \(d < t\). Par minimalité de \(t\) dans \(\AB(\cal{S})\backslash\{V\}\), on en déduit que \(g = \V\) et \(d = \V\), donc \(t = \N(x,\V,\V)\) est bien une feuille. \nt
+					%
+				\iii
+			\end{Preuve}
+		
+		\vs{2}
+		\begin{Corollaire}[]
+			On peut définir une fonction récursive à partir des éléments minimaux.
+		\end{Corollaire}
+	
+	\subsection{Chemins dans un arbre binaire}
+	
+		On pose \(\Sigma = \{0,1\}\) et on note \(\cdot\) la concaténation sur \(\displaystyle \Sigma^* = \bigcup\nolimits_{n\in\bb{N}} \Sigma^n\).
+		
+		\eqskip{3mm}
+		\colsep{2.2pt}
+		\begin{Definition}[ensemble des chemins d'un arbre]
+			On définit par induction sur \(\AB(\cal{S})\) l'ensemble des chemins admissibles d'un arbre binaire :
+				\[
+					\ch = \fun{\AB(\cal{S})}{\cal{P}_{\!f}(\Sigma^*)}{t}{\colsep{1.5pt}
+						\left\{ \begin{tabular}[h]{l}
+							\(\emptyset\) si \(t = \V\) \\
+							\(\{\varepsilon\} \cup 0\cdot \ch(g) \cup 1\cdot \ch(d)\) si \(t = \N(x,g,d)\)
+						\end{tabular} \right.
+					}
+				\]
+			où \(\cal{P}_{\!f}(\Sigma^*\) est l'ensemble des parties finies de \(\Sigma^*\). \nt
+				%
+			Un chemin admissible décrit ainsi la ``position'' d'un n\oe ud dans l'arbre.
+		\end{Definition}
+		
+		\vs{1}
+		\begin{Definition}[n\oe uds formels et profondeur]
+			Soit \(A\in\AB(\cal{S})\). On appelle n\oe ud de \(A\) un élément \(n\) de \(\ch(A)\). \\
+			Sa profondeur est alors sa longueur en tant que mot de \(\Sigma^*\), c'est-à-dire \(|n|\).
+		\end{Definition}
+		
+		\eqskip{1mm}
+		\begin{Definition}[taille d'un arbre]
+			Soit \(A\in\AB(\cal{S})\). La taille de \(A\), notée \(s(A)\), est le nombre de n\oe uds de \(A\) :
+				\[
+					s(A) = \card(\ch(A))
+				\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Exercice}
+			Donner une définition inductive de \(s\).
+		\end{Exercice}
+		
+		\eqskip{2mm}
+		\colsep{2.2pt}
+		\vs{2}
+		\begin{Correction}
+			En s'aidant de la définition de \(\ch\), on a facilement : \[s = \fun{\AB(\cal{S})}{\bb{N}}{t}{\colsep{1.5pt}
+				\left\{ \begin{tabular}[h]{l}
+					\(0\) si \(t = \V\) \\
+					\(1 + s(g) + s(d)\) si \(t = \N(x,g,d)\)
+				\end{tabular} \right.
+			}\]
+		\end{Correction}
+	
+	\subsection{\'Etiquetage}
+		
+		\colsep{2.2pt}
+		\eqskip{3mm}
+		\vs{-2}
+		\begin{Definition}[étiquetage d'un arbre]
+			On appelle étiquetage d'un arbre non vide la fonction qui à un n\oe ud de l'arbre associe son étiquette. Formellement, cet étiquetage est défini inductivement comme suit :
+				\[
+					\et = \left( \begin{tabular}[h]{rcl}
+						\(\AB(\cal{S})\backslash\{\V\}\) & \(\rightarrow\) & \(\EuScript{F}_p(\Sigma^*,\cal{S})\) \\[1mm]
+						\(\N(x,\V,\V)\) & \(\mapsto\) & \colsep{1.5pt}\(\fun{\{\varepsilon\}}{\cal{S}}{\varepsilon}{x}\) \\
+						\(\N(x,g,\V)\) & \(\mapsto\) & \colsep{1.5pt}\(
+							\left( \begin{tabular}[h]{rcl}
+								\(\ch(N(x,g,\V))\) & \(\to\) & \(\cal{S}\) \\
+								\(\varepsilon\) & \(\mapsto\) & \(x\) \\
+								\(0\cdot u\) & \(\mapsto\) & \(\et(g)(u)\)
+							\end{tabular} \right)
+						\) \\
+						\(\N(x,\V,d)\) & \(\mapsto\) & \colsep{1.5pt}\(
+						\left( \begin{tabular}[h]{rcl}
+							\(\ch(N(x,\V,d))\) & \(\to\) & \(\cal{S}\) \\
+							\(\varepsilon\) & \(\mapsto\) & \(x\) \\
+							\(1\cdot u\) & \(\mapsto\) & \(\et(d)(u)\)
+						\end{tabular} \right)
+						\) \\
+						\(\N(x,g,d)\) & \(\mapsto\) & \colsep{1.5pt}\(
+						\left( \begin{tabular}[h]{rcl}
+							\(\ch(N(x,g,d))\) & \(\to\) & \(\cal{S}\) \\
+							\(\varepsilon\) & \(\mapsto\) & \(x\) \\
+							\(0\cdot u\) & \(\mapsto\) & \(\et(g)(u)\) \\
+							\(1\cdot u\) & \(\mapsto\) & \(\et(d)(u)\)
+						\end{tabular} \right)
+						\) \\
+					\end{tabular} \right)
+				\]
+			\(\EuScript{F}_p(\Sigma^*,\cal{S})\) étant l'ensemble des fonctions partiellement définies sur \(\Sigma^*\) et à valeurs dans \(\cal{S}\). \nt
+				%
+			Pour \(A\in\AB(\cal{S})\backslash\{\V\}\), \(\et(A)\) est appelée l'étiquetage de \(A\).
+		\end{Definition}
+		
+		\vs{1}
+		\begin{Definition}[étiquette d'un n\oe ud dans un arbre]
+			Soit \(A\in\AB(\cal{S})\backslash\{\V\}\). Pour \(n\in\ch(A)\), l'étiquette de \(n\) dans \(A\) est \((\et(A))(n)\).
+		\end{Definition}
+		
+	\subsection{Vocabulaire}
+		
+		\vs{-2}
+		\begin{Definition}[racine, feuille, n\oe ud interne]
+			Soit \(t\in\AB(\cal{S})\) et \(n\in\ch(t)\). On dit que : \\
+				\hs{5} \bdot \(n\) est racine de \(t\) ssi \(n=\varepsilon\) \\
+				\hs{5} \bdot \(n\) est une feuille de \(t\) ssi \(\forall\,u\in\Sigma^*\), \(n\cdot u \in\ch(t) \Longrightarrow u = \varepsilon\), autrement dit il n'existe pas de \\ \hs{5} \listspace prolongement strict de \(n\) dans \(\ch(t)\) \\
+				\hs{5} \bdot \(n\) est un n\oe ud interne de \(t\) ssi \(\exists\,u\in\Sigma^*\backslash\{\varepsilon\}\), \(n\cdot u \in \ch(t)\), \emph{i.e.} \(n\) n'est pas une feuille.
+		\end{Definition}
+		
+		\begin{Remarque}
+			En fonction de la taille de l'arbre, la racine est tantôt une feuille, tantôt un n\oe ud interne.
+		\end{Remarque}
+	
+		\begin{Definition}[père, fils, descendant]
+			Soit \(t\in\AB(\cal{S})\backslash\{\V\}\) et \((n,n')\in\ch(t)^2\). Alors : \\
+				\hs{5} \bdot \(n'\) est le fils gauche ou l'enfant gauche de \(n\) ssi \(n' = n\cdot 0\) \\
+				\hs{5} \bdot \(n'\) est le fils droit ou enfant droit de \(n\) ssi \(n' = n\cdot 1\) \\
+				\hs{5} \bdot \(n'\) est un fils de \(n\) ssi c'est un fils gauche ou un fils droit, \(n\) est alors le père de \(n'\) \\
+				\hs{5} \bdot \(n'\) est un descendant de \(n\) ssi il existe \(u\in\Sigma^*\) tel que \(n'=n\cdot u\).
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			La racine est le seul n\oe ud sans père, et les feuilles sont les seuls sans fils.
+		\end{Remarque}
+		
+		\eqskip{2mm}
+		\colsep{1.5pt}
+		\begin{Definition}[branche]
+			Soit \(t\in\AB(\cal{S})\backslash\{V\}\) et \((n_i)_{i\in[0..k]}\in\ch(t)^{k+1}\).
+			On dit que \((n_i)_{i\in[0..k]}\) est une branche de \(t\) ssi :
+				\[
+					\left\{ \begin{tabular}[h]{l}
+						\(n_0 = \varepsilon\) \\
+						\(\forall\,i\in[0..k[\), \(n_i\) est le père de \(n_{i+1}\)
+					\end{tabular} \right.
+				\]
+			\vs{-3}
+		\end{Definition}
+		
+		\begin{Definition}[sous-arbres]
+			Soit \((t,t')\in\AB(\cal{S})^2\). \\
+				\hs{5} \bdot \(t'\) est sous-arbre gauche de \(t\) ssi il existe \(d\in\AB(\cal{S})\) et \(x\in\cal{S}\) tels que \(t = \N(x,t',d)\) \\
+				\hs{5} \bdot \(t'\) est sous-arbre droit de \(t\) ssi il existe \(g\in\AB(\cal{S})\) et \(x\in\cal{S}\) tels que \(t = \N(x,g,t')\) \\
+				\hs{5} \bdot \(t'\) est un sous-arbre de \(t\) ssi \(t' \leqslant t\), \(\leqslant\) étant la relation d'ordre induite par la construction de l'ensemble par induction.
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Comme \(\leqslant\) est une relation d'ordre, donc en particulier transitive, \(t'\) peut être sous-arbre de \(t\) sans qu'il soit en nécessairement sous-arbre gauche ni sous-arbre droit.
+		\end{Remarque}
+	
+	\subsection{Hauteur}
+		
+		\colsep{2.2pt}
+		\eqskip{3mm}
+		\vs{-2}
+		\begin{Definition}[hauteur d'un arbre]
+			On définit la hauteur d'un arbre binaire étiqueté par \(\cal{S}\) par la fonction :
+				\[
+					h = \fun{\AB(\cal{S})}{\bb{N}\cup\{-1\}}{t}{
+						\left\{ \colsep{1.5pt} \begin{tabular}[h]{l}
+							\(-1\) si \(t = \V\) \\
+							\(1 + \max(h(g),h(d))\) si \(t = \N(x,g,d)\)
+						\end{tabular} \right.
+					}
+				\]
+		\end{Definition}
+		
+		\colsep{1.5pt}
+		\begin{Proprietes}[caractérisations de la hauteur]
+			Soit \(t\in\AB(\cal{S})\). Alors, on a : \\
+				\begin{tabular}[h]{cl}
+					\hs{5}\i & \(h(t) = \displaystyle \max_{n\in\ch(t)} \prof(n)\) si \(t \neq \V\) (plus généralement, \(h(t) = \displaystyle \max \Big( \max_{n\in\ch(t)} \prof(n), -1\Big)\)) \\
+					\hs{5}\ii & \(h(t)\) est la longueur maximale d'une branche de \(t\), moins 1.
+				\end{tabular}
+		\end{Proprietes}
+		
+		\vs{2}
+		\begin{Remarque}
+			Une branche atteingant un tel maximum débute nécessairement à la racine.
+		\end{Remarque}
+		
+		\vs{2}
+		\uplabel{Propriété :} Pour tout \(t\in\AB(\cal{S})\), on a \(h(t)+1 \leq s(t) \leq 2^{h(t)+1} - 1\).
+		
+		\vs{2}
+		\begin{Preuve}
+			Montrons la première inégalité.
+		\end{Preuve}
+	
+	\subsection{Parcours}
+		
+		\eqskip{2mm}
+		\vs{-2}
+		\begin{Definition}[parcours dans un arbre]
+			Soit \(t\in\ABS\backslash\{\V\}\) et \(a = (a_i)_{i\in[1..s(t)]} \in \cal{S}^{s(t)}\). \\
+			On dit que \(a\) est un parcours de \(t\) ssi il existe \(\varphi \in \EuScript{F}(\ch(t),[1..s(t)])\) bijective telle que :
+				\[
+					\forall\,n\in\ch(t),\, a_{\varphi(n)} = \et(t)(n) \,\text{ soit encore }\, \forall\,i\in[1..s(t)],\, a_i = \et(t)(\varphi^{-1}(i))
+				\]
+			\vs{-4}
+		\end{Definition}
+		
+		\eqskip{2mm}
+		\begin{Definition}[parcours préfixe, infixe, post-fixe]
+			Soit \(t\in\ABS\backslash\{V\}\). Pour \(n\in\ch(t)\), on note :
+				\begin{align*}
+					& \text{\bdot} \cal{G}(n) = \{n \cdot 0 \cdot u \,|\, u\in\Sigma^*\} \cap \ch(t) \\
+					& \text{\bdot} \cal{D}(n) = \{n \cdot 1 \cdot u \,|\, u\in\Sigma^*\} \cap \ch(t)
+				\end{align*}
+			Soit \(\varphi\in\Bij(\ch(t),[1..s(t)])\). Alors : \nt
+				%
+			\hs{5} \bdot \((\et(t)(\varphi^{-1}(i)))_{i\in[1..s(t)]}\) est un parcours préfixe de \(t\) si
+				\[
+					\forall\,n\in\ch(t),\, \varphi(n) \leq \min_{g\in\cal{G}(n)} \varphi(g) \text{ et } \max_{g\in\cal{G}(n)} \varphi(g) \leq \min_{d\in\cal{D}(n)}\varphi(d)
+				\]
+			\hs{5} \bdot \((\et(t)(\varphi^{-1}(i)))_{i\in[1..s(t)]}\) est un parcours infixe de \(t\) si
+				\[
+					\forall\,n\in\ch(t),\, \max_{g\in\cal{G}(n)} \varphi(g) \leq \varphi(n) \leq \min_{d\in\cal{D}(n)}\varphi(d)
+				\]
+			\hs{5} \bdot \((\et(t)(\varphi^{-1}(i)))_{i\in[1..s(t)]}\) est un parcours post-fixe de \(t\) si
+				\[
+					\max_{g\in\cal{G}(n)} \varphi(g) \leq \min_{d\in\cal{D}(n)}\varphi(d) \text{ et } \min_{g\in\cal{G}(n)} \varphi(g) \leq \varphi(n)
+				\]
+				\vs{-2}
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			De façon alternative, si \(\forall\,n\in\ch(t)\), \(\forall\,(g,d) \in \cal{G}(n)\times\cal{D}(n)\), \(\varphi(n) \leq \varphi(g) \leq \varphi(d)\), alors \((\et(t)(\varphi^{-1}(i)))_{i\in[1..s(t)]}\) est un parcours préfixe de \(t\) (\emph{idem} pour les autres parcours).
+		\end{Remarque}
+		
+		\begin{Propriete}[unicité des parcours préfixe, infixe, post-fixe]
+			Il y a unicité des parcours préfixe, infixe et post-fixe dans un arbre non vide.
+		\end{Propriete}	
+		
+		\vs{2}
+		\begin{Exemple}
+			
+		\end{Exemple}
+	
+		\begin{Definition}[parcours en longueur]
+			Soit \(t\in\ABS\) et \(\varphi\in\Bij(\ch(t),[1..s(t)])\). \\
+			On dit que \((\et(t)(\varphi^{-1}(i)))_{i\in[1..s(t)]}\) est un parcours en longueur de \(t\) si :
+				\[
+					\forall\,(n,n') \in\ch(t)^2,\, \prof(n) \leq \prof(n') \Longrightarrow \varphi(n) \leq \varphi(n')
+				\]
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Il existe aussi une notion de parcours en profondeur, qui est hors-programme.
+		\end{Remarque}
+	
+\section{Arbres de recherche}
+
+	\intro{Dans cette partie, \(\cal{E}\) désignera un ensemble muni d'une relation d'ordre totale notée \(\preccurlyeq\).}
+	
+	\pagebreak
+	
+	\begin{Definition}[arbre binaire de recherche]
+		Soit \(t\in\ABE\backslash\{\V\}\). On note \(e\) pour désigner la fonction \(\et(t) \in \EuScript{F}(\ch(t),\cal{E})\). \\
+		\(t\) est un arbre binaire de recherche, ou ABR, si et seulement si
+			\[
+				\forall\,n\in\ch(t),\, \max_{g\in\cal{G}(n)} e(g) \preccurlyeq e(n) \prec \min_{d\in\cal{D}(n)} e(d)
+			\]
+		où \(\cal{G}(n)\) et \(\cal{D}(n)\) sont définis comme précédemment. \nt
+			%
+		De plus, on convient que \(\V\) est un ABR.
+	\end{Definition}
+	
+	\vs{2}
+	\begin{Remarque}
+		Le parcours infixe d'un ABR donne une suite croissante d'éléments de \((\cal{E},\preccurlyeq)\).
+	\end{Remarque}
+	
+	\subsection{Recherche d'élément}
+	
+		Profitant de la structure ordonnée de l'ABR, on procède par dichotomie pour la recherche d'un élément (de son étiquette en réalité). On propose le pseudo-code suivant :
+		
+		\begin{pscode}{est\_présent}{(ABR \(t\), \(e \in \cal{E}\))}{\caml{bool}}{}
+			Si \(t = \V\) alors renvoyer Faux \\
+			Si \(t = \N(x,g,d)\) alors \\ \Indp
+				Si \(e=x\) alors Vrai \\
+				Si \(e\prec x\) alors \textsf{est\_présent}\((g,e)\) \\
+				Sinon \textsf{est\_présent}\((d,e)\)
+		\end{pscode}
+		
+		\begin{Propriete}
+			Pour \(t\in\ABE\) et \(e\in\cal{E}\), on note \(c(t,e)\) le nombre de comparaisons effectuées lors de l'appel \textsf{est\_présent}\((t,e)\). Alors : \nt
+				\hs{5}\begin{tabular}[h]{cl}
+					\i & \(\forall\,t\in\ABE\), \(\forall\,e\in\cal{E}\), on a \(c(t,e) \leq 2(h(t)+1)\) \\
+					\ii & \(\forall\,t\in\ABE\), \(\forall\,n\in\ch(t)\), on a \(\uni(n,t) \Longrightarrow c(t,\et(t)(n)) = 2\prof(n) + 1\)
+				\end{tabular} \nt
+			où \(\uni(n,t)\) désigne la proposition \(\forall\,n'\in\ch(t)\), \(\et(t)(n') = \et(t)(n) \Longrightarrow n' = n\) (ce qui revient à dire que \(n\) est le seul n\oe ud de \(t\) portant son étiquette).
+		\end{Propriete}
+		
+		\vs{2}
+		\begin{Preuve}
+			\i
+		\end{Preuve}
+	
+		\begin{Corollaire}
+			Soit \(t\in\ABE\backslash\{\V\}\). Il existe \(e\in\cal{E}\) tel que \(c(t,e) = 2h(t) + 1\).
+		\end{Corollaire}
+		
+		\vs{2}
+		\eqskip{2mm}
+		\begin{Preuve}
+			D'après une caractérisation de la hauteur, pour \(t\in\ABE\backslash\{\V\}\) on a \(h(t) = \displaystyle \max_{n\in\ch(t)} \prof(n)\).\\[-2mm]
+			Soit \(n^*\in\ch(t)\) tel que \(\prof(n^*) = \ch(t)\). D'après la propriété précédente :
+				\[c(t,\et(t)(n^*)) = 2\prof(n^*) + 1 = 2h(t)+1\] donc \(e = \et(t)(n^*)\) convient.
+		\end{Preuve}
+	
+	\subsection{Ajout en feuille}
+	
+		Voici le pseudo-code d'une fonction permettant d'ajouter un élément en feuille dans un ABR.
+		
+		\pagebreak		
+		\begin{pscode}{ajout}{(ABR \(t\), \(e\in\cal{E}\))}{ABR}{}
+			Si \(t = \V\) alors \(\N(e,\V,\V)\) \\
+			Si \(t = \N(x,g,d)\) alors \\ \Indp
+				Si \(e \preccurlyeq x\) alors \\ \Indp
+					\(\N(x,\text{\textsf{ajout}}(g,e),d)\) \\ \Indm
+				Sinon \\ \Indp
+					\(\N(x,g,\text{\textsf{ajout}}(d,e))\)
+		\end{pscode}
+	
+		\begin{Propriete}[conservation de la structure d'ABR]
+			Si \(t\) est un ABR et \(e\in\cal{E}\), alors \textsf{ajout}\((t,e)\) est encore un ABR.
+		\end{Propriete}
+	
+		\uplabel{Propriété :} La complexité de \textsf{ajout}\((t,\text{\bdot}\!\!)\) est en \(\Theta(h(t))\).
+		
+	\subsection{Suppression}
+		
+		On donne ci-dessous le pseudo-code de l'opération de suppression d'élément pour un arbre non vide.
+		
+		\begin{pscode}{supp}{(ABR \(t\), $e\in\cal{E}$)}{ABR}{\textsf{est\_présent}\((t,e)\) et $t\neq\V$}
+			Si \(t=\N(x,\V,\V)\) alors \(\V\) \codecom{nécessairement, \(\bm{x=e}\)} \\
+			Si \(t = \N(x,g,d)\) alors \\ \Indp
+				Si \(x=e\) alors \\ \Indp
+					Si \(g\neq \V\) alors \\ \Indp
+						\(m = \text{\textsf{max\_e}}(g)\) \\
+						\(\N(m,\text{\textsf{supp}}(g,m),d)\) \\ \Indm
+					Sinon \(d\) \\ \Indm \Indm
+			Si \(e \prec x\) alors \(\N(x,\text{\textsf{supp}}(g,e),d)\) \\
+			Si \(e \succ x\) alors \(\N(x,g,\text{\textsf{supp}}(d,e))\)
+		\end{pscode}
+	
+		\textsf{max\_e} désignant ici une fonction donnant le plus grand élément du sous-ensemble de \(\cal{E}\) formé des étiquettes de l'arbre pris en argument.
+	
+		\begin{Propriete}[conservation de la structure d'ABR]
+			Si \(t\) est un ABR et \(e \in \et(t)(\ch(t)) = \{\et(t)(n)\,|\,n\in\ch(t)\}\), alors \textsf{supp}\((t,e)\) est encore un ABR. \\
+			De plus, si \(\card\big(\hs{-0.3}(\et(t))^{-1}(\{e\})\hs{-0.3}\big) = 1\), alors \(e\) n'est plus présent dans \textsf{supp}\((t,e)\).
+		\end{Propriete}
+		\vs{-2}
+		
+	\subsection{Limitation de la hauteur}
+		
+		\vs{-2}
+		\begin{Definition}[arbre localement complet]
+			Un arbre binaire est dit localement complet si chaque n\oe ud interne a deux fils non vides.
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Exemples}
+		\end{Exemples}
+		
+		\pagebreak
+		\begin{Definition}[arbre complet]
+			Un arbre binaire de hauteur \(h\) est complet si :
+				\[
+					h < 1 \text{ ou bien } \left\{ \begin{tabular}[h]{l}
+						\(h \geq 1\) \\
+						il y a \(2^{h-1}\) n\oe uds de profondeur \(h-1\) \\
+						les n\oe uds de profondeur \(h\) sont le plus à gauche possible
+					\end{tabular} \right.
+				\]
+			Toutes les feuilles sont alors de profondeur \(h\) ou \(h-1\).
+		\end{Definition}
+	
+		\begin{Propriete}[unicité et propriétés de l'arbre parfait à \(n\) n\oe uds]
+			Si l'on omet les étiquettes, alors pour tout \(n\in\bb{N}^*\), il existe un unique arbre binaire parfait à \(n\) n\oe uds. De plus, pour un tel arbre : \nt
+				\hs{5}\begin{tabular}[h]{cl}
+					\i & sa hauteur est \(\lfloor \log_2(n) \rfloor\) \\
+					\ii & \(\forall\,k\in[0..h-1]\), il y a \(2^k\) n\oe uds de profondeur \(k\) \\
+					\iii & il y a \(n - \displaystyle \sum\nolimits_{k=0}^{h-1} 2^k\), c'est-à-dire \(n - (2^h - 1)\) n\oe uds de profondeur \(h\).
+				\end{tabular}
+		\end{Propriete}
+	
+		\begin{Propriete}
+			Soit \(n\in\bb{N}^*\). L'arbre parfait à \(n\) n\oe uds minimise la somme des profondeurs des n\oe uds parùi les arbres binaires à \(n\) n\oe uds (mais ce n'est pas nécessairement le seul qui atteint ce minimum).
+		\end{Propriete}
+		\vs{2}
+		
+		Un constat que l'on peut établir vis-à-vis de l'arbre parfait est qu'il manque de souplesse. En effet, l'opération d'ajout en feuille vue précédemment modifie complètement sa structure, qu'il est pourtant souhaitable de conserver puisqu'elle permet une recherche dichotomique en \(\Theta(\log(n))\) (car elle est toujours en \(\Theta(h)\)). Mais cela nécessite alors d'avoir une opération d'insertion peu efficace. \nll
+			%
+		Dans la partie suivante, on va donc manipuler un autre type d'arbres où l'on s'autorise à avoir trois clés au maximum par n\oe ud, ce qui a pour effet de rendre la structure d'arbre parfait plus variable tout en maintenant ses propriétés avantageuses.
+		
+\section{Arbres 2-3-4 et arbres rouge-noir}
+
+	\intro{Dans cette partie, on fixe \(\cal{S}\) un ensemble totalement ordonné.}
+	\vs{-4}
+	
+	\subsection{Arbres 2-3-4}
+	
+		\subsubsection{Définitions}
+			
+			\vs{-2}
+			\begin{Definition}[ensemble $\AdtqS$]
+				On définit l'ensemble \(\AdtqS\) par induction à partir des règles de construction suivantes : \\
+					\hs{5} \bdot \(\V\constr{0}{\noset}\) (arbre vide) \\
+					\hs{5} \bdot \(\N^2\constr{2}{\cal{S}}\) (n\oe ud binaire) \\
+					\hs{5} \bdot \(\N^3\constr{3}{\cal{S}^\leqslant}\) (n\oe ud ternaire) \\
+					\hs{5} \bdot \(\N^4\constr{4}{\cal{S}^{\leqslant\leqslant}}\) (n\oe ud quaternaire) \\[1mm]
+				où \(\cal{S}^\leqslant = \{(i,j)\in\cal{S}^2\,|\, i\leqslant j\}\) et \(\cal{S}^{\leqslant\leqslant} = \{(i,j,k)\in\cal{S}^3\,|\, i\leqslant j\leqslant k\}\).
+			\end{Definition}
+			
+			\colsep{2.2pt}
+			On peut étendre les définitions données pour \(\ABS\) à \(\AdtqS\), notamment : \\
+				\hs{5} \bdot les n\oe uds comme des chemins, c'est-à-dire des mots sur \(\Sigma = \{0,1,2,3\}\), et en particulier :
+					\[
+						\ch = \left( \begin{tabular}[h]{rcl}
+							\(\AdtqS\) & \(\to\) & \(\cal{P}_{\!f}(\Sigma^*)\) \\
+							\(\V\) & \(\mapsto\) & \(\{\varepsilon\}\) \\
+							\(\N^2(x,a_1,a_2)\) & \(\mapsto\) & \(\{\varepsilon\} \cup (0\cdot \ch(a_1)) \cup (1\cdot \ch(a_2))\) \\
+							\(\N^3(x,a_1,a_2,a_3)\) & \(\mapsto\) & \(\{\varepsilon\} \cup (0\cdot \ch(a_1)) \cup (1\cdot \ch(a_2)) \cup (2\cdot \ch(a_3))\) \\
+							\(N^4(x,a_1,a_2,a_3,a_4)\)& \(\mapsto\) & \(\{\varepsilon\} \cup (0\cdot \ch(a_1)) \cup (1\cdot \ch(a_2)) \cup (2\cdot \ch(a_3)) \cup (3\cdot \ch(a_4))\)
+						\end{tabular} \right)
+					\]
+				\\
+				\hs{5} \bdot les feuilles \\
+				\hs{5} \bdot la profondeur \\
+				\hs{5} \bdot la hauteur (par induction ou bien comme la profondeur maximale d'un n\oe ud) \\
+				\hs{5} \bdot la taille, c'est-à-dire le nombre de n\oe uds \\
+				\hs{5} \bdot les étiquettes d'un arbre \\
+				\hs{5} \bdot les arbres ``de recherche'', prenant la forme suivante : \nt
+				%
+			On ajoute de plus la définition de 2-n\oe ud, 3-n\oe ud et 4-n\oe ud.
+			
+			\begin{Definition}[arbre parfaitement équilibré]
+				On dit qu'un arbre de \(\AdtqS\) est parfaitement équilibré si toutes ses branches ont la même longueur.
+			\end{Definition}
+		
+			\begin{Definition}[arbre 2-3-4]
+				On dit qu'un arbre de \(\AdtqS\) est un arbre 2-3-4 s'il est de recherche et parfaitement équilibré.
+			\end{Definition}
+			
+			\vs{2}
+			\begin{Remarque}
+				La structure d'arbre de recherche assure une recherche d'élements en \(\Theta(h(t))\). Puis, le caractère équilibré implique que \(h(t) \in \Theta(\log(s(t)))\) : en effet, en supprimant des n\oe uds dans \(t\), on peut fabriquer \(t'\in\ABS\) parfaitement équilibré et de même hauteur, on a donc \(s(t) \geq s(t') = 2^{h(t')+1}-1 = 2^{h(t)+1}-1\).
+			\end{Remarque}
+		
+		\subsubsection{Opération de scission d'un 4-n\oe ud}
+		
+		\subsubsection{Opération d'insertion dans un arbre 2-3-4}
+		
+		\subsubsection{Suppression}
+		
+			\emph{cf.} ARN (arbres rouge-noir).
+		
+	\subsection{ARN}
+	
+		\subsubsection{Définition}
+		
+			\begin{Definition}[arbre rouge-noir]
+				Un arbre rouge-noir ou ARN est un arbre binaire de recherche dans lequel les n\oe uds ont une couleur, rouge ou noir, de sorte que la racine est noire, un n\oe ud rouge a exactement deux fils noirs ou bien deux fils vides, et chaque branche contient exactement le même nombre de n\oe uds noirs.
+			\end{Definition}
+		
+			\begin{Proposition}[lien avec les arbres 2-3-4]
+			\end{Proposition}
+			
+			\vs{2}
+			\begin{Remarque}
+				La hauteur d'un ARN est logarithmique en le nombre de n\oe uds.
+			\end{Remarque}
+			
+			\colsep{1.5pt}
+			\begin{Definition}[branche (???)]
+				Soit \(t\in\ABS\) et \((n_i)_{i\in[0..N]}\in\ch(t)^{N+1}\). \((n_i)_{i\in[0..N]}\) est une branche de \(t\) ssi :
+					\[
+						\left\{ \begin{tabular}[h]{l}
+							\(n_0=\varepsilon\) \\
+							\(\forall\,i\in[0..N[\), \(n_i\) est le père de \(n_{i+1}\) \\
+							\(n_N\cdot0\notin\ch(t)\) ou \(n_N\cdot1\notin\ch(t)\) (c'est-à-dire \(n_N\) a un fils vide)
+						\end{tabular} \right.
+					\]
+			\end{Definition}
+		
+		\subsubsection{Scission des 4-n\oe uds}
+		
+		\subsubsection{Rotation simple}
+			
+			Comme illustré ci-dessus, les opérations de scission des 4-n\oe uds vues précédemment reposent sur des opérations intermédiaires dites de rotation simple. On en donne donc ici un pseudo-code :
+			
+			\begin{pscode}{rotation}{(n\oe uds \(u\), \(v\), \(p\), orientation $o_u$)}{()}{\(p.\text{\textsf{fg}} = u\) si \(o_u = \text{gauche}\) et \(p.\text{\textsf{fd}} = u\) si $o_u = \text{droite}$}
+				\(u.\text{\textsf{fg}} \gets v.\text{\textsf{fd}}\) \\
+				\(v.\text{\textsf{fd}} \gets u\) \\
+				Si \(o_u = \text{gauche}\) alors
+					\(p.\text{\textsf{fg}} \gets v\) \\
+				Sinon
+					\(p.\text{\textsf{fd}} \gets v\)
+			\end{pscode}
+		
+			Le schéma ci-dessous illustre le principe de cette opération dans le cas d'une orientation quelconque.
+		
+		\subsubsection{Suppression}
+		
+			\begin{pscode}{suppression}{(ARN \(t\), clé \(c\))}{()}{\(c\) est présent dans $t$}
+				Trouver \(z\) le n\oe ud de clé \(c\) \\
+				Si \(z.\text{\textsf{fg}} = \V\) alors \\ \Indp
+					remplacer \(z\) par \(z.\text{\textsf{fd}}\) \\
+					Si \(z\) était racine alors \\ \Indp
+						\(z.\text{\textsf{fd}}\) devient noir \\ \Indm
+					Sinon si \(z\) était noir alors \\ \Indp
+						\textsf{répare}(\(z.\text{\textsf{fd}}\)) \\ \Indm \Indm
+				Sinon si \(z.\text{\textsf{fd}} = \V\) alors \\ \Indp
+					remplacer \(z\) par \(z.\text{\textsf{fg}}\) \\
+					Si \(z\) était racine alors \\ \Indp
+						\(z.\text{\textsf{fg}}\) devient noir \\ \Indm
+					Sinon si \(z\) était noir alors \\ \Indp
+					\textsf{répare}(\(z.\text{\textsf{fg}}\)) \\ \Indm \Indm
+				Sinon \codecom{alors, \(\bm{z.\text{\textsf{\emph{fg}}}, z.\text{\textsf{\emph{fd}}} \neq \V}\)} \\ \Indp
+					\(y = \text{\textsf{min\_e}}(z.\text{\textsf{fd}})\) \codecom{\(\bm{y.\text{\textsf{\emph{{fg}}}} = \V}\) nécessairement} \\
+					remplacer \(y\) par \(y.\text{\textsf{fd}}\) \\
+					\(z.\text{\textsf{clé}} \gets y.\text{\textsf{clé}}\) \\
+					\(z.\text{\textsf{donnée}} \gets y.\text{\textsf{donnée}}\) \\
+					Si \(y\) était noir alors \(\text{\textsf{répare}}(y.\text{\textsf{fd}})\)
+			\end{pscode}
+			
+			où \textsf{min\_e} donne la plus grande étiquette dans un arbre et \textsf{répare} est une fonction dont on donne le pseudo-code dans la sous-section qui suit.
+			
+		\subsubsection{Réparation post-suppression}
+			
+			Suite à la suppression d'un n\oe ud noir qui menaçait l'équilibre de l'ARN, le n\oe ud \(x\) doit porter une surcharge noire (``en souvenir du n\oe ud disparu'' en quelques sortes), car si on omet cette surcharge, il manque un n\oe ud noir sur les branches passant par \(x\). On cherche à absorber cette surcharge pour régulariser la situation.
+			
+			\begin{pscode}{répare}{(n\oe ud \(x\))}{()}{}
+				Si \(x\) est rouge alors \\ \Indp
+					alors rendre \(x\) noir \\ \Indm
+				Sinon \\ \Indp
+					Si \(x\) est racine alors \\ \Indp
+						rien à faire \\ \Indm
+					Sinon \\ \Indp
+						\(p \gets \text{père de \(x\)}\) \\
+						\(w \gets \text{frère de \(x\)}\) \\
+						Si \(w\) est rouge alors \\ \Indp
+							rotation \(p\)-\(w\) \\
+							\(p\) devient rouge \\
+							\(w\) devient noir \\
+							\(w \gets \text{nouveau frère de \(x\)}\) \codecom{nécessairement noir car ex-fils du \(\bm{w}\) rouge} \\ \Indm
+						Si \(w\) est noir avec deux fils noirs alors \\ \Indp
+							\(w\) devient rouge \\
+							\textsf{répare}\((p)\) \\ \Indm
+						Sinon \\ \Indp
+							Si \(w\) est noir avec un fils noir et un fils rouge \(y\) tel que \(x\text{-}p \parallel y\text{-}w\) \\ \Indp
+								rotation \(y\)-\(w\) \\
+								\(y\) devient noir \\
+								\(w\) devient rouge \\
+								\(w \gets \text{nouveau frère de \(x\) (\emph{i.e.} \(y\))}\) \\ \Indm
+							Si \(w\) est noir avec un fils noir et un fils rouge \(z\) tel que \(x\text{-}p \,\,\text{\textbf{--\!\!--}}\hs{-4}\parallel\, z\text{-}w\) \\ \Indp
+								rotation \(p\)-\(w\) \\
+								\(w\) prend la couleur de \(p\) \\
+								\(z\) devient noir \\
+								et c'est fini
+			\end{pscode}
+			
+			\vs{2}
+			On illustre ci-dessous les quatre cas de la grande branche conditionnelle, les surcharges noires étant représentées par des icônes de fantômes.
+		
+	\subsection{Transition}
+	
+		Les ABR et les ARN nous ont permis d'implémenter le type abstrait \textbf{ensemble}, encore appelé \textbf{dictionnaire}, avec une complexité de recherche, d'insertion et de suppression logarithmique en le nombre d'élements. Les éléments étaient positionnés dans la structure en fonction de la valeur de leur clé relativement à celles des autres. \nll
+			%
+		Dans la prochaine section, on envisage de positionner les éléments de la structure en fonction de la seule valeur de leur clé et non relativement à celles des autres, en vue d'avoir une procédure de recherche en temps constant (c'est-à-dire indépendante du nombre d'éléments de la structure).
+		
+\section{Hachage}
+	
+	\intro{On suppose que l'on cherche à implémenter un ensemble \\ dont les clés sont à valeurs dans un ensemble \(\cal{C}\).}
+	
+	\vs{-2}
+	On se propose de stocker les éléments (ou du moins l'adresse des données) dans un tableau \(T\) de taille \(m\) à l'aide d'une fonction \(f\in\EuScript{F}(\cal{C},[0..m-1])\) de sorte qu'un élément \(c\in\cal{C}\) soit stocké dans la case d'indice \(f(c)\) de \(T\). \nt
+		%
+	Une telle fonction \(f\) est appelée fonction de hachage. \nll
+		%
+	Une ``bonne'' fonction de hachage est : \\
+		\hs{5} \bdot déterministe (la même clé donne la même case) \\
+		\hs{5} \bdot efficace (opérations en temps constant) \\
+		\hs{5} \bdot elle doit répartir au mieux les différentes clés \nt
+		%
+	Pour le dernier point, on peut en particulier chercher à minimiser l'une des quantités suivantes : \\
+		\hs{5} \bdot \(\displaystyle \max_{i\in[0..m-1]} \card(f^{-1}\{i\})\) (nombre maximal de collisions dans une même case) \\
+		\hs{5} \bdot \(\displaystyle \sum_{c\in\cal{C}} p_c \card f^{-1} \{f(c)\}\) (nombre moyen de collisions, connaissant la distribution des clés \((p_c)_{c\in\cal{C}}\)) \\
+		\hs{5} \bdot \(\displaystyle \frac{1}{m}\sum_{i=0}^{m-1} \card f^{-1} \{i\}\)) (nombre moyen de collisions dans le cas d'une distribution uniforme)
+		
+\section{Implémentation du tas}
+	
+	\subsection{Arbres tournoi}
+	
+	\intro{Dans cette section, on cherche à implémenter le type abstrait \textbf{tas (minimal)} grâce à des arbres binaires. Devinant qu'il faut limiter la hauteur de ces arbres pour limiter la complexité pire cas de ses opérations, on se restreint à des arbres binaires parfaits, sachant qu'ils ont une hauteur en \(\Theta(\log(n))\) pour \(n\) n\oe uds (cf. définition dans le TD sur les arbres).}
+		%
+	En vue d'avoir accès au minimum en temps constant, on maintiendra la clé minimale à la racine. Cependant, cette seule contrainte n'est pas suffisante car elle ne donne aucune information quant à la position du second minimum dans l'arbre, ce qui impliquerait au pire une recherche exhaustive lors de la suppression du minimum, et donc une complexité en \(\Theta(n)\). \nt
+		%
+	C'est pourquoi on introduit la définition suivante.
+	
+	\eqskip{2mm}
+	\begin{Definition}[arbre tournoi]
+		Soit \(t\in\ABS\) où \(\cal{S}\) est totalement ordonné. On dit que \(t\) est un (arbre) tournoi ssi
+			\[
+				\forall\,(n,n')\in\ch(t)^2,\, n' \text{ est fils de } n \Longrightarrow \et(t)(n') \geq \et(t)(n)
+			\]
+	\end{Definition}
+	
+	\vs{2}
+	\begin{Remarque}
+		On obtient une définition équivalente en remplaçant la proposition ``\(n'\) est fils de \(n\)'' par ``\(n'\) est descendant de \(n\)''.
+	\end{Remarque}
+	
+	\pagebreak
+	\subsection{Opérations en pseudo-code}
+	
+		\subsubsection{Minimum}
+			
+			\begin{pscode}{min}{(ABPT (\emph{c-à-d} tas) \(t\))}{\caml{elem}}{}
+				Retourner l'étiquette de la racine de \(t\)				
+			\end{pscode}
+		
+			Dans cette implémentation des tas sous forme d'arbres binaires parfaits tournois (ce que l'on a abrégé en ABPT), on a clairement accès au minimum en en \(\Theta(1)\).
+			
+		\subsubsection{Insertion}
+		
+			\begin{pscode}{insere}{(ABPT \(t\), \caml{elem} \(e\), priorité \(p\))}{()}{}
+				Soit pere le premier n\oe ud$^{(*)}$ ayant un fils vide$^{(**)}$ \\
+				Si pere.\textsf{fg} = \(\V\) alors \\ \Indp
+					ajouter un n\oe ud d'étiquette \((e,p)\) en fils gauche de pere \\ \Indm
+				Sinon \codecom{dans ce cas, \(\bm{\text{\normalfont{\textbf{pere.\textsf{fd}}}} = \V}\)} \\ \Indp
+					ajouter un n\oe ud \(n\) d'étiquette \((e,p)\) en fils droit de pere \\ \Indm
+				Tant que (\(n.\text{\textsf{prio}} < \text{pere}.\text{\textsf{prio}}\)) et (\(\text{pere} \neq t.\text{\textsf{racine}}\)) \\ \Indp
+					échanger les étiquettes de \(n\) et pere \\
+					\(n \gets \text{pere}\) \\
+					\(\text{pere} \gets n.\text{\textsf{pere}}\) \\ \Indm
+				Si \(n.\text{\textsf{prio}} < \text{pere}.\text{\textsf{prio}}\) alors \\ \Indp
+					échanger les étiquettes de \(n\) et pere
+			\end{pscode}
+			
+			\vs{4}
+			\begin{Remarque}
+				$^{(*)}$On ordonne ici les n\oe uds par profondeur croissante et de gauche à droite.
+			\end{Remarque}
+			
+			\vs{2}
+			\begin{Remarque}
+				$^{(**)}$Cette ligne peut s'effectuer en \(\Theta(1)\) grâce à une information que l'on peut accessoirement choisir de stocker dans le tas (ou plutôt dans la structure l'implémentant).
+			\end{Remarque}
+		
+		\subsubsection{Suppression du minimum}
+		
+			\begin{pscode}{supprime\_min}{(ABPT \(t\))}{()}{$t$ non vide}
+				Soit \(n\) le dernier n\oe ud \\
+				Remplacer ce n\oe ud par \(\V\) dans \(t\)$^{(*)}$ \\
+				Remplacer l'étiquette de la racine par celle de \(n\) \\
+				\(n \gets t.\text{\textsf{racine}}\) \\
+				Tant que (\(n.\text{\textsf{prio}} > n.\text{\textsf{fg}}.\text{\textsf{prio}}\)) ou (\(n.\text{\textsf{prio}} > n.\text{\textsf{fd}}.\text{\textsf{prio}}\))$^{(**)}$ \\ \Indp
+					Si \(n.\text{\textsf{fg}}.\text{\textsf{prio}} < n.\text{\textsf{fg}}.\text{\textsf{prio}}\) alors \\ \Indp
+						échanger les étiquettes de \(n\) et \(n.\text{\textsf{fg}}\) \\
+						\(n \gets n.\text{\textsf{fg}}\) \\ \Indm
+					Sinon \\ \Indp
+						échanger les étiquettes de \(n\) et \(n.\text{\textsf{fd}}\) \\
+						\(n \gets n.\text{\textsf{fd}}\)
+			\end{pscode}
+			
+			\vs{4}
+			\begin{Remarque}
+				$^{(*)}$Ceci peut encore une fois se faire en \(\Theta(n)\) ou en \(\Theta(\log(n))\) à partir d'une information stockée dans le tas.
+			\end{Remarque}
+			
+			\vs{2}
+			\begin{Remarque}
+				$^{(**)}$Il faut supposer ici que \(\V.\text{\textsf{prio}} = +\infty\) de façon à ce que la boucle termine.
+			\end{Remarque}
+			\vs{2}
+			
+			En utilisant ce pseudo-code, on peut relativement facilement implémenter des tas : \\
+				\hs{5} \bdot par tableau, en en retenant la première case vide (ou la dernière non vide) \\
+				\hs{5} \bdot avec des structures représentant les n\oe uds et un pointeur vers le champ correspondant au \\ \listspace premier vide. \nll
+				%
+			On propose une troisième implémentation de tas en utilisant un type récursif OCaml pour les arbres binaires et une liste de booléens indiquant le chemin du premier vide dans l'arbre. \nt
+				%
+			\eqskip{3mm}
+			On définit ainsi les fonctions suivantes, qui peuvent être utiles pour les opérations élémentaires :
+				\[
+					\text{suivant} = \funnn{\Sigma^*}{\Sigma^+}{\varepsilon}{0}{u\cdot 0}{u\cdot 1}{u\cdot 1}{\text{suivant}(u) \cdot 0} \qquad\qquad \text{prec} = \funnn{\Sigma^+}{\Sigma^*}{0}{\varepsilon}{v\cdot 1}{v\cdot 0}{v\cdot 0}{\text{prec}(v)\cdot 1}
+				\]
+
+\end{document}

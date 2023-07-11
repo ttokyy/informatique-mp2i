@@ -1,0 +1,515 @@
+\input{../commands_alt.tex}
+
+\DeclareMathOperator{\val}{val}
+\DeclareMathOperator{\ecr}{ecr}
+\let\eval\relax
+\DeclareMathOperator{\eval}{eval}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\comp}{comp}
+\DeclareMathOperator{\add}{add}
+
+\begin{document}
+	
+\title{Codage des nombres}
+	
+%\section{Prérequis}
+%
+%	\subsection{Division euclidienne}
+%		
+%		\eqskip{2mm}
+%		\begin{Proposition}[division euclidienne pour les entiers naturels]
+%			Pour tout \((a,b)\in\bb{N}\times\bb{N}^*\), il existe une unique couple \((q,r) \in\bb{N}\times[0..b-1] \) tel que \(a = bq+r\). \\
+%			\bdot \(q\) est appelé quotient dans la division euclidienne de \(a\) par \(b\) \\
+%			\bdot \(r\) est appelé reste de la division euclidienne de \(a\) par \(b\), ou encore reste de \(a\) modulo \(b\).
+%			
+%		\end{Proposition}
+	
+\section{Codage des entiers naturels}
+
+	\subsection{Codage en base \(\bm{b}\)}
+		
+		\eqskip{2mm}
+		Soit \(b\in\bb{N}\backslash\{0,1\}\). On considère l'alphabet \(\Sigma = [0..b-1]\). \\
+		\bdot Les éléments de \(\Sigma\) seront appelés les chiffres. \\
+		\bdot Les mots sur \(\Sigma\), c'est-à-dire les suites finies d'éléments de \(\Sigma\), sont appelés les nombres. L'ensemble de ces nombres se note \(\Sigma^*\), et est défini par :
+		\[
+		\Sigma^* = \bigcup_{i\in\bb{N}} \Sigma^i
+		\]
+		où pour tout \(i\in\bb{N}\), \(\Sigma^i\) est l'ensemble des suites de longueur \(i\) dans \(\Sigma\). \nt
+		Le seul mot de longueur nulle est le mot vide, noté \(\varepsilon\) : autrement dit, \(\Sigma^0 = \{\varepsilon\}\).
+		
+		\subsubsection{Définition}
+		
+			\eqskip{3mm}
+			\colsep{2.2pt}
+			\vs{-2}
+			\begin{Definition}[écriture en base $b$]
+				Pour \(a = a_{l-1}a_{l-2}...a_1a_0 \in \Sigma^l\) un mot sur \(\Sigma\) de longueur \(l\). \\
+				On dit que \(a\) est une écriture en base \(b\) à \(l\) chiffres de l'entier \(n = \displaystyle \sum_{i=0}^{l-1} a_ib^i\). \\[1mm]
+				On peut alors définir la fonction suivante, qui à un mot de \(\Sigma^*\) associe l'entier qu'il représente\,\,:
+					\[
+						\val_b = \fun{\Sigma^*}{\bb{N}}{(a_{l-1}a_{l-2}...a_0)}{\displaystyle \sum_{i=0}^{l-1} a_ib^i}
+					\]
+			\end{Definition}
+			
+				\vs{2}
+				\begin{Remarque}
+					On a en particulier \(\val_b (\varepsilon) = 0\) pour n'importe quelle base \(b \in \bb{N}\backslash\{0,1\}\).
+				\end{Remarque}
+		
+				\vs{2}
+				\begin{Remarque}
+					On trouvera parfois aussi la notation \(\overline{a_{l-1}...a_0}^b\) pour désigner \(\val_b(a_{l-1}...a_0)\).
+				\end{Remarque}
+			
+				\vs{2}
+				\begin{Exemples}
+					\(\val_{10}(123) = 100+20+3=123\) et
+					\(\val_2(100) = \val_2(000100) = 2^2 = 4\).
+				\end{Exemples}
+		
+		\subsubsection{Taille du codage}
+		
+			\begin{Lemme}
+				Soit \(l \in \bb{N}\). \(\forall\,a\in\Sigma^l, \,\val_b(a) \in [0..b^l[\). \\
+				Autrement dit, le plus grand entier que l'on peut écrire en base \(b\) avec \(l\) chiffres est \(b^l-1\).
+			\end{Lemme}
+			
+				\vs{2}
+				\eqskip{2mm}
+				\begin{Preuve}
+					Soit \((a_{l-1},a_{l-2},\!...,a_1,a_0)\in\Sigma^l\). Puisque \(\forall \,i\in[0..l-1], \,a_i \in [0..b-1]\), on a :
+						\begin{align*}
+							0 \leq \val_b(a_{l-1}...a_0) = \sum_{i=0}^{l-1} a_ib^i \leq \sum_{i=0}^{l-1} (b-1)b^i = \sum_{i=1}^{l} b^i - \sum_{i=0}^{l-1} b^i = b^l - 1
+						\end{align*}
+				\end{Preuve}
+		
+			\uplabel{Propriété :}
+				Soit \(n\in\bb{N}\). Il faut \(\lceil\log_b(n+1)\rceil\) chiffres (au moins) pour écrire \(n\) en base \(b\).
+			
+				\vs{2}
+				\eqskip{2mm}
+				\begin{Preuve}
+					Soit \(n\in\bb{N}\), on note \(l=\lceil\log_b(n+1)\rceil\). \nt
+					Supposons par l'absurde qu'il existe \(a_{l'-1}...a_0 \in \Sigma^{l'}\) représentant \(n\) en base \(b\) avec \(l'<l\) chiffres. Par définition de la partie entière supérieure d'un réel comme étant son plus petit majorant entier, \(l'\) n'est pas un majorant de \(\log_b(n+1)\), \emph{i.e.} \(l'<\log_b(n+1)\). \nt
+					Alors, d'après le lemme, on a :
+						\[n = \val_b(a_{l'-1}...a_0) \leq b^{l'}-1 < b^{\log_b(n+1)}-1 = (n+1)-1\]
+					c'est-à-dire \(n < n\), d'où une contradiction.
+				\end{Preuve}
+			
+				\vs{2.5}
+				\begin{Remarque}
+					\!\begin{tabular}[t]{ll}
+						\(\forall\,(n,k) \in \bb{N}^2\), \(n\in[b^{k-1}..b^k[\)\hs{-0.2} & \(\iff n+1 \in \,\,]b^{k-1}..b^k]\) \\
+						& \(\iff \log_b(n+1) \in \,\,]k-1..k]\) \\
+						& \(\iff \lceil \log_b(n+1) \rceil\).
+					\end{tabular}
+				\end{Remarque}
+				\vs{-1}
+				
+		\subsubsection{Existence}
+			
+			\vs{-2}
+			\begin{Propriete}[existence de l'écriture en base $b$]
+				Pour tout \(n\in\bb{N}\), il existe un nombre \(a_{l-1}a_{l-2}...a_0\in\Sigma^l\) tel que \(\val_b(a_{l-1}...a_0)=n\). \\
+				Plus précisément, tout entier \(n\in\bb{N}\) admet une écriture en base \(b\) à \(\lceil\log_b(n+1)\rceil\) chiffres.
+			\end{Propriete}
+			
+			\eqskip{3mm}
+			\begin{Preuve}
+				Montrons par récurrence sur \(l\in\bb{N}\) la propriété
+					\[\cal{H}_l : \text{``}\forall\,n\in[0..b^l-1], n \text{ admet une écriture en base \(b\) à \(l\) chiffres''}\]
+				\bdot On a \([0..b^0-1]=[0..0] = \{0\}\) et 0 admet bien une écriture en base \(b\) à \(\lceil \log_2(0+1) \rceil = 0\) chiffres : il s'agit du mot vide, \(\varepsilon\). Ainsi, \(\cal{H}_0\) est vraie. \nt
+					%
+				\bdot Supposons \(\cal{H}_l\) pour un \(l\in\bb{N}\) quelconque et montrons \(\cal{H}_{l+1}\). Soit donc \(n \in [0..b^{l+1}-1]\). \\
+				Par définition de la division euclidienne, il existe \((q,r)\in\bb{N}\times[0..b^l-1]\) tel que \(n=b^lq+r\). D'après \(\cal{H}_l\), \(r\) admet une écriture en base \(b\) à \(l\) chiffres ; notons-la \((a_i)_{i\in[0..l-1]} \in \Sigma^l\). \\[1mm]
+					%
+				Alors, \(r=\displaystyle\sum_{i=0}^{l-1}a_ib^i\) et donc \(\displaystyle n=qb^l + \sum_{i=0}^{l-1} a_ib^i\). \\[1mm]
+				Puisque \(n < b^{l+1}\), nécessairement \(q < b\) (car sinon on aurait \(n=b^lq + r \geq b^lq \geq b^{l+1} \)). \\[1mm]
+				En posant ainsi \(a_l=q\), on a \((a_i)_{i\in[0..l]} \in \Sigma^{l+1}\) et \(n = \displaystyle \sum\nolimits_{i=0}^{l} a_ib^i\) donc \(a_la_{l-1}...a_0\) est bien une écriture de \(n\) en base \(b\) à \(l+1\) chiffres, d'où \(\cal{H}_{l+1}\).
+			\end{Preuve}
+		
+		\subsubsection{Quasi-unicité}
+			
+			\vs{-2}
+			\begin{Propriete}[quasi-unicité de l'écriture en base $b$]
+				Soit \(n\in\bb{N}\). Si \(a = a_{l-1}a_{l-2}...a_0\) est une écriture de \(n\) en base \(b\), alors, \emph{i.e.} \(\val_b(a) = n\), alors pour tout \(k\in[0..l-1]\), \(a_k\) est le reste modulo \(b\) du quotient de \(n\) par \(b^k\).
+			\end{Propriete}
+		
+			%\pagebreak
+			
+			\eqskip{2mm}
+			\begin{Preuve}
+				Soit \(n\in\bb{N}\), \(a_{l-1}...a_0\) une écriture de \(n\) en base \(b\) et \(k\in[0..l-1]\). On a :
+					\[
+						n = \val_b(a_{l-1}...a_0) = \sum_{i=0}^{l-1} a_ib^i = \sum_{i=0}^{k-1} a_ib^i + \sum_{i=k}^{l-1} a_ib^i = \underbrace{\sum_{i=0}^{k-1} a_ib^i}_{:=r_k} + \,b^k \underbrace{\sum_{i=k}^{l-1} a_ib^{i-k}}_{:=q_k} = q_kb^k + r_k \text{ } (*)
+					\]
+				On a clairement \(r_k \in \bb{N}\) et comme \(\forall\,i\in[0..l-1]\), \(a_i\in[0..b-1]\), on a aussi
+					\[
+						r_k = \sum_{i=0}^{l-1}a_ib^i \leq \sum_{i=0}^{l-1} (b-1)b^i = \sum_{i=0}^{k-1}b^{i+1} - \sum_{i=0}^{k-1}b^i = b^k-1 < b^k
+					\]
+				Ensuite, \(\forall\, i\in[k..l-1]\), on a \(i-k\geq 0\) donc \(a_ib^{i-k} \in \bb{N}\) : ainsi, \(q_k \in \bb{N}\) par somme. \nt
+				Alors, d'après l'égalité \((*)\) : \bdot \(q_k\) est le quotient dans la division euclidienne de \(n\) par \(b\). \\
+				\hs{50} \bdot \(r_k\) est le reste de \(n\) modulo \(b\). \nt
+					%
+				Montrons à présent que \(a_k\) est le reste de \(q_k\) modulo \(b\). On a :
+					\[
+						q_k = \sum_{i=k}^{l-1} a_ib^{k-i} = a_k + b^{k-k} + \sum_{i=k+1}^{l-1} a_ib^{k-1} = a_k + b\sum_{i=k+1}^{l-1} a_ib^{i-k-1}
+					\]
+				D'une part, on sait que \(0 \leq a_k < b\) car \(a_k \in \Sigma\) et d'autre part, \(\forall\,i\in[k+1..l-1], \,i-1-k \geq 0\) donc \(a_ib^{i-1-k} \in \bb{N}\). On déduit donc de l'égalité précédente que \(a_k\) est bien le reste de \(q_k\) modulo \(b\).
+			\end{Preuve}
+			
+			\vs{2}
+			\begin{Exemple}
+				En base 10, \(n = \) 1023 a peut s'écrire \(a_3a_2a_1a_0\) avec : \\
+				\hs{8} \(a_0 = n \,\%\, 10 = 1023\,\%\,10 = 3\) \\
+				\hs{8} \(a_1 = (\lfloor n/10 \rfloor)\,\%\,10 = 102\,\%\,10 = 2\) \\
+				\hs{8} \(a_2 = \big(\big\lfloor (\lfloor n/10 \rfloor)/10 \big\rfloor\big)\,\%\,10 = 10\,\%\,10 = 0\) \\[0.5mm]
+				\hs{8} \(a_3 = \Big(\Big\lfloor\big(\big\lfloor (\lfloor n/10 \rfloor)/10 \big\rfloor\big)/10\Big\rfloor\Big)\,\%\,10 = 1 \,\%\,10 = 1\). \\
+			\end{Exemple}
+			
+			\vs{-1}
+			\begin{Remarque}
+				L'exemple précédent fournit un algorithme simple pour déterminer une écriture en base \(b\) de n'importe quel entier naturel \(n\) à partir de son écriture en base 10. On peut montrer que sa complexité est en \(\Theta(\log(n))\) (\emph{cf.} chapitre 3 -- ``complexité pire cas'').
+			\end{Remarque}
+		
+			\begin{Corollaire}[conséquences de la quasi-unicité]
+				Soit \(n\in\bb{N}\) et \(l,l'\in\bb{N}\) tels que \(l\leq l'\). \\
+				Si \(a = a_{l-1}...a_0\) et \(a' = a'_{l-1}...a'_0\) sont deux écritures de \(n\) en base \(b\), alors :
+					\begin{align*}
+						& \text{\bdot} \forall\,k\in[0..l-1], a_k = a'_k \\
+						& \text{\bdot} \forall\,k\in[l..l'-1], a_k = 0
+					\end{align*}
+				En particulier, il y a donc unicité de l'écriture en base \(b\) à longueur fixée.
+			\end{Corollaire}
+		
+		\subsubsection{Conclusion}
+			
+			La définition suivante nous permet à présent d'expliciter une écriture en base \(b\) de n'importe quel entier naturel.
+			
+			%\pagebreak
+			\eqskip{3mm}
+			\begin{Definition}[écriture en base \(b\) à \(l\) chiffres]
+				Pour \(l\in\bb{N}\), on définit l'écriture en base \(b\) à \(l\) chiffres :
+					\[
+						\ecr_b^l = \fun{[0..b^l-1]}{\Sigma^l}{n}{a_{l-1}...a_1a_0}
+					\]
+					où \(\forall\,k\in[0..l-1]\), \(a_k\) est le reste modulo \(b\) du quotient de \(n\) par \(b^k\).
+			\end{Definition}
+		
+			On peut donc extraire de toute écriture en base \(b\) l'entier représenté, et réciproquement, tout entier naturel admet une écriture en base \(b\) que l'on sait expliciter.
+		
+	\subsection{Addition en base 2}
+	
+		\emph{cf.} annexe ``figures pour le chapitre 2''.
+	
+	\subsection{Application de l'encodage en base \(\bm{b}\)}
+		
+		\intro{Dans cette section, on exploite l'encodage en base \(b\) pour démontrer que \\ tous les problèmes ne peuvent pas être résolus par un algorithme \\ (cf. notion de calculabilité, qui sort du cadre de ce cours)}
+		
+		Pour \(u\in\bb{N}^\bb{N}\), on considère le problème : \!\!\pbm{\(\bm{\cal{P}_u}\)}{\(n\in\bb{N}\)}{\(u_n\)} \\[3.5mm]
+		Un algorithme \(\scr{A}\) pouvant être identifié à une suite finie de caractères, donc par extension à une suite finie d'entiers entre 1 et 255, on peut le représenter par un entier écrit en base 256. \nt
+			%
+		\eqskip{4mm}
+		On note donc \(\varphi\) la fonction qui à un algorithme \(\scr{A}\) associe la valeur de l'entier écrit en base 256 obtenu en remplaçant les caractères par l'entier entre 1 et 255 correspondant (étant donnée une telle correspondance, la table ASCII éténdue par exemple). Autrement dit :
+			\[
+				\varphi : \hs{-2} \begin{tabular}[h]{l}
+					\parbox{50mm}{\centering l'ensemble \(\cal{A}\) des textes des algorithmes qui prennent en entrée un entier}
+				\end{tabular} \hs{-2} \rightarrow \bb{N}
+			\]
+		\(\varphi\) est facilement injective (deux algorithmes différents auront des écritures associées différentes en base 256, donc deux images différentes par quasi-unicité de l'écriture en base 256) mais elle n'est pas surjective (\emph{cf.} chaînes de caractères n'ayant aucun sens). \nll
+			%
+		En considérant \(\varphi|_\cal{A}^{\rm{Im}(\varphi)}\), on obtient une application surjective, donc bijective de \(\cal{A}\) sur \(\rm{Im}(\varphi)\). \nt
+			%
+		On note alors, pour \(\scr{A}\in\cal{A}\) le texte d'un algorithme qui prend en entrée un entier et rend en sortie un entier, \(\eval(\scr{A},n)\) la valeur obtenue en lançant cet algorithme sur l'entrée \(n\).
+		
+		\vs{2}
+		\begin{Remarque}
+			Si \(\scr{A}\) résout \(\cal{P}_u\) pour \(u\in\bb{N}^\bb{N}\), alors \(\forall\,n\in\bb{N}\), \(\eval(\scr{A},n) = u_n\)
+		\end{Remarque}
+		\vs{2}
+		
+		\colsep{2.2pt}
+		\eqskip{3mm}
+		On définit maintenant \(u\in\bb{N}^\bb{N}\) par :
+			\[
+				\forall\,n\in\bb{N},\, u_n = \left\{ \hspace{-0.2mm}\begin{tabular}[h]{l}
+					\(\eval(\varphi^{-1}(n),n)+1\) si \(n\in\im(\varphi)\) \\
+					\(0\) sinon
+				\end{tabular} \right.
+			\]
+		On suppose que \(\scr{A}_u\) est un algorithme qui résout \(\cal{P}_u\). Alors,
+			\begin{align*}
+				\eval(\scr{A}_u,\varphi(\scr{A}_u)) & = u_{\varphi(\scr{A}_u)} \text{ car \(\scr{A}_u\) résout \(\cal{P}_u\)} \\
+				& = \eval(\varphi^{-1}(\varphi(\scr{A}_u)),\varphi(\scr{A}_u)) + 1 \text{ puisque \(\varphi(\scr{A}_u)\in\im(\varphi)\)} \\
+				& = \eval(\scr{A}_u,\varphi(\scr{A}_u)+1
+			\end{align*}
+		ce qui est absurde et prouve donc qu'il n'existe pas d'algorithme résolvant \(\cal{P}_u\).
+		
+		\vs{2}
+		\begin{Remarque}
+			Cette preuve utilise ce que l'on appelle un argument diagonal.
+		\end{Remarque}
+	
+	\pagebreak
+\section{Encodage des entiers relatifs}
+
+	\intro{On s'intéresse dans cette partie à l'encodage des entiers relatifs tels qu'il est fait \\ sur les ordinateurs. On s'appuiera ainsi sur le codage des entiers naturels en binaire, c'est-à-dire en base 2 : on fixe donc \(\Sigma = \{0,1\}\).}
+	
+	\vs{-4}
+	\subsection{Encodage}
+	
+		Afin d'introduire la notion de signe dans l'encodage, le signe de l'entier encodé par un nombre sera donné par l'un de ses chiffres : il vaudra 0 pour les positifs et 1 pour les négatifs. Ce chiffre a donc une signification particulière, différente de celle des autres 0 ou 1. \nt
+			%
+		De plus, pour des raisons pratiques qui apparaîtront plus bas, ce chiffre de signe sera celui le plus à gauche du nombre, soit à l'opposé du chiffre des unités. Il nous faut ainsi travailler à longueur fixée pour pouvoir identifier ce chiffre au statut particulier, ce qui limite nécessairement l'ensemble des entiers que l'on pourra encoder. \nll
+			%
+		Soit \(l \in \bb{N}^*\). On note \(I^l = [-2^{l-1}..2^{l-1}]\), on remarque alors que \(\card(I^l) = 2^l\).
+		
+		\colsep{2.2pt}
+		\eqskip{3mm}
+		\begin{Proposition}[encodage et décodage à longueur fixée]
+			On définit les deux fonctions suivantes :
+				\begin{align*}
+					\varphi^l & = \fun{I^l}{\{0,1\}^l}{z}{\!\left\{ \! \begin{tabular}[h]{l}
+						\(0\,\ecr_2^{l-1}(z)\) si \(z \geq 0\) \\
+						\(1\,\ecr_2^{l-1}(z+2^{l-1})\) sinon \end{tabular} \right.} \\[2mm]
+					\psi^l & = \fun{\{0,1\}^l}{I^l}{a_{l-1}...a_1a_0}{-2^{l-1} a_{l-1} + \val_2(a_{l-2}...a_0)}
+				\end{align*}
+			Alors, \(\varphi_l\) et \(\psi_l\) sont bien définies et sont réciproques (\emph{c-à-d} \(\varphi^l\circ\psi^l = \Id_{\Sigma^l}\) et \(\psi^l\circ\varphi^l=\Id_{I^l}\)).
+		\end{Proposition}
+			
+			\vs{2}
+			\begin{Preuve}
+				\(\varphi^l\) est bien définie : en effet, \(\ecr_2^{l-1}\) l'est et est elle-même à valeurs dans \(\{0,1\}^{l-1}\), ainsi ajouter un 0 ou un 1 à gauche donne bien un mot de \(\{0,1\}^l\). \nt
+				\(\psi^l\) est également bien définie : en effet, \(\val_2\) l'est et \(\forall\,a \in \{0,1\}^{l-1}\), \(\val_2(a) \in [0..2^{l-1}[\), donc ajouter 0 ou \(-2^{l-1}\) au résultat donne un bien un entier de \([-2^{l-1}..2^{l-1}[ \,\,= I^l\). \nll
+					%
+				%\pagebreak
+				Soit ensuite \(z\in{I^l}\).
+					\vs{-2}
+					\begin{addmargin}{4mm}
+						\bdot Si \(z\geq 0\), on a \(\psi^l(\varphi^l(z)) = \psi^l(0\,\ecr_2^{l-1}(z)) = -2^{l-1}\times 0 + \val_2(\ecr_2^{l-1}(z))\). \\
+						Or par définition de l'écriture en base 2, \(\val_2(\ecr_2^{l-1}(z)) = z\) (en fait \(\val_2\!\big|\,\!_{\Sigma^l}^{[0..b^l-1]}\) et \(\ecr_b^l\) sont toujours bijectives et réciproques l'une de l'autre). D'où \((\psi^l\circ\varphi^l)(z) = z\). \nt
+						\bdot Si \(z<0\), on a \(\psi^l(\varphi^l(z)) = \psi^l(1 \,\ecr_2^{l-1}(z+2^{l-1})) = -2^{l-1} \times 1 + \val_2(\ecr_2^{l-1}(z+2^{l-1}))\). \\
+						Par la même remarque qu'au-dessus, on a donc \((\psi^l\circ\varphi^l)(z) = -2^{l-1} + (z + 2^{l-1}) = z\).
+					\end{addmargin}
+				
+				\vs{2}
+				Soit enfin \(a = a_{l-1}...a_1a_0 \in\{0,1\}^l\). On note \(\widetilde{a}\) son suffixe \(a_{l-2}...a_1a_0\), alors \(\widetilde{a}\in\{0,1\}^{l-1}\).
+					\vs{-2}
+					\begin{addmargin}{4mm}
+						\bdot Si \(a_{l-1} = 0\), alors \(\psi^l(a) = \val_2(\widetilde{a}) \in [0..2^{l-1}[\) donc en particulier \(\psi^l(a) \geq 0\). \\
+						Ainsi, comme \(\ecr_2^{l-1}(\val_2(\widetilde{a})) = \widetilde{a}\), on a \((\varphi^l\circ\psi^l)(a) = 0 \, \ecr_2^{l-1}(\val_2(\widetilde{a})) = a_{l-1} \, \widetilde{a} = a\). \nt
+						%
+						\bdot Si \(a_{l-1} = 1\), alors \(\psi^l(a) = -2^{l-1} + \val_2(\widetilde{a}) \in [-2^{l-1}..0[\) donc \(\psi^l(a) < 0\). \\
+						Par conséquent, on a de même \((\varphi^l\circ\psi^l)(a) = 1 \, \ecr_2^{l-1}(\val_2(\widetilde{a})) = a_{l-1} \, \widetilde{a} = a\).
+					\end{addmargin}
+			\end{Preuve}
+		
+	\subsection{Opérations}
+	
+		\subsubsection{Passage à l'opposé}
+			
+			\vs{-2}
+			\begin{Definition}[complément à 2]
+				On appelle complément à 2 d'un nombre écrit sur \(\{0,1\}\) (donc en binaire) le nombre obtenu en remplaçant les 0 par des 1 et vice-versa, \emph{i.e.} son image par la fonction :
+					\[
+						\comp_2 = \fun{\Sigma^*}{\Sigma^*}{a_{k-1}...a_1a_0}{\overline{a}_{k-1}...{\overline{a}_1}{\overline{a}_0}}
+					\]
+				où \(\forall\,i\in[0..l-1],\,\overline{a}_i = 1-a_i\).
+			\end{Definition}
+			
+			\eqskip{1mm}
+			\begin{Propriete}[lien entre complément à 2 et opposé]
+				Pour tout entier relatif, le complément à 2 de son écriture encode son opposé moins 1 :
+				\[\forall\,z\in I^l,\,\psi^l(\comp_2(\varphi^l(z))) = -z-1\]
+			\end{Propriete}
+			
+			\vs{2}
+			\eqskip{1mm}
+				\begin{Preuve}
+					Soit \(z\in I^l\). On note :
+					\bdot \(a_{l-1}...a_1a_0 = \varphi^l(z)\) \\
+					\hs{39.6} \bdot \(\widetilde{a} = a_{l-2}...a_1a_0\) \\
+					\hs{39.6} \bdot \(\overline{a}_{l-1}...\overline{a}_1\overline{a}_0 = \comp_2(\varphi^l(z))\)  (ainsi, \(\forall\,i\in[0..l-1],\,\overline{a}_i = 1-a_i\)) \\
+					\hs{39.6} \bdot \(\widehat{a} = \overline{a}_{l-2}...\overline{a}_1\overline{a}_0\) \\
+					Alors, on peut écrire :
+						\begin{align*}
+							& \text{\bdot} z = \psi^l(\varphi^l(z)) = -2^{l-1}a_{l-1} + \val_2(\widetilde{a}) \\[-1mm] & \text{\bdot} \psi^l(\comp_2(\varphi^l(z))) = \psi^l(\overline{a}_{l-1}\overline{a}_{l-2}...\overline{a}_1\overline{a}_0) = -2^{l-1}\overline{a}_{l-1} + \val_2(\widehat{a})
+						\end{align*}
+					Or, \(\displaystyle
+							\val_2(\widehat{a}) = \val_2(\overline{a}_{l-2}...\overline{a}_0) = \sum_{i=0}^{l-2} \overline{a}_i2^i = \sum_{i=0}^{l-2} (1-a_i)2^i = \sum_{i=0}^{l-2} 2^i - \sum_{i=0}^{l-2} a_i2^i = 2^{l-1}-1-\val_2(\widetilde{a})
+						\). \nt
+					\eqskip{-5mm}
+					Ainsi :
+						\begin{align*}
+							\psi^l(\comp_2(\varphi^l(z))) & = -2^{l-1}(1-a_{l-1}) + 2^{l-1}-1-\val_2(\widetilde{a}) \\
+							& = 2^{l-1}(1-1+a_{l-1})-1-\val_2(\widetilde{a}) \\
+							& = -(2^{l-1}a_{l-1} + \val_2(\widetilde{a})) - 1 \\
+							& = -z-1
+						\end{align*}
+				\end{Preuve}
+				
+				\vs{2}
+				\begin{Exemple}
+					\(\varphi^4(7) = 0111\) donc \(\comp_2(\varphi^4(7)) = 1000\) qui encode bien \(-8=-7-1\).
+				\end{Exemple}
+		\subsubsection{Addition}
+			
+			\vs{-2}
+			\eqskip{3mm}
+			\begin{Definition}[addition en binaire]
+				On définit l'addition en base 2 à longueur fixée à l'aide de la fonction suivante :
+					\[
+						\add_2^l = \fun{\Sigma^l\times\Sigma^{l}}{\Sigma^{l+1}}{(a,b)}{c_lc_{l-1}...c_0}
+					\]
+				où on a noté successivement : \\
+				\hs{10}\bdot \(a = a_{l-1}a_{l-2}...a_0 \text{ et } b = b_{l-1}b_{l-2}...b_0\) \\[-1mm]
+				\hs{10}\bdot \(r_0 = 0\) et \(\forall\,i\in[1..l],\,r_i = \lfloor (a_{i-1}+b_{i-1}+r_{i-1})/2 \rfloor =
+				\left\{ \!\begin{tabular}[h]{l}
+					\(1\) si \(a_{i-1}+b_{i-1}+r_{i-1}\geq 2\) \\
+					\(0\) sinon
+				\end{tabular} \right.\) \\[-1mm]
+				\hs{10}\bdot \(\forall\,i\in[0..l-1],\,c_i = (a_i+b_i+r_i) \,\%\, 2\) et \(c_l=r_l\)
+			\end{Definition}
+			
+				\vs{2}
+				\begin{Remarque}
+					Il s'agit seulement d'une écriture formelle de l'algorithme d'addition réalisé par la machine présentée en cours, algorithme qui est lui-même l'équivalent en base 2 de l'algorithme d'addition des nombres en base 10 que l'on connaît. On voit en particulier que \(r_i\) correspond à la retenue à prendre en compte à l'étape \(i\).
+				\end{Remarque}
+			
+			\eqskip{1mm}
+			\begin{Propriete}[addition des entiers naturels]
+				\(\add_2^l\) réalise l'addition sur les écritures binaires des entiers naturels, c'est-à-dire :
+					\[
+						\forall\,(a,b)\in(\Sigma^l)^2,\,\val_2(\add_2^l(a,b)) = \val_2(a)+\val_2(b)
+					\]
+			\end{Propriete}
+			
+			\eqskip{3mm}
+			\vs{2}
+			\begin{Preuve}
+				Montrons par récurrence sur \(l\in\bb{N}\) la propriété
+					\[
+						\cal{P}_l : \text{``}\forall\,(a,b)\in(\Sigma^l)^2,\,\val_2(\add_2^l(a,b)) = \val_2(a)+\val_2(b)\text{''}
+					\]
+				\bdot On a \(\Sigma^0 = \{\varepsilon\}\) et \(\val_2(\add_2^0(\varepsilon,\varepsilon)) = c_0 = r_0 = 0 = \val_2(\varepsilon) + \val_2(\varepsilon)\), ce qui montre \(\cal{P}_0\). \nt
+					%
+				\bdot Soit \(l\in\bb{N}\), on suppose \(\cal{P}_l\). Considérons alors \((a,b)\in(\Sigma^{l+1})^2\). \\
+				On note \(a = a_{l}...a_0\) et \(b=b_l...b_0\), puis \(\widetilde{a} = a_{l-1}...a_0\) et \(\widetilde{b} = b_{l-1}...b_0\). \\
+				On note enfin \(c_{l+1}...c_0 = \add_2^{l+1}(a,b)\). \nt
+					%
+				\eqskip{2mm}
+				On remarque en utilisant la définition de \(\add_2^{l}\) et \(\add_2^{l+1}\) que les chiffres les plus à droite de \(\add_2^l(\widetilde{a},\widetilde{b})\) sont exactement les mêmes que ceux de \(\add_2^{l+1}(a,b)\) : plus précisément,
+					\[
+						\add_2^l(\widetilde{a},\widetilde{b}) = \widetilde{c}_lc_{l-1}...c_0 \text{ où } \widetilde{c}_l = r_l
+					\]
+				En utilisant alors que \(\val_2(\widetilde{a}) + \val_2(\widetilde{b}) = \val_2(\add_2^l(\widetilde{a},\widetilde{b}))\) d'après \(\cal{P}_l\), puisque \((\widetilde{a},\widetilde{b})\in(\Sigma^l)^2\), \eqskip{3mm}
+					\begin{align*}
+						\val_2(a) + \val_2(b) & = \val_2(a_l\,\widetilde{a}) + \val_2(b_l\,\widetilde{b}) \\
+						& = 2^la_l+\val_2(\widetilde{a}) + 2^lb_l+\val_2(\widetilde{b}) \\
+						& = 2^l(a_l+b_l) + \val_2(\add_2^l(\widetilde{a},\widetilde{b})) \\
+						& = 2^l(a_l+b_l) + \val_2(\widetilde{c}_lc_{l-1}...c_0)	\\
+						& = 2^l(a_l+b_l+\widetilde{c}_l) + \val_2(c_{l-1}...c_0)
+					\end{align*}
+				D'autre part, \(\val_2(c_{l+1}c_l...c_0) = 2^{l+1}c_{l+1} + 2^lc_l + \val_2(c_{l-1}...c_0)\). \nt
+					%
+				Il reste donc à montrer que \(2^l(a_l+b_l+\widetilde{c}_l = 2^{l+1}c_{l+1}+2^lc_l)\), soit \(a_l+b_l+\widetilde{c}_l = 2c_{l+1} + c_l\). Or, \\
+					\hs{5} \bdot \(c_{l+1} = r_{l+1} = \lfloor (a_l+b_l+r_l)/2 \rfloor\) \\
+					\hs{5} \bdot \(c_l = (a_l+b_l+r_l) \,\%\, 2\) \\
+					\hs{5} \bdot \(\widetilde{c}_l = r_l\) \\
+				En reportant la dernière égalité dans les deux premières, on obtient exactement la relation voulue par définition de la division euclidienne (par 2 ici). \(\cal{P}_{l+1}\) est donc vraie.
+			\end{Preuve}
+			
+			\eqskip{3mm}
+			\begin{Propriete}[addition des entiers relatifs]
+				Soit \((y,z)\in (I^l)^2\). Si \(y+z\in I^l\), alors en notant \(c_lc_{l-1}...c_0=\add_2^l(\varphi^l(y),\varphi^l(z))\), on a :
+					\[
+						\psi^l(c_{l-1}c_{l-2}...c_0) = y+z
+					\]
+				Autrement dit, \(\add_2^l\) réalise aussi l'addition sur les écritures binaires des entiers relatifs pourvu que la somme soit dans l'intervalle \(I^l\).
+			\end{Propriete}
+				
+				\vs{2}
+				\begin{Preuve}
+					Notons \(a=a_{l-1}...a_0=\varphi^l(y)\) et \(b=b_{l-1}...b_0=\varphi^l(z)\).
+				\end{Preuve}
+			
+				\vs{2}
+				\begin{Remarque}
+					Dans la propriété précédente, on a tronqué \(c_lc_{l-1}...c_1c_0\) puisque, la ``somme'' étant dans \(I^l\), il ne reste aucune retenue à la fin, autrement dit \(c_l=0\).
+				\end{Remarque}
+				\vs{-1}
+			
+\section{Codage des entiers en C}
+
+	\subsection{Tailles des types en mémoire}
+				
+\section{Encodage des réels}
+	
+	\'Etant donné que tout intervalle non trivial (\emph{i.e.} non réduit à un singleton) contient une infinité de réels (en fait, de tels intervalles ne sont pas dénombrable), il est impossible d'encoder ``tous'' ses réels. Il faut donc limiter d'une certaine façon l'ensemble des réels que l'on souhaite représenter, quitte à seulement approximer tout réel qui n'appartiendrait pas à ce nouvel ensemble réduit.
+	
+	\subsection{\'Ecriture à précision arbitrairement élevée}
+	
+		\intro{L'objet de cette section est d'étudier les bases de la théorie sur laquelle \\ repose l'encodage des réels sur les machines.}
+		
+		\vs{-4}
+		\subsubsection{Se ramener dans \(\bm{[0,1]}\)}
+		
+			\uplabel{Propriété :}
+				Soit \(x\in\bb{R}^+\). Il existe \(k\in\bb{N}\) et \(y\in[0,1]\) tels que \(x=y\times2^k\).
+			
+			\vs{2}
+			\begin{Preuve}
+				Il suffit de prendre \(y=k=0\) si \(x=0\), ou bien \(k=\lceil\log_2(x)\rceil\) et \(y=x/2^k\) sinon. \\ En effet, dans le deuxième cas on a \(k\geq\log_2(x)\) soit \(2^k\geq 2^{\log_2(x)}=x\), donc \(y \leq 1\). En particulier, quand \(0 < x \leq 1\), on a \(y=x\) et \(k=0\).
+			\end{Preuve}
+			
+			%\pagebreak
+
+			\eqskip{2mm}
+			\begin{Propriete}[approximation dyadique]
+				Soit \(x\in[0,1]\) et \(\varepsilon\in\bb{R}^{+*}\). Il existe \(l\in\bb{N}\) et \((a_i)_{i\in[1..l]}\in\{0,1\}^l\) tels que :
+					\[
+						\sum_{i=1}^l \frac{a_i}{2^i} \in [x-\varepsilon,x+\varepsilon]\text{, c'est-à-dire } \bigg| \sum_{i=1}^l \frac{a_i}{2^i} - x \bigg| \leq \varepsilon
+					\]
+				Une telle somme est appelée une fraction dyadique (ou encore un rationnel dyadique).
+			\end{Propriete}
+			
+			\vs{2}
+			\begin{Remarque}
+				La propriété précédente affirme entre autres la convergence du principe de dichotomie lorsque l'on l'applique à \(x\in[0,1]\).
+			\end{Remarque}
+			
+		\subsection{Les flottants en C}
+		
+			Le C, comme la plupart des langages de programmation, dispose d'un type ayant spécifiquement pour fonction de représenter les réels : il s'agit des flottants, ou des \texttt{float}, qui s'appuient sur les deux propriétés abordées dans la section précédente\(^{(1)}\) et dont le codage se décompose en trois parties : \\
+		\hs{5} \bdot un signe \(s\), stocké sur 1 bit \\
+		\hs{5} \bdot un exposant \(e_{k-1}...e_0\), sur un nombre de bits \(k\) fixé \\
+		\hs{5} \bdot une mantisse \(m_1...m_l\), sur un nombre de bits \(l\) fixé.
+		
+		\vs{2}
+		\begin{Remarque}
+			Bien-sûr, les valeurs de \(l\) et de \(k\) déterminent l'ensemble des réels que l'on peut effectivement représenter avec une précision parfaite.
+		\end{Remarque}
+		\vs{2}
+		
+		Considérons le nombre \(N = s\,e_{k-1}e_{k-2}...e_0\,m_1m_2...m_l \in \{0,1\}^{k+l+1}\). \nt
+		%
+		\eqskip{2mm}
+		Si \(\exists\,(i,i')\in[0..k-1]^2\), \(e_i=0\) et \(e_{i'}=1\), il représente ce qu'on appelle sa valeur normalisée :
+		\[
+		(-1)^s\,2^{-(2^{k-1}-1)+\val_2(e_{k-1}...e_0)} \Big(1+\sum_{i=1}^{l} \frac{m_i}{2^i}\Big)
+		\]
+		Si \(\forall\,i\in[0..k-1]\), \(e_i=0\), le réel représenté par \(N\) porte le nom de valeur dénormalisée et vaut :
+		\[
+		(-1)^s\,2^{-2^{k-1}+2}\sum_{i=1}^l\frac{m_i}{2^i}
+		\]
+		Si enfin \(\forall\,i\in[0..k-1]\), \(e_i=1\), alors : \\
+		\hs{5} \bdot soit \(\forall\,i\in[1..l],\,m_i=0\) auquel cas \(N\) encode \((-1)^s\,\infty\) \\
+		\hs{5} \bdot soit \(\exists\,i\in[1..l],\,m_i\neq0\), auquel cas \(N\) n'encode aucun élément de \(\overline{\bb{R}}\), sa valeur en C est alors \\ \hs{7.3} \texttt{NaN} (pour ``not a number'').
+			
+			\vs{2}
+			\begin{Remarque}
+				L'exposant encode donc ``l'ordre de grandeur'' du réel représenté, tandis que la mantisse en donne les ``chiffres significatifs''. Conformément à ce qui a été dit précédemment\(^{(1)}\), on a ainsi une écriture de la forme \(x = (-1)^s 2^k y\) avec \((k,y)\in\bb{N}\times[0,1]\), de manière analogue à l'écriture scientifique en physique.
+			\end{Remarque}
+			
+\end{document}

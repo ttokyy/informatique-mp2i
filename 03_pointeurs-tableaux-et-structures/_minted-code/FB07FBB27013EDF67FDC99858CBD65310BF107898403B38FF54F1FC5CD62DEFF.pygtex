@@ -1,0 +1,451 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}dispo.h\PYGZdq{}}
+
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cDensityToleranceRadius}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{100}\PYG{p}{;}
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cEntropyToleranceRadius}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{50}\PYG{p}{;}
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cHomeAttributionInflation}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0.6}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// the smaller, the more tolerant attribution}
+\PYG{c+c1}{// is with regards to attractiveness}
+
+
+\PYG{c+c1}{// returns an empty disposition (i.e. with all attributes initialized to their default}
+\PYG{c+c1}{// value) that is valid for Canvas (i.e. whose dimensions in units are those of}
+\PYG{c+c1}{// Canvas in cells)}
+\PYG{n}{disposition}\PYG{+w}{ }\PYG{n+nf}{CREATE\PYGZus{}CANVAS\PYGZus{}DISPOSITION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{disposition}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}\PYG{+w}{ }\PYG{p}{(}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{vdisposition\PYGZus{}s}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{num\PYGZus{}inhabitants}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}inhabitants}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{o}{*}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{o}{*}\PYG{n}{cCellHomeLimit}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{unit}\PYG{o}{*}\PYG{o}{*}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{n}{unit}\PYG{o}{*}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{sorted\PYGZus{}unit\PYGZus{}indices\PYGZus{}density}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{o}{*}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}
+\PYG{+w}{	}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{o}{*}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// initialize units}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{unit}\PYG{o}{*}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{n}{unit}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}density}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{sorted\PYGZus{}unit\PYGZus{}indices\PYGZus{}density}\PYG{p}{[}\PYG{n}{LIN\PYGZus{}COEFF}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{LIN\PYGZus{}COEFF}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{entropy}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// calculate maximum possible density}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}density}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{X\PYGZus{}min}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cDensityToleranceRadius}\PYG{p}{;}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{X\PYGZus{}max}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cDensityToleranceRadius}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}min}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cDensityToleranceRadius}\PYG{p}{;}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}max}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cDensityToleranceRadius}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{InscribingSquareSideCells}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{ceil}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{float}\PYG{p}{)}\PYG{p}{(}\PYG{n}{X\PYGZus{}max}\PYG{o}{\PYGZhy{}}\PYG{n}{X\PYGZus{}min}\PYG{p}{)}\PYG{o}{/}\PYG{p}{(}\PYG{k+kt}{float}\PYG{p}{)}\PYG{n}{cCellSizePixels}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{InscribingSquareSideCells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{row}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{InscribingSquareSideCells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{column}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{CurrentX}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{X\PYGZus{}min}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{column}\PYG{o}{*}\PYG{n}{cCellSizePixels}\PYG{p}{;}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{CurrentY}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}min}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{row}\PYG{o}{*}\PYG{n}{cCellSizePixels}\PYG{p}{;}
+\PYG{+w}{			}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{SqDist}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{CurrentX}\PYG{o}{*}\PYG{n}{CurrentX}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{CurrentY}\PYG{o}{*}\PYG{n}{CurrentY}\PYG{p}{;}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SqDist}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cDensityToleranceRadius}\PYG{o}{*}\PYG{n}{cDensityToleranceRadius}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}density}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{F\PYGZus{}DENSITY\PYGZus{}CONTRIBUTION}
+\PYG{+w}{				}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SqDist}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cCellHomeLimit}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{FREE\PYGZus{}DISPOSITION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+cm}{/* printf (\PYGZdq{}freeing dispo\PYGZbs{}n\PYGZdq{});}
+\PYG{c+cm}{	free (Dispo\PYGZhy{}\PYGZgt{}unitsA);}
+\PYG{c+cm}{	free (Dispo\PYGZhy{}\PYGZgt{}sorted\PYGZus{}unit\PYGZus{}indices\PYGZus{}density); */}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// hyp: Dispo is a disposition on Canvas}
+\PYG{c+c1}{// returns a copy of Dispo}
+\PYG{n}{disposition}\PYG{+w}{ }\PYG{n+nf}{COPY\PYGZus{}DISPOSITION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{DispoCopy}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{disposition}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}\PYG{+w}{ }\PYG{p}{(}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{vdisposition\PYGZus{}s}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{num\PYGZus{}inhabitants}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{num\PYGZus{}inhabitants}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}inhabitants}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}inhabitants}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}density}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}density}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{unit}\PYG{o}{*}\PYG{o}{*}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{n}{unit}\PYG{o}{*}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{sorted\PYGZus{}unit\PYGZus{}indices\PYGZus{}density}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{o}{*}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}
+\PYG{+w}{	}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{o}{*}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{unit}\PYG{o}{*}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{n}{unit}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}density}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}density}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}entropy}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}entropy}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{DispoCopy}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{sorted\PYGZus{}unit\PYGZus{}indices\PYGZus{}density}\PYG{p}{[}\PYG{n}{LIN\PYGZus{}COEFF}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{sorted\PYGZus{}unit\PYGZus{}indices\PYGZus{}density}\PYG{p}{[}\PYG{n}{LIN\PYGZus{}COEFF}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{]}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{DispoCopy}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// returns whether or not both statements are simultaneously true:}
+\PYG{c+c1}{// \PYGZhy{} all of Dispo\PYGZsq{}s cells contain between 0 and cCellHomeLimit houses}
+\PYG{c+c1}{// \PYGZhy{} summing the amount of homes per cell across all cells yields Dispo\PYGZhy{}\PYGZgt{}num\PYGZus{}inhabitants}
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{IS\PYGZus{}DISPOSITION\PYGZus{}HOME\PYGZus{}ASSIGNMENT\PYGZus{}COHERENT}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{NumHomes}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumHomes}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{num\PYGZus{}inhabitants}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// sorts Dispo\PYGZhy{}\PYGZgt{}sorted\PYGZus{}unit\PYGZus{}indices\PYGZus{}density such that the sequence}
+\PYG{c+c1}{// (Dispo\PYGZhy{}\PYGZgt{}unitsA[ik][jk].local\PYGZus{}density), where (ik,jk) is the delinearized coefficient}
+\PYG{c+c1}{// obtained from k, increases in k}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SORT\PYGZus{}UNIT\PYGZus{}INDICES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumUnits}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{o}{*}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{UnitIndices}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{sorted\PYGZus{}unit\PYGZus{}indices\PYGZus{}density}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{UnitDensities}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{o}{*}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumUnits}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{index}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{index}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{NumUnits}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{index}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ci}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cj}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{ASSIGN\PYGZus{}DELIN\PYGZus{}INDEX}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ci}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{cj}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{UnitIndices}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{UnitDensities}\PYG{p}{[}\PYG{n}{index}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{ci}\PYG{p}{]}\PYG{p}{[}\PYG{n}{cj}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}density}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{QS\PYGZus{}SORT\PYGZus{}ELEMENTS\PYGZus{}BY\PYGZus{}SCORE}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{UnitIndices}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{UnitDensities}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{NumUnits}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+cm}{/* printf (\PYGZdq{}freeing unitdensities\PYGZbs{}n\PYGZdq{});}
+\PYG{c+cm}{	free (UnitDensities); */}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// attempts to move Amount homes between Dispo\PYGZsq{}s units of indices (i1,j1) and (i2,j2)}
+\PYG{c+c1}{// while ensuring that their numbers of homes remains between 0 and cCellHomeLimit}
+\PYG{c+c1}{// returns true if and only if a non\PYGZhy{}zero number of homes were actually moved}
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{TRANSFER\PYGZus{}HOMES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Amount}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i1}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j1}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i2}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j2}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// printf (\PYGZdq{} into \PYGZpc{}d\PYGZbs{}n\PYGZdq{}, Dispo\PYGZhy{}\PYGZgt{}unitsA[i2][j2].num\PYGZus{}homes);}
+\PYG{+w}{	}\PYG{n}{Amount}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Amount}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i1}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j1}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cCellHomeLimit}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}
+\PYG{+w}{	}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i2}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j2}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Amount}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{o}{\PYGZam{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i2}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j2}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i1}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j1}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Amount}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i2}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j2}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Amount}\PYG{p}{;}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n+nb}{true}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// hyp: Dispo is a disposition on Canvas \PYGZam{}\PYGZam{} CALCULATE\PYGZus{}ATTRACTIVENESSES (Canvas) has}
+\PYG{c+c1}{// been called}
+\PYG{c+c1}{// distributes NumHomes homes to Dispo\PYGZsq{}s units according to a random process in which}
+\PYG{c+c1}{// each unit\PYGZsq{}s expected final amount of homes increases with the corresponding cell\PYGZsq{}s}
+\PYG{c+c1}{// attractiveness value in Canvas}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{INITIALIZE\PYGZus{}DISPOSITION\PYGZus{}FROM\PYGZus{}CELLS\PYGZus{}1}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{,}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{HomeAttributionInflation}\PYG{p}{)}\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// METHOD 1}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{assert}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumHomes}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}inhabitants}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{num\PYGZus{}inhabitants}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{;}
+\PYG{+w}{	}\PYG{c+c1}{// printf (\PYGZdq{}\PYGZpc{}d/\PYGZpc{}d\PYGZbs{}n\PYGZdq{}, Dispo\PYGZhy{}\PYGZgt{}num\PYGZus{}inhabitants, Dispo\PYGZhy{}\PYGZgt{}max\PYGZus{}possible\PYGZus{}inhabitants);}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// reset disposition\PYGZsq{}s housing}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{c+c1}{// sort cell indices by descending attractivenesses and extract highest attractiveness}
+\PYG{+w}{	}\PYG{n}{SORT\PYGZus{}CELL\PYGZus{}INDICES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{BestCell\PYGZus{}i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{BestCell\PYGZus{}j}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{ASSIGN\PYGZus{}DELIN\PYGZus{}INDEX}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{BestCell\PYGZus{}i}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{BestCell\PYGZus{}j}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}
+\PYG{+w}{	}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{sorted\PYGZus{}cell\PYGZus{}indices\PYGZus{}attractiveness}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{HighestAttractiveness}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{BestCell\PYGZus{}i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{BestCell\PYGZus{}j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{attractiveness}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumRemainingHomes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{pos}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ci}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cj}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// distribute homes by prioritising high\PYGZhy{}attractiveness cells}
+\PYG{+w}{	}\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumRemainingHomes}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{ASSIGN\PYGZus{}DELIN\PYGZus{}INDEX}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ci}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{cj}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{sorted\PYGZus{}cell\PYGZus{}indices\PYGZus{}attractiveness}\PYG{p}{[}\PYG{n}{pos}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{ci}\PYG{p}{]}\PYG{p}{[}\PYG{n}{cj}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumReceivedHomes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumRemainingHomes}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cCellHomeLimit}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{rand}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZpc{}}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{p}{(}\PYG{n}{ceil}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{cCellHomeLimit}\PYG{p}{)}\PYG{o}{*}\PYG{n}{F\PYGZus{}HOME\PYGZus{}ATTRIBUTION\PYGZus{}PROPORTION}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{ci}\PYG{p}{]}\PYG{p}{[}\PYG{n}{cj}\PYG{p}{]}\PYG{p}{.}\PYG{n}{attractiveness}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{HighestAttractiveness}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{HomeAttributionInflation}\PYG{p}{)}\PYG{p}{)}\PYG{o}{+}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{ci}\PYG{p}{]}\PYG{p}{[}\PYG{n}{cj}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumReceivedHomes}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{NumRemainingHomes}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumReceivedHomes}\PYG{p}{;}
+\PYG{+w}{			}\PYG{c+c1}{// printf (\PYGZdq{}\PYGZpc{}d\PYGZbs{}n\PYGZdq{}, NumReceivedHomes);}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{n}{pos}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{pos}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZpc{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{o}{*}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// hyp: Dispo is a disposition on Canvas \PYGZam{}\PYGZam{} CALCULATE\PYGZus{}ATTRACTIVENESSES (Canvas) has}
+\PYG{c+c1}{// been called}
+\PYG{c+c1}{// distributes NumHomes homes to Dispo\PYGZsq{}s units according to a random process in which}
+\PYG{c+c1}{// each unit\PYGZsq{}s expected final amount of homes increases with the corresponding cell\PYGZsq{}s}
+\PYG{c+c1}{// attractiveness value in Canvas}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{INITIALIZE\PYGZus{}DISPOSITION\PYGZus{}FROM\PYGZus{}CELLS\PYGZus{}2}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{HomeAttributionInflation}\PYG{p}{)}\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// METHOD 2}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{assert}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumHomes}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}inhabitants}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{num\PYGZus{}inhabitants}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{;}
+\PYG{+w}{	}\PYG{c+c1}{// printf (\PYGZdq{}\PYGZpc{}d/\PYGZpc{}d\PYGZbs{}n\PYGZdq{}, Dispo\PYGZhy{}\PYGZgt{}num\PYGZus{}inhabitants, Dispo\PYGZhy{}\PYGZgt{}max\PYGZus{}possible\PYGZus{}inhabitants);}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// reset disposition\PYGZsq{}s housing}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{c+c1}{// sort cell indices by descending attractivenesses and extract highest attractiveness}
+\PYG{+w}{	}\PYG{n}{SORT\PYGZus{}CELL\PYGZus{}INDICES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{BestCell\PYGZus{}i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{BestCell\PYGZus{}j}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{ASSIGN\PYGZus{}DELIN\PYGZus{}INDEX}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{BestCell\PYGZus{}i}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{BestCell\PYGZus{}j}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}
+\PYG{+w}{	}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{sorted\PYGZus{}cell\PYGZus{}indices\PYGZus{}attractiveness}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{HighestAttractiveness}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{BestCell\PYGZus{}i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{BestCell\PYGZus{}j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{attractiveness}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumRemainingHomes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{pos}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{ci}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cj}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// distribute homes by prioritising high\PYGZhy{}attractiveness cells}
+\PYG{+w}{	}\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumRemainingHomes}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{ASSIGN\PYGZus{}DELIN\PYGZus{}INDEX}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ci}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{cj}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}
+\PYG{+w}{		}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{sorted\PYGZus{}cell\PYGZus{}indices\PYGZus{}attractiveness}\PYG{p}{[}\PYG{n}{pos}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{ci}\PYG{p}{]}\PYG{p}{[}\PYG{n}{cj}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{AttributionPeak}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{F\PYGZus{}HOME\PYGZus{}ATTRIBUTION\PYGZus{}PROPORTION}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{ci}\PYG{p}{]}\PYG{p}{[}\PYG{n}{cj}\PYG{p}{]}\PYG{p}{.}\PYG{n}{attractiveness}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{HighestAttractiveness}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{HomeAttributionInflation}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumReceivedHomes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumRemainingHomes}\PYG{p}{,}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{cCellHomeLimit}\PYG{o}{\PYGZhy{}}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{ci}\PYG{p}{]}\PYG{p}{[}\PYG{n}{cj}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{p}{)}\PYG{p}{,}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{max}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{ceil}\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{cCellHomeLimit}\PYG{o}{*}\PYG{+w}{ }\PYG{c+c1}{// previously, max (0, ...)}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{RAND\PYGZus{}VAR\PYGZus{}HALF\PYGZus{}NORMAL\PYGZus{}DISTRIBUTION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{AttributionPeak}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{0.25}\PYG{o}{*}\PYG{n}{AttributionPeak}\PYG{p}{)}\PYG{p}{)}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{ci}\PYG{p}{]}\PYG{p}{[}\PYG{n}{cj}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumReceivedHomes}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{NumRemainingHomes}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumReceivedHomes}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{n}{pos}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{pos}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZpc{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{o}{*}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{INITIALIZE\PYGZus{}DISPOSITION\PYGZus{}BLINDLY}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{n}{assert}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumHomes}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}inhabitants}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{num\PYGZus{}inhabitants}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// reset disposition\PYGZsq{}s housing}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumRemainingHomes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumRemainingHomes}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{rand}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZpc{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{;}
+\PYG{+w}{		}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{rand}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZpc{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumReceivedHomes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{cCellHomeLimit}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{p}{,}
+\PYG{+w}{			}\PYG{n}{rand}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZpc{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{cCellHomeLimit}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumReceivedHomes}\PYG{p}{;}
+\PYG{+w}{			}\PYG{n}{NumRemainingHomes}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{NumReceivedHomes}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{c+c1}{// returns the amount of homes for which a unit with NumHomes houses accounts for}
+\PYG{c+c1}{// in the density calculation of a unit SqDist pixels away}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}DENSITY\PYGZus{}CONTRIBUTION}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{SqDist}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{NumHomes}\PYG{p}{)}\PYG{o}{*}\PYG{n}{exp}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{n}{SqDist}\PYG{o}{/}\PYG{l+m+mi}{10000}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// hyp: Dispo\PYGZhy{}\PYGZgt{}num\PYGZus{}inhabitants has been assigned the intented number of homes to place}
+\PYG{c+c1}{// returns the fraction of cCellHomeLimit\PYGZsq{}s homes given to a cell of attractiveness}
+\PYG{c+c1}{// Attractiveness, living in a canvas of highest attractiveness HighestAttractiveness}
+\PYG{c+c1}{// and depending on Dispo\PYGZsq{}s intended and maximum number of houses}
+\PYG{c+c1}{// (see paper for more precise description of parameter influences)}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}HOME\PYGZus{}ATTRIBUTION\PYGZus{}PROPORTION}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Attractiveness}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{HighestAttractiveness}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{HomeAttributionInflation}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{v}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{pow}\PYG{p}{(}\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{max\PYGZus{}possible\PYGZus{}inhabitants}\PYG{p}{)}\PYG{o}{/}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{num\PYGZus{}inhabitants}\PYG{p}{)}\PYG{p}{,}
+\PYG{+w}{	}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{HomeAttributionInflation}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{Attractiveness}\PYG{o}{\PYGZhy{}}\PYG{n}{HighestAttractiveness}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{u}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{v}\PYG{o}{/}\PYG{p}{(}\PYG{l+m+mi}{15}\PYG{o}{*}\PYG{n}{pow}\PYG{p}{(}\PYG{n}{HighestAttractiveness}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{0.75}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{w}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{1.03}\PYG{o}{*}\PYG{n}{u}\PYG{o}{*}\PYG{n}{exp}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{p}{(}\PYG{p}{(}\PYG{l+m+mi}{875}\PYG{l+m+mi}{\PYGZhy{}1000}\PYG{o}{*}\PYG{n}{u}\PYG{p}{)}\PYG{o}{/}\PYG{l+m+mi}{300}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{p}{(}\PYG{l+m+mi}{875}\PYG{l+m+mi}{\PYGZhy{}1000}\PYG{o}{*}\PYG{n}{u}\PYG{p}{)}\PYG{o}{/}\PYG{l+m+mi}{300}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{p}{(}\PYG{l+m+mi}{875}\PYG{l+m+mi}{\PYGZhy{}1000}\PYG{o}{*}\PYG{n}{u}\PYG{p}{)}\PYG{o}{/}\PYG{l+m+mi}{300}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{p}{(}\PYG{l+m+mi}{875}\PYG{l+m+mi}{\PYGZhy{}1000}\PYG{o}{*}\PYG{n}{u}\PYG{p}{)}\PYG{o}{/}\PYG{l+m+mi}{300}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{max\PYGZus{}double}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{w}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}ENTROPY\PYGZus{}CONTRIBUTION}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Ratio}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Ratio}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k}{else}\PYG{+w}{ }\PYG{k}{return}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{n}{Ratio}\PYG{o}{*}\PYG{n}{log}\PYG{p}{(}\PYG{n}{Ratio}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// hyp: Dispo is a disposition on Canvas}
+\PYG{c+c1}{// calculates and assigns to each Dispo\PYGZhy{}\PYGZgt{}unit[i][j] its local house density, i.e.}
+\PYG{c+c1}{// the distance\PYGZhy{}weighted sum of the number of homes contained in cells within distance}
+\PYG{c+c1}{// cDensityToleranceRadius of said unit}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{CALCULATE\PYGZus{}LOCAL\PYGZus{}DENSITIES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// METHOD 1}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}density}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{UnitX}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{UnitY}\PYG{p}{;}
+\PYG{+w}{				}\PYG{n}{ASSIGN\PYGZus{}MIDPOINT\PYGZus{}OF\PYGZus{}CELL}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{UnitX}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{UnitY}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{c+c1}{// find range of pixels that are for sure within distance cDensityToleranceRadius}
+\PYG{+w}{				}\PYG{c+c1}{// (forming a square of sidelength 2*cDensityToleranceRadius)}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{X\PYGZus{}min}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{max}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{UnitX}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cDensityToleranceRadius}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{X\PYGZus{}max}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{UnitX}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cDensityToleranceRadius}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}min}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{max}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{UnitY}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cDensityToleranceRadius}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}max}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{UnitY}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cDensityToleranceRadius}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i\PYGZus{}min}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i\PYGZus{}max}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j\PYGZus{}min}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j\PYGZus{}max}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{c+c1}{// convert to unit indices}
+\PYG{+w}{				}\PYG{n}{ASSIGN\PYGZus{}CELL\PYGZus{}OF\PYGZus{}PIXEL}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{i\PYGZus{}min}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{j\PYGZus{}min}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{X\PYGZus{}min}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}min}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{n}{ASSIGN\PYGZus{}CELL\PYGZus{}OF\PYGZus{}PIXEL}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{i\PYGZus{}max}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{j\PYGZus{}max}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{X\PYGZus{}max}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}max}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{c+c1}{// add up unit contributions}
+\PYG{+w}{				}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{i\PYGZus{}min}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{i\PYGZus{}max}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{row}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{j\PYGZus{}min}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{j\PYGZus{}max}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{column}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{						}
+\PYG{+w}{						}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{CurrentX}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{CurrentY}\PYG{p}{;}
+\PYG{+w}{						}\PYG{n}{ASSIGN\PYGZus{}MIDPOINT\PYGZus{}OF\PYGZus{}CELL}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{CurrentX}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{CurrentY}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{column}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{						}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{SqDist}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{CurrentX}\PYG{o}{\PYGZhy{}}\PYG{n}{UnitX}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{CurrentX}\PYG{o}{\PYGZhy{}}\PYG{n}{UnitX}\PYG{p}{)}
+\PYG{+w}{						}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{CurrentY}\PYG{o}{\PYGZhy{}}\PYG{n}{UnitY}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{CurrentY}\PYG{o}{\PYGZhy{}}\PYG{n}{UnitY}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{						}
+\PYG{+w}{						}\PYG{c+c1}{// count contribution iff the distance is actually less than}
+\PYG{+w}{						}\PYG{c+c1}{// cDensityToleranceRadius}
+\PYG{+w}{						}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SqDist}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cDensityToleranceRadius}\PYG{o}{*}\PYG{n}{cDensityToleranceRadius}\PYG{p}{)}
+\PYG{+w}{						}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}density}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{F\PYGZus{}DENSITY\PYGZus{}CONTRIBUTION}
+\PYG{+w}{						}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SqDist}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{row}\PYG{p}{]}\PYG{p}{[}\PYG{n}{column}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{					}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{CALCULATE\PYGZus{}LOCAL\PYGZus{}ENTROPIES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{HomeCountOccurrences}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{o}{*}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{(}\PYG{n}{cCellHomeLimit}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{entropy}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}units}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}units}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumCellsInRange}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cCellHomeLimit}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{num\PYGZus{}homes}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}
+\PYG{+w}{					}\PYG{n}{HomeCountOccurrences}\PYG{p}{[}\PYG{n}{num\PYGZus{}homes}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}entropy}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{UnitX}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{UnitY}\PYG{p}{;}
+\PYG{+w}{				}\PYG{n}{ASSIGN\PYGZus{}MIDPOINT\PYGZus{}OF\PYGZus{}CELL}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{UnitX}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{UnitY}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{c+c1}{// find range of pixels that are for sure within distance cEntropyToleranceRadius}
+\PYG{+w}{				}\PYG{c+c1}{// (forming a square of sidelength 2*cEntropyToleranceRadius)}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{X\PYGZus{}min}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{max}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{UnitX}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cEntropyToleranceRadius}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{X\PYGZus{}max}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{UnitX}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cEntropyToleranceRadius}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}min}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{max}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{UnitY}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cEntropyToleranceRadius}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}max}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{min}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{UnitY}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{cEntropyToleranceRadius}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i\PYGZus{}min}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i\PYGZus{}max}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j\PYGZus{}min}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j\PYGZus{}max}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{c+c1}{// convert to unit indices}
+\PYG{+w}{				}\PYG{n}{ASSIGN\PYGZus{}CELL\PYGZus{}OF\PYGZus{}PIXEL}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{i\PYGZus{}min}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{j\PYGZus{}min}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{X\PYGZus{}min}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}min}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{n}{ASSIGN\PYGZus{}CELL\PYGZus{}OF\PYGZus{}PIXEL}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{i\PYGZus{}max}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{j\PYGZus{}max}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{X\PYGZus{}max}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Y\PYGZus{}max}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{c+c1}{// add up entropy contributions contributions}
+\PYG{+w}{				}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{i\PYGZus{}min}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{i\PYGZus{}max}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{row}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{j\PYGZus{}min}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{j\PYGZus{}max}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{column}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{						}
+\PYG{+w}{						}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{CurrentX}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{CurrentY}\PYG{p}{;}
+\PYG{+w}{						}\PYG{n}{ASSIGN\PYGZus{}MIDPOINT\PYGZus{}OF\PYGZus{}CELL}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{CurrentX}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{CurrentY}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{column}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{						}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{SqDist}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{CurrentX}\PYG{o}{\PYGZhy{}}\PYG{n}{UnitX}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{CurrentX}\PYG{o}{\PYGZhy{}}\PYG{n}{UnitX}\PYG{p}{)}
+\PYG{+w}{						}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{CurrentY}\PYG{o}{\PYGZhy{}}\PYG{n}{UnitY}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{CurrentY}\PYG{o}{\PYGZhy{}}\PYG{n}{UnitY}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{						}
+\PYG{+w}{						}\PYG{c+c1}{// count contribution iff the distance is actually less than}
+\PYG{+w}{						}\PYG{c+c1}{// cEntropyToleranceRadius}
+\PYG{+w}{						}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{SqDist}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cEntropyToleranceRadius}\PYG{o}{*}\PYG{n}{cEntropyToleranceRadius}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{o}{\PYGZam{}}
+\PYG{+w}{						}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{row}\PYG{p}{]}\PYG{p}{[}\PYG{n}{column}\PYG{p}{]}\PYG{p}{.}\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{+w}{ }\PYG{o}{=}\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{\PYGZhy{}1}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{							}
+\PYG{+w}{							}\PYG{n}{HomeCountOccurrences}\PYG{p}{[}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{row}\PYG{p}{]}\PYG{p}{[}\PYG{n}{column}\PYG{p}{]}\PYG{p}{.}\PYG{n}{num\PYGZus{}homes}\PYG{p}{]}\PYG{o}{+}\PYG{o}{+}\PYG{p}{;}
+\PYG{+w}{							}\PYG{n}{NumCellsInRange}\PYG{o}{+}\PYG{o}{+}\PYG{p}{;}
+\PYG{+w}{						}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{					}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{num\PYGZus{}homes}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cCellHomeLimit}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{num\PYGZus{}homes}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}
+\PYG{+w}{					}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Proportion}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{HomeCountOccurrences}\PYG{p}{[}\PYG{n}{num\PYGZus{}homes}\PYG{p}{]}
+\PYG{+w}{					}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{o}{/}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{NumCellsInRange}\PYG{p}{;}
+\PYG{+w}{					}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}entropy}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{F\PYGZus{}ENTROPY\PYGZus{}CONTRIBUTION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Proportion}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{				}
+\PYG{+w}{				}\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{entropy}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{unitsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{local\PYGZus{}entropy}\PYG{p}{;}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{c+cm}{/* printf (\PYGZdq{}freeing homecountoccurrences\PYGZbs{}n\PYGZdq{});}
+\PYG{c+cm}{	free (HomeCountOccurrences); */}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

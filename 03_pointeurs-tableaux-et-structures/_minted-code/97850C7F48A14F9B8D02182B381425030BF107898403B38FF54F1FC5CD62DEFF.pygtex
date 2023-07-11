@@ -1,0 +1,99 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{ifndef CANVAS\PYGZus{}H}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{define CANVAS\PYGZus{}H}
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}stdio.h\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}stdlib.h\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}stdbool.h\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}float.h\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}assert.h\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}time.h\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}math.h\PYGZgt{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZlt{}SDL.h\PYGZgt{}}
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}tools.h\PYGZdq{}}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}linked\PYGZus{}list.h\PYGZdq{}}
+
+
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} STRUCTURE DEFINITIONS \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} //}
+
+\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{cell\PYGZus{}s}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{n}{SDL\PYGZus{}Rect}\PYG{+w}{ }\PYG{n}{fill\PYGZus{}square}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// rectangle for color filling \PYGZhy{} contains pixel coordinates}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{attractiveness}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{service\PYGZus{}presence\PYGZus{}class}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// \PYGZhy{}1 if unoccupied by a service}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{entertain\PYGZus{}presence\PYGZus{}type}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{terrain\PYGZus{}height}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+
+\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{vcanvas\PYGZus{}s}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// width in number of cells}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{height\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// height in number of cells}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cell\PYGZus{}size}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// on\PYGZhy{}screen size of cells in pixels}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{cell\PYGZus{}s}\PYG{o}{*}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{cellsA}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{sorted\PYGZus{}cell\PYGZus{}indices\PYGZus{}attractiveness}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// by default, is equal to the identity}
+\PYG{+w}{	}\PYG{c+c1}{// array \PYGZhy{} the sorting}
+\PYG{+w}{	}\PYG{c+c1}{// is done according to attractivenesses and indices}
+\PYG{+w}{	}\PYG{c+c1}{// correspond to the linearized positions of cells in}
+\PYG{+w}{	}\PYG{c+c1}{// cellsA}
+\PYG{+w}{	}\PYG{n}{l\PYGZus{}list}\PYG{+w}{ }\PYG{n}{service\PYGZus{}border\PYGZus{}pixelsL}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// midpoints of service boundaries}
+\PYG{+w}{	}\PYG{n}{l\PYGZus{}list}\PYG{+w}{ }\PYG{n}{service\PYGZus{}interior\PYGZus{}cellsL}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+
+\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{cell\PYGZus{}s}\PYG{+w}{ }\PYG{n}{cell}\PYG{p}{;}
+\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{vcanvas\PYGZus{}s}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{canvas}\PYG{p}{;}
+
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} GLOBAL CONSTANTS \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} //}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cCellSizePixels}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cCellHomeLimit}\PYG{p}{;}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cNumServiceClasses}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cNumEntertainTypes}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cServiceWeights}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{]}\PYG{p}{;}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cDistanceScaleFactor}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// factor by which}
+
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{p}{;}
+
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} FUNCTIONS \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} //}
+
+\PYG{c+c1}{// creating canvases}
+\PYG{n}{canvas}\PYG{+w}{ }\PYG{n+nf}{CREATE\PYGZus{}CANVAS}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{CellSizePixels}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{WindowDims}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// handy functions}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{CANVAS\PYGZus{}HEIGHT}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{WindowDims}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{CANVAS\PYGZus{}WIDTH}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{WindowDims}\PYG{p}{[}\PYG{l+m+mi}{2}\PYG{p}{]}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{LIN\PYGZus{}COEFF}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{column}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{ASSIGN\PYGZus{}DELIN\PYGZus{}INDEX}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{prow}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pcolumn}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{index}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// cell\PYGZhy{}pixel correspondece}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{ASSIGN\PYGZus{}MIDPOINT\PYGZus{}OF\PYGZus{}CELL}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pX}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pY}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{column}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{ASSIGN\PYGZus{}CELL\PYGZus{}OF\PYGZus{}PIXEL}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{prow}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pcolumn}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{X}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Y}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// cell tests}
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{IS\PYGZus{}CELL\PYGZus{}IN\PYGZus{}CANVAS}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{ARE\PYGZus{}NEIGHBOR\PYGZus{}CELLS}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i1}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j1}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i2}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j2}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// ensuring correctness}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SORT\PYGZus{}CELL\PYGZus{}INDICES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// calculation functions}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}CLASS\PYGZus{}PLACEMENT\PYGZus{}SCORE}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{SquareDist}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{class}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// calculating canvas attributes}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{CALCULATE\PYGZus{}ATTRACTIVENESSES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// quicksort}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SWAP}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{IntTab}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{DoubleTab}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{pos1}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{pos2}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{QS\PYGZus{}PARTITION\PYGZus{}CUT}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{CellIndices}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{CellScores}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{start}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{end}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{pivot}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{QS\PYGZus{}SORT\PYGZus{}ELEMENTS\PYGZus{}BY\PYGZus{}SCORE}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{CellIndices}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{CellScores}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{start}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{end}\PYG{p}{)}\PYG{p}{;}
+
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{endif}
+\end{Verbatim}

@@ -1,0 +1,74 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{ifndef DISPO\PYGZus{}H}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{define DISPO\PYGZus{}H}
+
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}canvas.h\PYGZdq{}}
+
+
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} STRUCTURE DEFINITIONS \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} //}
+
+\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{unit\PYGZus{}s}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{num\PYGZus{}homes}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{local\PYGZus{}density}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{local\PYGZus{}entropy}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+
+\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{vdisposition\PYGZus{}s}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{width\PYGZus{}units}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{height\PYGZus{}units}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{unit\PYGZus{}s}\PYG{o}{*}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{unitsA}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{sorted\PYGZus{}unit\PYGZus{}indices\PYGZus{}density}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{num\PYGZus{}inhabitants}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{max\PYGZus{}possible\PYGZus{}inhabitants}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{max\PYGZus{}possible\PYGZus{}density}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{entropy}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+
+\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{unit\PYGZus{}s}\PYG{+w}{ }\PYG{n}{unit}\PYG{p}{;}
+\PYG{k}{typedef}\PYG{+w}{ }\PYG{k}{struct}\PYG{+w}{ }\PYG{n+nc}{vdisposition\PYGZus{}s}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{disposition}\PYG{p}{;}
+
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} GLOBAL CONSTANTS \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} //}
+
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cDensityToleranceRadius}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cEntropyToleranceRadius}\PYG{p}{;}
+\PYG{k}{extern}\PYG{+w}{ }\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{cHomeAttributionInflation}\PYG{p}{;}
+
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} FUNCTIONS \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} //}
+
+\PYG{c+c1}{// creating and handling dispositions}
+\PYG{n}{disposition}\PYG{+w}{ }\PYG{n+nf}{CREATE\PYGZus{}CANVAS\PYGZus{}DISPOSITION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{)}\PYG{p}{;}
+\PYG{n}{disposition}\PYG{+w}{ }\PYG{n+nf}{COPY\PYGZus{}DISPOSITION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// ensuring correctness}
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{IS\PYGZus{}DISPOSITION\PYGZus{}HOME\PYGZus{}ASSIGNMENT\PYGZus{}COHERENT}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{SORT\PYGZus{}UNIT\PYGZus{}INDICES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// manipulating and placing homes in dispositions}
+\PYG{k+kt}{bool}\PYG{+w}{ }\PYG{n+nf}{TRANSFER\PYGZus{}HOMES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Amount}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i1}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j1}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i2}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j2}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{INITIALIZE\PYGZus{}DISPOSITION\PYGZus{}FROM\PYGZus{}CELLS\PYGZus{}1}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{HomeAttributionInflation}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{INITIALIZE\PYGZus{}DISPOSITION\PYGZus{}FROM\PYGZus{}CELLS\PYGZus{}2}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{HomeAttributionInflation}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{INITIALIZE\PYGZus{}DISPOSITION\PYGZus{}BLINDLY}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// calculation and attribution functions}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}DENSITY\PYGZus{}CONTRIBUTION}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{SqDist}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumHomes}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}HOME\PYGZus{}ATTRIBUTION\PYGZus{}PROPORTION}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Attractiveness}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{HighestAttractiveness}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{HomeAttributionInflation}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}ENTROPY\PYGZus{}CONTRIBUTION}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Ratio}\PYG{p}{)}\PYG{p}{;}
+
+\PYG{c+c1}{// calculating disposition attributes}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{CALCULATE\PYGZus{}LOCAL\PYGZus{}DENSITIES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{CALCULATE\PYGZus{}LOCAL\PYGZus{}ENTROPIES}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{;}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{CALCULATE\PYGZus{}ENTROPY}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{;}
+
+
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{FREE\PYGZus{}DISPOSITION}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{disposition}\PYG{+w}{ }\PYG{n}{Dispo}\PYG{p}{)}\PYG{p}{;}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{endif}
+\end{Verbatim}

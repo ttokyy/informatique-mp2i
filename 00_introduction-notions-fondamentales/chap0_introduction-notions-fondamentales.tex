@@ -1,0 +1,248 @@
+\input{../commands_alt.tex}
+
+\usepackage{euscript}
+
+\begin{document}
+
+\title{Introduction et notions fondamentales}
+
+\section{Exemples de domaines informatiques}
+
+	L'informatique ne se résume pas à l'utilisation des ordinateurs, comme le dit Edsger Dijkstra dans sa célèbre citation : ``l'informatique n'est pas plus la science des ordinateurs que l'astronomie n'est celle des télescopes''. La discipline est au contraire très vaste, et compte un grand nombre de domaines parmi lesquels : \nt
+			\hs{10} \bdot les bases de données \\
+			\hs{10} \bdot les réseaux \\
+			\hs{10} \bdot les systèmes embarqués \\
+			\hs{10} \bdot la robotique \\
+			\hs{10} \bdot la cybersécurité \\
+			\hs{10} \bdot le block chain \\
+			\hs{10} \bdot la cryptographie \\
+			\hs{10} \bdot le calcul scientifique \\
+			\hs{10} \bdot l'intelligence artificielle \\
+			\hs{10} \bdot l'interface homme-machine, humain-machine ou utilisateur \\
+			\hs{10} \bdot le développement web \\
+			\hs{10} \bdot la recherche opérationnelle et l'optimisation (plannings, projets...) \\
+			\hs{10} \bdot la vérification de programmes (empirique et méthodique) \\
+			\hs{10} \bdot la preuve de programmes (formel, s'appuie sur la logique) \\
+			\hs{10} \bdot la logique \nt
+	Ces domaines se divisent souvent eux-mêmes en sous-domaines : ainsi, on trouve dans l'intelligence artificielle les algorithmes génétiques (qui donnent des solutions approchées à des problèmes), le machine learning, l'inférence, l'aide à la décision (exemple : partage équitable...) ou encore le choix social computationnel (exemples : modèles de vote, découpage des territoires, cartes électorales...).
+	
+\section{Informatique sans ordinateur : les algorithmes}
+	
+	\vs{-2}
+	\begin{Definition}[algorithme]
+		Un algorithme est une méthode systématique à base d'opérations qui permet de résoudre toutes les instances d'un problème.
+	\end{Definition}
+	
+	\intro{Les deux sections de cette partie sont consacrées à l'étude rapide de deux exemples d'algorithme.}
+	\vs{-5}
+	
+	\subsection{Compter en binaire}
+	
+		Lorsque l'on compte sur les doigts en employant la méthode naturelle, on compte en unaire : chaque doigt compte pour 1 et on peut donc compter au maximum jusqu'à 10. \nt
+			%
+		Cependant, si l'on attribue à chaque doigt de la main un poids deux fois plus grand que celui du doigt précédent, en commençant par 1 pour le pouce, on peut compter jusqu'à \(2^0+2^1+2^2+2^3+2^4 = 2^5 - 1 = 31\) : on compte alors en binaire. \nll
+			%
+		\uplabel{Propriété :} De façon générale, pour tout \(n\in\bb{N}\) on a \(\displaystyle \sum_{i=0}^n 2^i = 2^{n+1} - 1\).
+		
+		\eqskip{2mm}
+		\begin{Preuve}
+			Pour \(n\in\bb{N}\), notons \(S = \displaystyle\sum\nolimits_{i=0}^n 2^i\). En l'écrivant différemment, on a une somme télescopique :
+				\[
+					S=2S-S = \sum_{i=0}^n 2^{i+1} - \sum_{i=0}^n 2^i = \sum_{j=1}^{n+1} 2^j - \sum_{j=0}^n 2^j = 2^{n+1} - 1
+				\]
+			(on pouvait également procéder par récurrence sur \(n\)).
+		\end{Preuve}
+	
+		\vs{2}
+		On propose à présent l'algorithme suivant, qui permet d'obtenir la ``représentation'' de tout entier de l'intervalle \([0..31]\) dans le comptage en binaire sur les doigts. \vs{2}
+			
+			\begin{algo}{Comptage en binaire}{$n\in\bb{N}^*$}{}
+				Commencer tous les doigts baissés \\
+				\(i = 0\) \\
+				Tant que \(i < n\) \\ \Indp
+				Si le pouce est baissé \\ \Indp
+				Lever le pouce \\
+				\(i \gets i+1\) \\ \Indm
+				Sinon \\ \Indp
+				Baisser tous les doigts levés consécutifs au pouce \\
+				Lever le doigt suivant \\
+				Baisser le pouce \\
+				\(i \gets i+1\)
+			\end{algo}
+		
+	\subsection{Tours de Hanoï}
+		
+		On s'intéresse dans cet exemple au jeu des tours de Hanoï dont on rappelle brièvement les règles. \nt
+		On dispose de \(n\) disques de diamètres allant de 1 à \(n\) (notés \((d_k)_{k\in[1..n]}\)) et d'un plateau à trois piquets sur lesquels entre lesquels on peut les déplacer, sous les contraintes suivantes : \nt
+			\hs{5} \bdot on ne peut déplacer qu'un disque à la fois \\
+			\hs{5} \bdot on n'a accès qu'aux disques situés au sommet d'un piquet lorsque l'on effectue un déplacement \\
+			\hs{5} \bdot aucun disque ne peut être posé sur un disque de diamètre plus petit \nt
+		Initialement, tous les disques se trouvent sur l'un des piquets (usuellement celui de gauche). Le but du jeu est alors de les déplacer tous vers un autre piquet (celui de droite souvent) en respectant les règles précédentes. \nll
+			%
+		On propose une résolution du jeu de manière récursive (\emph{cf.} chapitre 6 -- ``premiers pas en OCaml'').
+		
+		\vs{1}
+		\begin{Notations}
+		Soit \(k,n\in(\bb{N}^*)^2\) et \(x,y\) deux piquets quelconques parmi les trois du jeu. On note : \\
+			\hs{5} \bdot \(d_k : x \rightarrow y\) l'instruction consistant à déplacer \(d_k\) de \(x\) vers \(y\) (lorsque cela est possible) \\
+			\hs{5} \bdot \(\rm{autre}(x,y)\) le troisième piquet
+		\end{Notations}
+		
+		\vs{2}
+		Sous ces notations, l'algorithme suivant permet de résoudre n'importe quelle instance du jeu. \pagebreak
+			
+			\begin{algo}{Hanoï}{\(n\in\bb{N}^*\) et \(x,y\) deux piquets}{}
+				Si \(n=1\) alors
+					\(d_1 : x \to y\) \\
+				Sinon \\ \Indp
+					\textsf{Hanoï}\((n-1,x,\rm{autre}(x,y))\) \\
+					\(d_n : x \to y\) \\
+					\textsf{Hanoï}\((n-1,\rm{autre}(x,y),y)\)
+			\end{algo}
+		
+		\vs{1}
+		\eqskip{3mm}		
+		\begin{Propriete}
+			On définit la suite \((h_n)_{n\in\bb{N}^*} \in \bb{N}^{\bb{N}^*}\) de la manière suivante :
+				\[
+					\forall\,n\in\bb{N}^*,\, h_n = \left\{ \!\!\begin{tabular}{l}
+					\(1\) si \(n = 1\) \\
+					\(2h_{n-1} + 1\) sinon
+					\end{tabular} \right.
+				\]
+			Compte tenu du pseudo-code de l'algorithme précédent, \(h_n\) donne le nombre d'opérations nécessaires à \textsf{Hanoï} pour déplacer \(n\) disques entre deux piquets. \nt
+			Il s'ensuit alors : \(\forall\,n\in\bb{N}^*\), \(h_n = 2^n-1\).
+		\end{Propriete}
+		
+		\vs{2}
+		\begin{Preuve}
+			Par une récurrence immédiate sur \(n\in\bb{N}^*\).
+		\end{Preuve}
+	
+		\vs{2}
+		\begin{Exercice}
+			Développer \textsf{Hanoï}\((4,\rm{A},\rm{C})\) de façon à ce qu'il ne reste à la fin que des déplacements.
+		\end{Exercice}
+	
+\section{Langage de programmation}
+	
+	\vs{-2}
+	\begin{Definition}[langage de programmation]
+		Un langage de programmation est une manière conventionnelle et formelle (\emph{i.e.} avec un format bien précis) en vue de formuler des algorithmes intelligibles par les humains et exécutables par une machine.
+	\end{Definition}
+	
+	\vs{2}
+	\renewcommand{\arraystretch}{1.2}
+	Il est possible d'établir une analogie entre les langages de programmation et les langues parlées par les populations humaines. Les similitudes sont résumées dans le tableau de comparaison suivant. \\[3mm]
+	\begin{tabular}{l|p{68mm}|p{75mm}}
+		& Langue naturelle & Langage de programmation \\ \hline
+		Alphabet & \raggedright majuscules, minuscules, chiffres, ponctiuation (dont l'espace$^{(*)}$) & la même chose, avec en plus les symboles \texttt{@} \texttt{\#} \texttt{\&} \texttt{/} \texttt{\{ \}} \c{( )} \c{[ ]}, la tabulation$^{(*)}$, etc. (en fait, toute la table ASCII) \\ \hline
+		Mots & mots du dictionnaire, noms propres & mots-clé (\mintinline{python}{def}, \c{return}...), identificateurs (noms de variables, de fonctions) \\ \hline
+		Grammaire & \raggedright phrases formées de mots selon les règles de la grammaire & bloc de code qui respecte la syntaxe \\ \hline
+		Sémantique & sens des phrases & interprétation du code
+	\end{tabular}
+	
+	\pagebreak
+	
+\section{Problèmes et fonctions}
+
+	\subsection{Problèmes}
+		
+		\vs{-2}
+		\begin{Definition}[problème]
+			Un problème est la donnée : \\
+			\hs{5} \bdot d'un format de paramètres d'entrée (décrivant quelles données on a en entrée) \\
+			\hs{5} \bdot de la sortie attendue en fonction de ces paramètres. \nt
+				%
+			Si la sortie attendue est un booléen (vrai \textsf{V} ou faux \textsf{F}), il s'agit d'un problème de décision. \\
+			Si la sortie attendue est une valeur maximisant ou minimisant une fonction donnée sur un ensemble donné, on
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Exemple}
+			\!\pbm{RECTANGLE}{\((a,b)\in\bb{N}^2\)}{la surface d'un rectangle de côtés \(a\) et \(b\)}
+		\end{Exemple}
+	
+		\begin{Definition}[problème de décision]
+			Un problème de décision est un problème dont la sortie est un booléen (Vrai (\textsf{V}) ou Faux (\textsf{F})).
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Exemple}
+			\!\pbm{PARIT\'E}{\(n\in\bb{N}\)}{Vrai si \(n\) est pair, Faux sinon}
+		\end{Exemple}
+	
+		\begin{Definition}[problème d'optimisation]
+			Un problème d'optimisation est un problème dont la sortie attendue maximise ou minimise une fonction donnée sur un ensemble donné.
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Exemples} \pbm{SAC \'A DOS}{\(P_{\text{max}} \in \bb{R}^{+*}\) \\[-1mm]
+			\aentspace \((p_i)_{i\in[1..n]}\in(\bb{R}^+)^n\) \\
+			\aentspace \((v_i)_{i\in[1..n]}\in(\bb{R}^+)^n\)}{\((x^*_i)_{i\in[1..n]}\in\{0,1\}^n\) tel que \(\displaystyle \sum\nolimits_{i=1}^nx^*_ip_i \leq P_\text{max}\) qui maximise \\[2mm] \colsep{2.2pt}
+				\hs{35} \(
+					f = \fun{\{0,1\}^n}{\bb{R}}{x}{\displaystyle\sum\nolimits_{i=1}^nx_iv_i}
+				\)} \\[3mm]
+				%
+			\hs{22} \pbm{\parbox[t]{28.2mm}{\centering PLUS COURT CHEMIN}}{un graphe orienté \(\EuScript{G} = (V,E)\) \\
+			\aentspace un point de départ \(\rm{A} \in V\) \\
+			\aentspace un point d'arrivée \(\rm{B} \in V\)}{un chemin de longueur minimale de A à B dans \(\EuScript{G}\)}
+		\end{Exemples}
+		
+		\begin{Definition}[instance d'un problème]
+			Une instance d'un problème est une famille de paramètres répondant au type de ses entrées. \nt
+				%
+			Dans le cas particulier d'un problème de décision, on dira que l'instance est : \\
+				\hs{5} \bdot positive si la sortie correspondante est Vrai \\
+				\hs{5} \bdot négative si la sortie correspondante est Faux.
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Exemples}
+			18 est une instance de \textsf{Parité}, de solution Vrai (c'est donc une instance positive). \\
+			17 est une autre instance de \textsf{Parité}, de solution Faux (c'est une instance négative). \\
+			\((7,8)\) est une instance de \textsf{Rectangle} de solution 56.
+		\end{Exemples}
+			
+			
+	\subsection{Fonctions}
+		
+		\vs{-2}
+		\begin{Definition}[fonction en programmation]
+			En programmation, une fonction peut être vue comme un rassemblement d'instructions qui s'appliquent sur des données que l'on peut faire varier, appelées arguments de la fonction.
+		\end{Definition}
+		
+		\vs{2}
+		\begin{Remarque}
+			Si on attend généralement d'une fonction qu'elle donne ou retourne un résultat en sortie, elle peut aussi avoir des effets de bord comme des affichages ou des modifications de la mémoire (\emph{cf.} fonctions de type \texttt{void} en C).
+		\end{Remarque}
+		\vs{2}
+		
+	La résolution de problèmes tels que définis dans la section précédente passe en général par des fonctions.
+	Quitte à décomposer des les problèmes difficiles en sous-problèmes, on essaiera d'avoir une fonction par problème. \nll
+		%
+	Pour que ce découpage en fonctions ou en sous-problèmes soit lisible dans le code, on munit le code de chaque fonction d'une spécification qui contient : \nt
+		\hs{5} \bdot le nombre et le type des arguments \\
+		\hs{5} \bdot le type de la sortie \\
+		\hs{5} \bdot les hypothèses sur les arguments \\
+		\hs{5} \bdot la valeur de la sortie pour les arguments (et éventuellement une description des effets de bord)
+		
+		\vs{2}
+		\begin{Remarque}
+			Les deux premiers éléments énoncés précédemment constituent dans la spécification ce que l'on appelle la signature de la fonction, ou encore prototype.
+		\end{Remarque}
+		
+		\vs{2}
+		\begin{Exemple}
+			La fonction en C suivante permet de calculer l'aire d'un rectangle dont on connaît les deux dimensions, répondant ainsi au problème \textsf{Rectangle} de la section précédente :
+			\begin{C}
+					int surface_rectangle (int L1,int L2){
+						// hyp : L1>=0 && L2 >= 0
+						// retourne la surface d'un rectangle
+						// de longueur L1et de largeur L2
+						return (L1*L2);
+					}
+			\end{C}
+		\end{Exemple}
+	
+\end{document}

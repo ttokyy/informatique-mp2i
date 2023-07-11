@@ -1,0 +1,2783 @@
+\input{../commands_alt.tex}
+\beamertemplatenavigationsymbolsempty
+
+\begin{document}
+
+{\Large \texttt{\textbf{canvas.h}}}
+\vspace*{1mm}
+\hrule
+\fontsize{6pt}{6pt}\selectfont
+\begin{C}
+#ifndef CANVAS_H
+#define CANVAS_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <float.h>
+#include <assert.h>
+#include <time.h>
+#include <math.h>
+#include <SDL.h>
+
+#include "tools.h"
+#include "linked_list.h"
+
+
+
+// ----- STRUCTURE DEFINITIONS ----- //
+
+struct cell_s {
+	SDL_Rect fill_square; // rectangle for color filling - contains pixel coordinates
+	double attractiveness;
+	int service_presence_class; // -1 if unoccupied by a service
+	int entertain_presence_type;
+	
+	double terrain_height;
+};
+
+struct vcanvas_s {
+	int width_cells; // width in number of cells
+	int height_cells; // height in number of cells
+	int cell_size; // on-screen size of cells in pixels
+	
+	struct cell_s** cellsA;
+	int* sorted_cell_indices_attractiveness; // by default, is equal to the identity
+	// array - the sorting
+	// is done according to attractivenesses and indices
+	// correspond to the linearized positions of cells in
+	// cellsA
+	l_list service_border_pixelsL; // midpoints of service boundaries
+	l_list service_interior_cellsL;
+};
+
+typedef struct cell_s cell;
+typedef struct vcanvas_s* canvas;
+
+
+// ----- GLOBAL CONSTANTS ----- //
+
+extern const int cCellSizePixels;
+extern const int cCellHomeLimit;
+
+extern const int cNumServiceClasses;
+extern const int cNumEntertainTypes;
+extern const double cServiceWeights[7];
+
+extern const double cDistanceScaleFactor; // factor by which
+
+
+extern const int cWindowDims[2];
+
+
+// ----- FUNCTIONS ----- //
+
+// creating canvases
+canvas CREATE_CANVAS (int CellSizePixels, const int WindowDims[2]);
+
+// handy functions
+int CANVAS_HEIGHT (canvas Canvas, const int WindowDims[2]);
+int CANVAS_WIDTH (canvas Canvas, const int WindowDims[2]);
+int LIN_COEFF (canvas Canvas, int row, int column);
+void ASSIGN_DELIN_INDEX (int* prow, int* pcolumn, canvas Canvas, int index);
+
+// cell-pixel correspondece
+void ASSIGN_MIDPOINT_OF_CELL (int* pX, int* pY, canvas Canvas, int row, int column);
+void ASSIGN_CELL_OF_PIXEL (int* prow, int* pcolumn, canvas Canvas, int X, int Y);
+
+// cell tests
+bool IS_CELL_IN_CANVAS (canvas Canvas, int i, int j);
+bool ARE_NEIGHBOR_CELLS (canvas Canvas, int i1, int j1, int i2, int j2);
+
+// ensuring correctness
+void SORT_CELL_INDICES (canvas Canvas);
+
+// calculation functions
+double F_CLASS_PLACEMENT_SCORE (double SquareDist, int class);
+
+// calculating canvas attributes
+void CALCULATE_ATTRACTIVENESSES (canvas Canvas);
+
+// quicksort
+void SWAP (int* IntTab, double* DoubleTab, int pos1, int pos2);
+int QS_PARTITION_CUT (int* CellIndices, double* CellScores, int start, int end, int pivot);
+void QS_SORT_ELEMENTS_BY_SCORE (int* CellIndices, double* CellScores, int start, int end);
+
+
+#endif
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{canvas.c}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#include "canvas.h"
+
+// constants
+const int cCellSizePixels = 10;
+const int cNumServiceClasses = 7;
+const int cNumEntertainTypes = 2;
+
+const int cCellHomeLimit = 10;
+const double cServiceWeights[7] = {1.2, 0.9, 0.6, 0.4, 0.3, -0.5, -1};
+
+const double cDistanceScaleFactor = 2.0;
+
+
+
+// returns an empty canvas (i.e. with all attributes initialized to their null
+// or neutral value) covering the entire screen, and whose cells are sized
+// CellSizePixels in size
+canvas CREATE_CANVAS (int CellSizePixels, const int WindowDims[2]){
+	
+	canvas Canvas = (canvas) malloc (sizeof(struct vcanvas_s));
+	
+	Canvas->width_cells = ceil (WindowDims[0]/cCellSizePixels);
+	Canvas->height_cells = CANVAS_HEIGHT (Canvas, WindowDims);
+	Canvas->cell_size = CellSizePixels;
+	
+	Canvas->service_border_pixelsL = NULL;
+	Canvas->service_interior_cellsL = NULL;
+	
+	Canvas->cellsA = (cell**) malloc (Canvas->height_cells*sizeof(cell*));
+	Canvas->sorted_cell_indices_attractiveness = (int*) malloc
+	/**/ (Canvas->height_cells*Canvas->width_cells*sizeof(int));
+	
+	for (int index = 0; index < Canvas->height_cells*Canvas->width_cells; index++)
+	Canvas->sorted_cell_indices_attractiveness[index] = index;
+	
+	for (int i = 0; i < Canvas->height_cells; i++){
+		
+		Canvas->cellsA[i] = (cell*) malloc (Canvas->width_cells*sizeof(cell));
+		
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			Canvas->cellsA[i][j].attractiveness = 0;
+			Canvas->cellsA[i][j].service_presence_class = -1;
+			
+			Canvas->cellsA[i][j].terrain_height = -DBL_MAX;
+			
+			Canvas->cellsA[i][j].fill_square.x = j*cCellSizePixels;
+			Canvas->cellsA[i][j].fill_square.y = i*cCellSizePixels;
+			Canvas->cellsA[i][j].fill_square.w = cCellSizePixels;
+			Canvas->cellsA[i][j].fill_square.h = cCellSizePixels;
+			
+		}
+	}
+	
+	return Canvas;
+}
+
+
+/* hyp: Canvas->width_cells has been initialized */
+// returns the appropriate value of Canvas->width_cells according
+// to Canvas->height_cells and the window size as given by WindowDims
+int CANVAS_HEIGHT (canvas Canvas, const int WindowDims[2]){
+	
+	return (int) ((((double) WindowDims[1])/((double) WindowDims[0]))
+	/**/ * ((double) Canvas->width_cells));
+}
+
+
+/* precond: Canvas->height_cells has been initialized */
+// returns the appropriate value of Canvas->width_cells according
+// to Canvas->height_cells and the window size as given by WindowDims
+int CANVAS_WIDTH (canvas Canvas, const int WindowDims[2]){
+	
+	return (int) ((((double) WindowDims[1])/((double) WindowDims[0]))
+	/**/ * ((double) Canvas->height_cells)); 
+}
+
+
+int LIN_COEFF (canvas Canvas, int row, int column){
+	
+	return row*Canvas->width_cells + column;
+}
+
+
+void ASSIGN_DELIN_INDEX (int* prow, int* pcolumn, canvas Canvas, int index){
+	
+	*prow = index/Canvas->width_cells;
+	*pcolumn = index % Canvas->width_cells;
+}
+
+
+// assigns the on-screen pixel coordinates of cell Canvas->cellsA[row][column]'s
+// midpoint to *pX and *pY
+void ASSIGN_MIDPOINT_OF_CELL (int* pX, int* pY, canvas Canvas, int row, int column){
+	
+	*pX = ((2*column)*Canvas->cell_size)/2;
+	*pY = ((2*row)*Canvas->cell_size)/2;
+}
+
+
+// modifies *prow and *pcolumn such that Canvas->cellsA[*prow][*pcolumn] contains
+// the on-screen pixel of coordinates (X,Y)
+void ASSIGN_CELL_OF_PIXEL (int* prow, int* pcolumn, canvas Canvas, int X, int Y){
+	
+	*prow = Y/Canvas->cell_size;
+	*pcolumn = X/Canvas->cell_size;
+}
+
+
+// tests whether or not (i,j) forms a valid cell index for Canvas
+bool IS_CELL_IN_CANVAS (canvas Canvas, int i, int j){
+	
+	return (i >= 0 && i < Canvas->height_cells && j >= 0 && j < Canvas->width_cells);
+}
+
+
+/* hyp: IS_CELL_IN_CANVAS (Canvas, i1, j1) && IS_CELL_IN_CANVAS (Canvas, i2, j2) */
+// tests whether or not cells
+bool ARE_NEIGHBOR_CELLS (canvas Canvas, int i1, int j1, int i2, int j2){
+	
+	assert (IS_CELL_IN_CANVAS (Canvas, i1, j1) && IS_CELL_IN_CANVAS (Canvas, i2, j2));
+	return (i1 >= i2-1 && i1 <= i2+1 && j1 >= j2-1 && j1 <= j2+1);
+}
+
+
+// updates Canvas->sorted_cell_indices such that the sequence
+// (Canvas->cellsA[ik][jk].attractiveness), where LIN (Canvas, ik, jk) = k, increases
+// with k
+void SORT_CELL_INDICES (canvas Canvas){
+	
+	int NumCells = Canvas->width_cells*Canvas->height_cells;
+	int* CellIndices = Canvas->sorted_cell_indices_attractiveness;
+	double* CellAttractivenesses = (double*) malloc (NumCells*sizeof(double));
+	
+	for (int index = 0; index < NumCells; index++){
+		
+		int ci, cj;
+		ASSIGN_DELIN_INDEX (&ci, &cj, Canvas, CellIndices[index]);
+		CellAttractivenesses[index] = Canvas->cellsA[ci][cj].attractiveness;
+	}
+	
+	QS_SORT_ELEMENTS_BY_SCORE (CellIndices, CellAttractivenesses, 0, NumCells-1);
+	
+	free (CellAttractivenesses);
+}
+
+// hyp: 0 <= class < cNumServiceClasses
+// calculates the placement score contribution of service class class
+// for a cell at distance sqrt(SquareDist) away from said class
+double F_CLASS_PLACEMENT_SCORE (double SquareDist, int class){
+	double Dist = sqrt (SquareDist);
+	if (cServiceWeights[class] > 0)
+		return (0.02*cServiceWeights[class]*(10.+(Dist/2.))
+		/**/ *exp(-(cServiceWeights[class]*SquareDist)/12000.));
+	else
+		return (0.6*cServiceWeights[class]
+		/**/ *exp((cServiceWeights[class]*SquareDist)/20000.));
+}
+
+
+// assigns to each Canvas->cellsA[i][j] its normalized attractiveness value
+// (calculated by summing the cell's class placement scores over all classes
+// and then normalizing by the attractiveness score of a hypothetical cell whose
+// class placement scores are maximal for each class)
+void CALCULATE_ATTRACTIVENESSES (canvas Canvas){
+	
+	// array that will contain, for each (i,j), Canvas->cellsA[i][j]'s distance to each class'
+	double* SqDistsToClasses = (double*) malloc (cNumServiceClasses*sizeof(double));
+	
+	double Normalizer = 0;
+	for (int class = 0; class < cNumServiceClasses; class++){
+		if (cServiceWeights[class] > 0){
+			double ArgmaxScore = (10.*(sqrt(1+(60./cServiceWeights[class]))-1))
+			/**/ *(10.*(sqrt(1+(60./cServiceWeights[class]))-1));
+			Normalizer += F_CLASS_PLACEMENT_SCORE ((int) ArgmaxScore, class);
+		}
+	}
+	
+	for (int i = 0; i < Canvas->height_cells; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			// only score unoccupied cells
+			if (Canvas->cellsA[i][j].service_presence_class == -1){
+				
+				int CellX = Canvas->cellsA[i][j].fill_square.x;
+				int CellY = Canvas->cellsA[i][j].fill_square.y;
+				
+				// reset array for current cell's distance calculations
+				for (int class = 0; class < cNumServiceClasses; class++){
+					SqDistsToClasses[class] = DBL_MAX;
+				}
+				
+				// calculate distance to each class by looking at all service borders
+				// and updating array
+				l_list ServiceBorders = Canvas->service_border_pixelsL;
+				
+				while (ServiceBorders != NULL){
+					
+					int class = ServiceBorders->spec;
+					double SqDist = ((ServiceBorders->x - CellX)*(ServiceBorders->x - CellX)
+					/**/ + (ServiceBorders->y - CellY)*(ServiceBorders->y - CellY))
+					/**/ /cDistanceScaleFactor;
+					SqDistsToClasses[class] = min_double (SqDist, SqDistsToClasses[class]);
+					
+					ServiceBorders = ServiceBorders->next;
+				}
+				
+				// calculate attractiveness
+				Canvas->cellsA[i][j].attractiveness = 0;
+				for (int class = 0; class < cNumServiceClasses; class++){
+					if (SqDistsToClasses[class] != DBL_MAX){
+						Canvas->cellsA[i][j].attractiveness +=
+						/**/ F_CLASS_PLACEMENT_SCORE (SqDistsToClasses[class], class);
+					}
+				}
+				Canvas->cellsA[i][j].attractiveness =
+				/**/ Canvas->cellsA[i][j].attractiveness*(1000/Normalizer);
+			}
+		}
+	}
+	SORT_CELL_INDICES (Canvas);
+	free (SqDistsToClasses);
+}
+
+
+// hyp: if Array is of length l, 0 <= pos1 < l && 0 <= pos2 < l
+// swap Tab[pos1] and Tab[pos2]
+void SWAP (int* IntTab, double* DoubleTab, int pos1, int pos2){
+	
+	int TempInt = IntTab[pos1];
+	IntTab[pos1] = IntTab[pos2];
+	IntTab[pos2] = TempInt;
+	
+	double TempDouble = DoubleTab[pos1];
+	DoubleTab[pos1] = DoubleTab[pos2];
+	DoubleTab[pos2] = TempDouble;
+}
+
+
+// hyp: start, pivot and end are valid indices for ElemIndices and ElemScores
+// swaps elements in ElemIndices[start..end] and ElemScores[start..end] identically then
+// returns an index PivotPlace such that after the procedure the following are true:
+// - ElemScores[PivotPlace] has ElemScores[pivot]'s initial value
+// - for all i < PivotPlace, ElemScores[i] <= ElemScores[PivotPlace]
+// - for all i > PivotPlace, ElemScores[i] > ElemScores[PivotPlace]
+int QS_PARTITION_CUT (int* ElemIndices, double* ElemScores, int start, int end, int pivot){
+	
+	SWAP (ElemIndices, ElemScores, pivot, end);
+	int PivotPlace = start;
+	for (int pos = start; pos < end; pos++){
+		if (ElemScores[pos] >= ElemScores[end]){
+			SWAP (ElemIndices, ElemScores, pos, PivotPlace);
+			PivotPlace++;
+		}
+	}
+	SWAP (ElemIndices, ElemScores, PivotPlace, end);
+	return PivotPlace;
+}
+
+
+// hyp: start and end are valid indices for ElemIndices and ElemScores
+// sorts ElemScores[start..end] in decreasing order using quicksort,
+// also sorting ElemScores following the same permutation 
+void QS_SORT_ELEMENTS_BY_SCORE (int* ElemIndices, double* ElemScores, int start, int end){
+	
+	if (start < end){
+		int pivot = (rand () % (end-start+1)) + start;
+		int PivotPlace = QS_PARTITION_CUT (ElemIndices, ElemScores, start, end, pivot);
+		QS_SORT_ELEMENTS_BY_SCORE (ElemIndices, ElemScores, start, PivotPlace-1);
+		QS_SORT_ELEMENTS_BY_SCORE (ElemIndices, ElemScores, PivotPlace+1, end);
+	}
+}
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{terrain.h}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#ifndef TERRAIN_H
+#define TERRAIN_H
+
+#include "canvas.h"
+
+
+
+// ----- FUNCTIONS ----- //
+
+double SMOOTHSTEP (double lambda);
+double F_HEIGHT_OF_PIXEL (double** VertexHeights, int NoiseFrequency, int PixelX, int PixelY);
+void ADD_NOISE_LAYER (canvas Canvas, int NoiseFrequency, double RotationRadians,
+/**/ double LayerWeight);
+void GENERATE_TERRAIN_HEIGHTMAP (canvas Canvas, double Amplitude, int Frequency,
+/**/ int NumOctaves, double Lacunarity, double Persistence, double Exponentiation);
+
+#endif
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{terrain.c}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#include "terrain.h"
+
+
+const int cNoiseFrequencyPixels = 200;
+
+
+// returns smoothstep (lambda)
+double SMOOTHSTEP (double lambda){
+	
+	return 3*lambda*lambda - 2*lambda*lambda*lambda;
+}
+
+
+// given a noise tiling whose tiles are sized NoiseFrequency and the noise values at each
+// tile's corners contained in VertexHeights, returns the height map's value at the point
+// of coordinates (PixelX, PixelY) obtained by interpolating between the nearest vertices
+// according to the smoothstep function
+double F_HEIGHT_OF_PIXEL (double** VertexHeights, int NoiseFrequency, int PixelX, int PixelY){
+	
+	// find the position of the tile containing PixelX and PixelY
+	int Tile_i = PixelY/NoiseFrequency;
+	int Tile_j = PixelX/NoiseFrequency;
+	
+	// printf ("%d,%d\n", Tile_i, Tile_j);
+	
+	// extract the height at each one of the tile's corners
+	double a = VertexHeights[Tile_i][Tile_j];     // top-left
+	double b = VertexHeights[Tile_i][Tile_j+1];   // top-right
+	double c = VertexHeights[Tile_i+1][Tile_j];   // bottom-left
+	double d = VertexHeights[Tile_i+1][Tile_j+1]; // bottom-right
+	
+	double i_diff = (double)PixelY/(double)NoiseFrequency - (double)Tile_i;
+	double j_diff = (double)PixelX/(double)NoiseFrequency - (double)Tile_j;
+	
+	return a + (b-a)*SMOOTHSTEP(j_diff) + (c-a)*SMOOTHSTEP(i_diff) +
+	/**/ (a-b-c+d)*SMOOTHSTEP(j_diff)*SMOOTHSTEP(i_diff);
+}
+
+
+// 
+void ADD_NOISE_LAYER (canvas Canvas, int NoiseFrequency, double RotationRadians,
+/**/ double LayerWeight){
+	
+	// calculate number of tiles in length, in width and diagonally to cover window rectangle
+	int WidthTiles = cWindowDims[0]/NoiseFrequency;
+	int HeightTiles = cWindowDims[1]/NoiseFrequency;
+	int DiagonalSizePixels = (int)ceil(sqrt((double)cWindowDims[0]*cWindowDims[0] +
+	/**/ (double)cWindowDims[1]*cWindowDims[1]));
+	
+	// determine heights of tile vertices randomly
+	int InscribingSquareSizeTiles = 2*DiagonalSizePixels/NoiseFrequency;
+	double** VertexHeights = (double**) malloc ((InscribingSquareSizeTiles)*sizeof(double*));
+	
+	for (int row = 0; row < InscribingSquareSizeTiles; row++){
+		
+		VertexHeights[row] = (double*) malloc ((InscribingSquareSizeTiles)*sizeof(double));
+		
+		for (int column = 0; column < InscribingSquareSizeTiles; column++){
+			
+			VertexHeights[row][column] = LayerWeight*(double)rand()/(double)RAND_MAX;
+		}
+	}
+	
+	// calculate height of each canvas cell's midpoint pixel according to the above values
+	int CellX, CellY;
+	
+	for (int i = 0; i < Canvas->height_cells; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			ASSIGN_MIDPOINT_OF_CELL (&CellX, &CellY, Canvas, i, j);
+			int HalfWidth = cWindowDims[0]/2;
+			int HalfHeight = cWindowDims[1]/2;
+			
+			// rotate heightmap by RotationRadians
+			int RotatedX = cos(RotationRadians)*(CellX-HalfWidth)
+			/**/ - sin(RotationRadians)*(CellY-HalfHeight) + DiagonalSizePixels/2;
+			int RotatedY = sin(RotationRadians)*(CellX-HalfWidth)
+			/**/ + cos(RotationRadians)*(CellY-HalfHeight) + DiagonalSizePixels/2;
+			
+			// printf ("%d, %d ---> (%f) %d, %d\n", CellX, CellY, RotationRadians, RotatedX, RotatedY);
+			Canvas->cellsA[i][j].terrain_height += F_HEIGHT_OF_PIXEL (VertexHeights,
+			/**/ NoiseFrequency, RotatedX, RotatedY);
+		}
+	}
+}
+
+
+// 
+void GENERATE_TERRAIN_HEIGHTMAP (canvas Canvas, double Amplitude, int Frequency, int NumOctaves,
+/**/ double Lacunarity, double Persistence, double Exponentiation){
+	
+	for (int i = 0; i < Canvas->height_cells; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			Canvas->cellsA[i][j].terrain_height = 0;
+		}
+	}
+	
+	double NoiseFrequency = Frequency;
+	double LayerWeight = (1-Persistence);
+	
+	for (int layer = 0; layer < NumOctaves; layer++){
+		
+		double RandAngle = 2*3.141592*(double)rand()/(double)RAND_MAX;
+		
+		ADD_NOISE_LAYER (Canvas, NoiseFrequency, RandAngle, LayerWeight);
+		LayerWeight *= Persistence;
+		NoiseFrequency = (int)ceil((NoiseFrequency/Lacunarity));
+	}
+	for (int i = 0; i < Canvas->height_cells; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			Canvas->cellsA[i][j].terrain_height = Amplitude
+			/**/ * pow(Canvas->cellsA[i][j].terrain_height, Exponentiation);
+		}
+	}
+}
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{dispo.h}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#ifndef DISPO_H
+#define DISPO_H
+
+#include "canvas.h"
+
+
+
+// ----- STRUCTURE DEFINITIONS ----- //
+
+struct unit_s {
+	int num_homes;
+	double local_density;
+	double local_entropy;
+};
+
+struct vdisposition_s {
+	int width_units;
+	int height_units;
+	
+	struct unit_s** unitsA;
+	int* sorted_unit_indices_density;
+	
+	int num_inhabitants;
+	int max_possible_inhabitants;
+	
+	double max_possible_density;
+	double entropy;
+};
+
+typedef struct unit_s unit;
+typedef struct vdisposition_s* disposition;
+
+
+// ----- GLOBAL CONSTANTS ----- //
+
+extern const double cDensityToleranceRadius;
+extern const double cEntropyToleranceRadius;
+extern const double cHomeAttributionInflation;
+
+
+// ----- FUNCTIONS ----- //
+
+// creating and handling dispositions
+disposition CREATE_CANVAS_DISPOSITION (canvas Canvas);
+disposition COPY_DISPOSITION (canvas Canvas, disposition Dispo);
+
+// ensuring correctness
+bool IS_DISPOSITION_HOME_ASSIGNMENT_COHERENT (disposition Dispo);
+void SORT_UNIT_INDICES (canvas Canvas, disposition Dispo);
+
+// manipulating and placing homes in dispositions
+bool TRANSFER_HOMES (canvas Canvas, disposition Dispo, int Amount, int i1, int j1, int i2, int j2);
+void INITIALIZE_DISPOSITION_FROM_CELLS_1 (canvas Canvas, disposition Dispo, int NumHomes,
+/**/ double HomeAttributionInflation);
+void INITIALIZE_DISPOSITION_FROM_CELLS_2 (canvas Canvas, disposition Dispo, int NumHomes,
+/**/ double HomeAttributionInflation);
+void INITIALIZE_DISPOSITION_BLINDLY (canvas Canvas, disposition Dispo, int NumHomes);
+
+// calculation and attribution functions
+double F_DENSITY_CONTRIBUTION (double SqDist, int NumHomes);
+double F_HOME_ATTRIBUTION_PROPORTION (double Attractiveness, double HighestAttractiveness,
+/**/ disposition Dispo, double HomeAttributionInflation);
+double F_ENTROPY_CONTRIBUTION (double Ratio);
+
+// calculating disposition attributes
+void CALCULATE_LOCAL_DENSITIES (canvas Canvas, disposition Dispo);
+void CALCULATE_LOCAL_ENTROPIES (canvas Canvas, disposition Dispo);
+void CALCULATE_ENTROPY (canvas Canvas, disposition Dispo);
+
+
+void FREE_DISPOSITION (disposition Dispo);
+#endif
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{dispo.c}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#include "dispo.h"
+
+
+const double cDensityToleranceRadius = 100;
+const double cEntropyToleranceRadius = 50;
+
+const double cHomeAttributionInflation = 0.6; // the smaller, the more tolerant attribution
+// is with regards to attractiveness
+
+
+// returns an empty disposition (i.e. with all attributes initialized to their default
+// value) that is valid for Canvas (i.e. whose dimensions in units are those of
+// Canvas in cells)
+disposition CREATE_CANVAS_DISPOSITION (canvas Canvas){
+	
+	disposition Dispo = (disposition) malloc (sizeof(struct vdisposition_s));
+	Dispo->width_units = Canvas->width_cells;
+	Dispo->height_units = Canvas->height_cells;
+	
+	Dispo->num_inhabitants = 0;
+	Dispo->max_possible_inhabitants = Dispo->width_units*Dispo->height_units*cCellHomeLimit;
+	
+	Dispo->unitsA = (unit**) malloc (Dispo->height_units*sizeof(unit*));
+	
+	Dispo->sorted_unit_indices_density = (int*) malloc
+	/**/ (Dispo->width_units*Dispo->height_units*sizeof(int));
+	
+	// initialize units
+	for (int i = 0; i < Dispo->height_units; i++){
+		
+		Dispo->unitsA[i] = (unit*) malloc (Dispo->width_units*sizeof(unit));
+		
+		for (int j = 0; j < Dispo->width_units; j++){
+			
+			Dispo->unitsA[i][j].num_homes = 0;
+			Dispo->unitsA[i][j].local_density = 0;
+			Dispo->sorted_unit_indices_density[LIN_COEFF (Canvas, i, j)] =
+			/**/ LIN_COEFF (Canvas, i, j);
+		}
+		
+	}
+	Dispo->entropy = 0;
+	
+	// calculate maximum possible density
+	Dispo->max_possible_density = 0;
+	
+	int X_min = -(int)cDensityToleranceRadius; int X_max = (int)cDensityToleranceRadius;
+	int Y_min = -(int)cDensityToleranceRadius; int Y_max = (int)cDensityToleranceRadius;
+	int InscribingSquareSideCells = (int)ceil ((float)(X_max-X_min)/(float)cCellSizePixels);
+	
+	for (int row = 0; row <= InscribingSquareSideCells; row++){
+		for (int column = 0; column <= InscribingSquareSideCells; column++){
+			
+			int CurrentX = X_min + column*cCellSizePixels;
+			int CurrentY = Y_min + row*cCellSizePixels;
+			double SqDist = CurrentX*CurrentX + CurrentY*CurrentY;
+			
+			if (SqDist <= cDensityToleranceRadius*cDensityToleranceRadius){
+				Dispo->max_possible_density += F_DENSITY_CONTRIBUTION
+				/**/ (SqDist, cCellHomeLimit);
+			}
+		}
+	}
+	return Dispo;
+}
+
+
+
+void FREE_DISPOSITION (disposition Dispo){
+	
+	/* printf ("freeing dispo\n");
+	free (Dispo->unitsA);
+	free (Dispo->sorted_unit_indices_density); */
+}
+
+
+// hyp: Dispo is a disposition on Canvas
+// returns a copy of Dispo
+disposition COPY_DISPOSITION (canvas Canvas, disposition Dispo){
+	
+	disposition DispoCopy = (disposition) malloc (sizeof(struct vdisposition_s));
+	DispoCopy->width_units = Dispo->width_units;
+	DispoCopy->height_units = Dispo->height_units;
+	
+	DispoCopy->num_inhabitants = Dispo->num_inhabitants;
+	DispoCopy->max_possible_inhabitants = Dispo->max_possible_inhabitants;
+	DispoCopy->max_possible_density = Dispo->max_possible_density;
+	
+	DispoCopy->unitsA = (unit**) malloc (DispoCopy->height_units*sizeof(unit*));
+	
+	DispoCopy->sorted_unit_indices_density = (int*) malloc
+	/**/ (DispoCopy->height_units*DispoCopy->width_units*sizeof(int));
+	
+	for (int i = 0; i < DispoCopy->height_units; i++){
+		
+		DispoCopy->unitsA[i] = (unit*) malloc (DispoCopy->width_units*sizeof(unit));
+		
+		for (int j = 0; j < DispoCopy->width_units; j++){
+			
+			DispoCopy->unitsA[i][j].num_homes = Dispo->unitsA[i][j].num_homes;
+			DispoCopy->unitsA[i][j].local_density = Dispo->unitsA[i][j].local_density;
+			DispoCopy->unitsA[i][j].local_entropy = Dispo->unitsA[i][j].local_entropy;
+			DispoCopy->sorted_unit_indices_density[LIN_COEFF (Canvas, i, j)] =
+			/**/ Dispo->sorted_unit_indices_density[LIN_COEFF (Canvas, i, j)];
+		}
+	}
+	return DispoCopy;
+}
+
+
+// returns whether or not both statements are simultaneously true:
+// - all of Dispo's cells contain between 0 and cCellHomeLimit houses
+// - summing the amount of homes per cell across all cells yields Dispo->num_inhabitants
+bool IS_DISPOSITION_HOME_ASSIGNMENT_COHERENT (disposition Dispo){
+	
+	int NumHomes = 0;
+	for (int i = 0; i < Dispo->height_units; i++){
+		for (int j = 0; j < Dispo->width_units; j++){
+			if (Dispo->unitsA[i][j].num_homes < 0) return false;
+			NumHomes += Dispo->unitsA[i][j].num_homes;
+		}
+	}
+	return (NumHomes == Dispo->num_inhabitants);
+}
+
+
+// sorts Dispo->sorted_unit_indices_density such that the sequence
+// (Dispo->unitsA[ik][jk].local_density), where (ik,jk) is the delinearized coefficient
+// obtained from k, increases in k
+void SORT_UNIT_INDICES (canvas Canvas, disposition Dispo){
+	
+	int NumUnits = Dispo->height_units*Dispo->width_units;
+	int* UnitIndices = Dispo->sorted_unit_indices_density;
+	double* UnitDensities = (double*) malloc (NumUnits*sizeof(double));
+	
+	for (int index = 0; index < NumUnits; index++){
+		
+		int ci, cj;
+		ASSIGN_DELIN_INDEX (&ci, &cj, Canvas, UnitIndices[index]);
+		UnitDensities[index] = Dispo->unitsA[ci][cj].local_density;
+	}
+	
+	QS_SORT_ELEMENTS_BY_SCORE (UnitIndices, UnitDensities, 0, NumUnits-1);
+	
+	/* printf ("freeing unitdensities\n");
+	free (UnitDensities); */
+}
+
+
+// attempts to move Amount homes between Dispo's units of indices (i1,j1) and (i2,j2)
+// while ensuring that their numbers of homes remains between 0 and cCellHomeLimit
+// returns true if and only if a non-zero number of homes were actually moved
+bool TRANSFER_HOMES (canvas Canvas, disposition Dispo, int Amount, int i1, int j1, int i2, int j2){
+	
+	// printf (" into %d\n", Dispo->unitsA[i2][j2].num_homes);
+	Amount = min (min (Amount, Dispo->unitsA[i1][j1].num_homes), cCellHomeLimit -
+	/**/ Dispo->unitsA[i2][j2].num_homes);
+	if (Amount > 0 && Canvas->cellsA[i2][j2].service_presence_class == -1){
+		
+		Dispo->unitsA[i1][j1].num_homes -= Amount;
+		Dispo->unitsA[i2][j2].num_homes += Amount;
+		return true;
+	}
+	else return false;
+}
+
+
+// hyp: Dispo is a disposition on Canvas && CALCULATE_ATTRACTIVENESSES (Canvas) has
+// been called
+// distributes NumHomes homes to Dispo's units according to a random process in which
+// each unit's expected final amount of homes increases with the corresponding cell's
+// attractiveness value in Canvas
+void INITIALIZE_DISPOSITION_FROM_CELLS_1 (canvas Canvas, disposition Dispo, int NumHomes,
+double HomeAttributionInflation){ // METHOD 1
+	
+	assert (NumHomes <= Dispo->max_possible_inhabitants);
+	Dispo->num_inhabitants = NumHomes;
+	// printf ("%d/%d\n", Dispo->num_inhabitants, Dispo->max_possible_inhabitants);
+	
+	// reset disposition's housing
+	for (int i = 0; i < Canvas->height_cells; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			Dispo->unitsA[i][j].num_homes = 0;
+		}
+	}
+	// sort cell indices by descending attractivenesses and extract highest attractiveness
+	SORT_CELL_INDICES (Canvas);
+	
+	int BestCell_i, BestCell_j;
+	ASSIGN_DELIN_INDEX (&BestCell_i, &BestCell_j, Canvas,
+	Canvas->sorted_cell_indices_attractiveness[0]);
+	double HighestAttractiveness = Canvas->cellsA[BestCell_i][BestCell_j].attractiveness;
+	
+	int NumRemainingHomes = NumHomes;
+	int pos = 0;
+	int ci, cj;
+	
+	// distribute homes by prioritising high-attractiveness cells
+	while (NumRemainingHomes > 0){
+		
+		ASSIGN_DELIN_INDEX (&ci, &cj, Canvas, Canvas->sorted_cell_indices_attractiveness[pos]);
+		if (Canvas->cellsA[ci][cj].service_presence_class == -1){
+			
+			int NumReceivedHomes = min (min (NumRemainingHomes, cCellHomeLimit), rand () %
+			/**/ ((int)(ceil ((double)cCellHomeLimit)*F_HOME_ATTRIBUTION_PROPORTION
+			/**/ (Canvas->cellsA[ci][cj].attractiveness, HighestAttractiveness, Dispo,
+			/**/ HomeAttributionInflation))+ 1));
+			Dispo->unitsA[ci][cj].num_homes += NumReceivedHomes;
+			NumRemainingHomes -= NumReceivedHomes;
+			// printf ("%d\n", NumReceivedHomes);
+		}
+		pos = (pos + 1) % (Canvas->width_cells*Canvas->height_cells);
+	}
+}
+
+
+// hyp: Dispo is a disposition on Canvas && CALCULATE_ATTRACTIVENESSES (Canvas) has
+// been called
+// distributes NumHomes homes to Dispo's units according to a random process in which
+// each unit's expected final amount of homes increases with the corresponding cell's
+// attractiveness value in Canvas
+void INITIALIZE_DISPOSITION_FROM_CELLS_2 (canvas Canvas, disposition Dispo, int NumHomes,
+/**/ double HomeAttributionInflation){ // METHOD 2
+	
+	assert (NumHomes <= Dispo->max_possible_inhabitants);
+	Dispo->num_inhabitants = NumHomes;
+	// printf ("%d/%d\n", Dispo->num_inhabitants, Dispo->max_possible_inhabitants);
+	
+	// reset disposition's housing
+	for (int i = 0; i < Canvas->height_cells; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			Dispo->unitsA[i][j].num_homes = 0;
+		}
+	}
+	// sort cell indices by descending attractivenesses and extract highest attractiveness
+	SORT_CELL_INDICES (Canvas);
+	
+	int BestCell_i, BestCell_j;
+	ASSIGN_DELIN_INDEX (&BestCell_i, &BestCell_j, Canvas,
+	/**/ Canvas->sorted_cell_indices_attractiveness[0]);
+	double HighestAttractiveness = Canvas->cellsA[BestCell_i][BestCell_j].attractiveness;
+	
+	int NumRemainingHomes = NumHomes;
+	int pos = 0;
+	int ci, cj;
+	
+	// distribute homes by prioritising high-attractiveness cells
+	while (NumRemainingHomes > 0){
+		
+		ASSIGN_DELIN_INDEX (&ci, &cj, Canvas,
+		/**/ Canvas->sorted_cell_indices_attractiveness[pos]);
+		if (Canvas->cellsA[ci][cj].service_presence_class == -1){
+			
+			double AttributionPeak = F_HOME_ATTRIBUTION_PROPORTION
+			/**/ (Canvas->cellsA[ci][cj].attractiveness, HighestAttractiveness, Dispo,
+			/**/ HomeAttributionInflation);
+			
+			int NumReceivedHomes = min (min (NumRemainingHomes,
+			/**/ cCellHomeLimit-Dispo->unitsA[ci][cj].num_homes),
+			/**/ max (1, (int)ceil((double)cCellHomeLimit* // previously, max (0, ...)
+			/**/ RAND_VAR_HALF_NORMAL_DISTRIBUTION (AttributionPeak, 0.25*AttributionPeak))));
+			
+			Dispo->unitsA[ci][cj].num_homes += NumReceivedHomes;
+			NumRemainingHomes -= NumReceivedHomes;
+		}
+		pos = (pos + 1) % (Canvas->width_cells*Canvas->height_cells);
+	}
+}
+
+
+void INITIALIZE_DISPOSITION_BLINDLY (canvas Canvas, disposition Dispo, int NumHomes){
+	
+	assert (NumHomes <= Dispo->max_possible_inhabitants);
+	Dispo->num_inhabitants = NumHomes;
+	
+	// reset disposition's housing
+	for (int i = 0; i < Canvas->height_cells; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			Dispo->unitsA[i][j].num_homes = 0;
+		}
+	}
+	
+	int NumRemainingHomes = NumHomes;
+	while (NumRemainingHomes > 0){
+		
+		int i = rand () % Canvas->height_cells;
+		int j = rand () % Canvas->width_cells;
+		
+		if (Canvas->cellsA[i][j].service_presence_class == -1){
+			int NumReceivedHomes = min (cCellHomeLimit - Dispo->unitsA[i][j].num_homes,
+			rand () % (cCellHomeLimit+1));
+			
+			Dispo->unitsA[i][j].num_homes += NumReceivedHomes;
+			NumRemainingHomes -= NumReceivedHomes;
+		}
+	}
+	
+}
+
+// returns the amount of homes for which a unit with NumHomes houses accounts for
+// in the density calculation of a unit SqDist pixels away
+double F_DENSITY_CONTRIBUTION (double SqDist, int NumHomes){
+	
+	return ((double)NumHomes)*exp(-SqDist/10000);
+}
+
+
+// hyp: Dispo->num_inhabitants has been assigned the intented number of homes to place
+// returns the fraction of cCellHomeLimit's homes given to a cell of attractiveness
+// Attractiveness, living in a canvas of highest attractiveness HighestAttractiveness
+// and depending on Dispo's intended and maximum number of houses
+// (see paper for more precise description of parameter influences)
+double F_HOME_ATTRIBUTION_PROPORTION (double Attractiveness, double HighestAttractiveness,
+/**/ disposition Dispo, double HomeAttributionInflation){
+	
+	double v = pow(((double)Dispo->max_possible_inhabitants)/(2*(double)Dispo->num_inhabitants),
+	/**/ HomeAttributionInflation)*(Attractiveness-HighestAttractiveness);
+	double u = 1 + v/(15*pow(HighestAttractiveness, 0.75));
+	double w = 1.03*u*exp(-((875-1000*u)/300)*((875-1000*u)/300)*((875-1000*u)/300)*((875-1000*u)/300));
+	return max_double (0, w);
+}
+
+
+double F_ENTROPY_CONTRIBUTION (double Ratio){
+	if (Ratio == 0) return 0;
+	else return -Ratio*log(Ratio);
+}
+
+
+// hyp: Dispo is a disposition on Canvas
+// calculates and assigns to each Dispo->unit[i][j] its local house density, i.e.
+// the distance-weighted sum of the number of homes contained in cells within distance
+// cDensityToleranceRadius of said unit
+void CALCULATE_LOCAL_DENSITIES (canvas Canvas, disposition Dispo){ // METHOD 1
+	
+	for (int i = 0; i < Dispo->height_units; i++){
+		for (int j = 0; j < Dispo->width_units; j++){
+			
+			if (Canvas->cellsA[i][j].service_presence_class == -1){
+				
+				Dispo->unitsA[i][j].local_density = 0;
+				
+				int UnitX, UnitY;
+				ASSIGN_MIDPOINT_OF_CELL (&UnitX, &UnitY, Canvas, i, j);
+				
+				// find range of pixels that are for sure within distance cDensityToleranceRadius
+				// (forming a square of sidelength 2*cDensityToleranceRadius)
+				int X_min = max (UnitX - (int)cDensityToleranceRadius, 0);
+				int X_max = min (UnitX + (int)cDensityToleranceRadius, cWindowDims[0]-1);
+				int Y_min = max (UnitY - (int)cDensityToleranceRadius, 0);
+				int Y_max = min (UnitY + (int)cDensityToleranceRadius, cWindowDims[1]-1);
+				int i_min, i_max, j_min, j_max;
+				
+				// convert to unit indices
+				ASSIGN_CELL_OF_PIXEL (&i_min, &j_min, Canvas, X_min, Y_min);
+				ASSIGN_CELL_OF_PIXEL (&i_max, &j_max, Canvas, X_max, Y_max);
+				
+				// add up unit contributions
+				for (int row = i_min; row <= i_max; row++){
+					for (int column = j_min; column <= j_max; column++){
+						
+						int CurrentX, CurrentY;
+						ASSIGN_MIDPOINT_OF_CELL (&CurrentX, &CurrentY, Canvas, row, column);
+						double SqDist = (CurrentX-UnitX)*(CurrentX-UnitX)
+						/**/ + (CurrentY-UnitY)*(CurrentY-UnitY);
+						
+						// count contribution iff the distance is actually less than 
+						// cDensityToleranceRadius
+						if (SqDist <= cDensityToleranceRadius*cDensityToleranceRadius)
+						Dispo->unitsA[i][j].local_density += F_DENSITY_CONTRIBUTION
+						/**/ (SqDist, Dispo->unitsA[row][column].num_homes);
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void CALCULATE_LOCAL_ENTROPIES (canvas Canvas, disposition Dispo){
+	
+	int* HomeCountOccurrences = (int*) malloc ((cCellHomeLimit+1)*sizeof(int));
+	Dispo->entropy = 0;
+	
+	for (int i = 0; i < Dispo->height_units; i++){
+		for (int j = 0; j < Dispo->width_units; j++){
+			
+			if (Canvas->cellsA[i][j].service_presence_class == -1){
+				
+				int NumCellsInRange = 0;
+				for (int num_homes = 0; num_homes <= cCellHomeLimit; num_homes++){
+					
+					HomeCountOccurrences[num_homes] = 0;
+				}
+				
+				Dispo->unitsA[i][j].local_entropy = 0;
+				
+				int UnitX, UnitY;
+				ASSIGN_MIDPOINT_OF_CELL (&UnitX, &UnitY, Canvas, i, j);
+				
+				// find range of pixels that are for sure within distance cEntropyToleranceRadius
+				// (forming a square of sidelength 2*cEntropyToleranceRadius)
+				int X_min = max (UnitX - (int)cEntropyToleranceRadius, 0);
+				int X_max = min (UnitX + (int)cEntropyToleranceRadius, cWindowDims[0]-1);
+				int Y_min = max (UnitY - (int)cEntropyToleranceRadius, 0);
+				int Y_max = min (UnitY + (int)cEntropyToleranceRadius, cWindowDims[1]-1);
+				int i_min, i_max, j_min, j_max;
+				
+				// convert to unit indices
+				ASSIGN_CELL_OF_PIXEL (&i_min, &j_min, Canvas, X_min, Y_min);
+				ASSIGN_CELL_OF_PIXEL (&i_max, &j_max, Canvas, X_max, Y_max);
+				
+				// add up entropy contributions contributions
+				for (int row = i_min; row <= i_max; row++){
+					for (int column = j_min; column <= j_max; column++){
+						
+						int CurrentX, CurrentY;
+						ASSIGN_MIDPOINT_OF_CELL (&CurrentX, &CurrentY, Canvas, row, column);
+						double SqDist = (CurrentX-UnitX)*(CurrentX-UnitX)
+						/**/ + (CurrentY-UnitY)*(CurrentY-UnitY);
+						
+						// count contribution iff the distance is actually less than
+						// cEntropyToleranceRadius
+						if (SqDist <= cEntropyToleranceRadius*cEntropyToleranceRadius &&
+						/**/ Canvas->cellsA[row][column].service_presence_class == -1){
+							
+							HomeCountOccurrences[Dispo->unitsA[row][column].num_homes]++;
+							NumCellsInRange++;
+						}
+					}
+				}
+				
+				for (int num_homes = 0; num_homes <= cCellHomeLimit; num_homes++){
+					
+					double Proportion = (double)HomeCountOccurrences[num_homes]
+					/**/ /(double)NumCellsInRange;
+					Dispo->unitsA[i][j].local_entropy += F_ENTROPY_CONTRIBUTION (Proportion);
+				}
+				
+				Dispo->entropy += Dispo->unitsA[i][j].local_entropy;
+			}
+		}
+	}
+	/* printf ("freeing homecountoccurrences\n");
+	free (HomeCountOccurrences); */
+}
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{display.h}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#ifndef DISPLAY_H
+#define DISPLAY_H
+
+#include "canvas.h"
+#include "dispo.h"
+#include "terrain.h"
+
+
+
+// ----- GLOBAL CONSTANTS ----- //
+
+extern const int cGridlineColor[4];
+
+extern const int cServiceDisplayColors[7][3]; // should have size cNumServiceClass x 3
+extern const int cTerrainDisplayColors[9][3];
+
+extern const double cTerrainCosts[9];
+
+extern const double cDeepWaterHeight;
+extern const double cShallowWaterHeight;
+extern const double cLowGrassHeight;
+extern const double cNormalGrassHeight;
+extern const double cHighGrassHeight;
+extern const double cHillsHeight;
+extern const double cLowMountainsHeight;
+extern const double cElevatedMountainsHeight;
+extern const double cMountainPeaksHeight;
+
+
+// ----- FUNCTIONS ----- //
+
+// utilitary
+void ASSIGN_COLOR_OF_SERVICE_CLASS (int class, int* pRed, int* pGreen, int* pBlue);
+void ASSIGN_COLOR_OF_TERRAIN_TYPE (int type, int* pRed, int* pGreen, int* pBlue);
+int TERRAIN_TYPE_OF_HEIGHT (double Height);
+
+// displaying attributes
+void SDL_DisplayCanvasGrid (SDL_Renderer* Renderer, canvas Canvas);
+void SDL_DisplayTerrainHeights (SDL_Renderer* Renderer, canvas Canvas);
+void SDL_DisplayCellAttractivenesses (SDL_Renderer* Renderer, canvas Canvas);
+void SDL_DisplayUnitDensities (SDL_Renderer* Renderer, canvas Canvas, disposition Dispo);
+void SDL_DisplayUnitEntropies (SDL_Renderer* Renderer, canvas Canvas, disposition Dispo);
+
+// rendering objects
+void SDL_RenderExistingServices (SDL_Renderer* Renderer, canvas Canvas);
+void SDL_RenderExistingHomes (SDL_Renderer* Renderer, canvas Canvas, disposition Dispo);
+void SDL_RenderTerrain (SDL_Renderer* Renderer, canvas Canvas);
+
+// filling
+void SDL_FloodFillService (SDL_Renderer* Renderer, canvas Canvas, int class, int i, int j);
+
+
+
+// unused
+void SDL_DoNothing (void);
+
+
+#endif	
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{display.c}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#include "display.h"
+
+const int cWindowDims[2] = {1920,1080};
+const int cGridlineColor[4] = {255, 255, 255, 30};
+const int cServiceDisplayColors[7][3] = {
+	{239,149,91},
+	{157,197,105},
+	{52,167,80},
+	{122,185,190},
+	{136,113,158},
+	{133,30,42},
+	{100,23,17}
+};
+
+
+const int cTerrainDisplayColors[9][3] = {
+	{0,36,172},
+	{0,177,249},
+	{51,236,56},
+	{139,218,45},
+	{165,180,55},
+	{162,128,49},
+	{149,117,71},
+	{190,173,136},
+	{229,240,245}
+};
+
+const double cTerrainCosts[9] = {2000,1900,80,50,60,90,120,160,230};
+
+const double cDeepWaterHeight = 0.25;
+const double cShallowWaterHeight = 0.28;
+const double cLowGrassHeight = 0.38;
+const double cNormalGrassHeight = 0.52;
+const double cHighGrassHeight = 0.65;
+const double cHillsHeight = 0.75;
+const double cLowMountainsHeight = 0.85;
+const double cElevatedMountainsHeight = 0.92;
+const double cMountainPeaksHeight = 1;
+
+// hyp: 0 <= class < cNumServiceClasses
+// assigns to pRed, pGreen and pBlue the color coordinates of service class class's
+// display color as determined by cServiceDisplayColors
+void ASSIGN_COLOR_OF_SERVICE_CLASS (int class, int* pRed, int* pGreen, int* pBlue){
+	
+	*pRed = cServiceDisplayColors[class][0];
+	*pGreen = cServiceDisplayColors[class][1];
+	*pBlue = cServiceDisplayColors[class][2];
+}
+
+
+// hyp : 0 <= type < 9
+// assigns to pRed, pGreen and pBlue the color values of terrain type type's display
+// color as determined by cTerrainDisplayColors
+void ASSIGN_COLOR_OF_TERRAIN_TYPE (int type, int* pRed, int* pGreen, int* pBlue){
+	
+	*pRed = cTerrainDisplayColors[type][0];
+	*pGreen = cTerrainDisplayColors[type][1];
+	*pBlue = cTerrainDisplayColors[type][2];
+}
+
+
+int TERRAIN_TYPE_OF_HEIGHT (double Height){
+	if (Height <= cDeepWaterHeight) return 0;
+	else if (Height <= cShallowWaterHeight) return 1;
+	else if (Height <= cLowGrassHeight) return 2;
+	else if (Height <= cNormalGrassHeight) return 3;
+	else if (Height <= cHighGrassHeight) return 4;
+	else if (Height <= cHillsHeight) return 5;
+	else if (Height <= cLowMountainsHeight) return 6;
+	else if (Height <= cElevatedMountainsHeight) return 7;
+	else if (Height <= cMountainPeaksHeight) return 8;
+}
+
+
+// displays Canvas's grid with lines of color coordinates cGridlineColor
+void SDL_DisplayCanvasGrid (SDL_Renderer* Renderer, canvas Canvas){
+	
+	SDL_SetRenderDrawColor (Renderer, cGridlineColor[0], cGridlineColor[1],
+	/**/ cGridlineColor[2], cGridlineColor[3]);
+	// draw horizontal lines
+	for (int i = 0; i < Canvas->height_cells; i++)
+	SDL_RenderDrawLine (Renderer, 0, i*Canvas->cell_size, cWindowDims[0], i*Canvas->cell_size);
+	// draw vertical lines
+	for (int j = 0; j < Canvas->width_cells; j++)
+	SDL_RenderDrawLine (Renderer, j*Canvas->cell_size, 0, j*Canvas->cell_size, cWindowDims[1]);
+	SDL_RenderPresent (Renderer);
+}
+
+
+// fills each Canvas->cellsA[i][j].fill_square in cyan with an opacity proprtional to the
+// terrain height at said cell
+void SDL_DisplayTerrainHeights (SDL_Renderer* Renderer, canvas Canvas){
+	
+	for (int i = 0; i < Canvas->height_cells ; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			int CyanValue = (int) (255.*Canvas->cellsA[i][j].terrain_height);
+			SDL_SetRenderDrawColor (Renderer, 0, CyanValue, CyanValue, 255);
+			SDL_RenderFillRect (Renderer, &Canvas->cellsA[i][j].fill_square);
+		}
+	}
+	SDL_RenderPresent (Renderer);
+}
+
+
+// displays the individual values of Canvas->cellsA[i][j].attractiveness in red,
+// with brighter shades corresponding to higher attractiveness levels
+void SDL_DisplayCellAttractivenesses (SDL_Renderer* Renderer, canvas Canvas){
+	
+	for (int i = 0; i < Canvas->height_cells ; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			if (Canvas->cellsA[i][j].service_presence_class == -1){
+				int RedBlueValue = (int) (Canvas->cellsA[i][j].attractiveness*(255./1000.));
+				if (RedBlueValue < 0){
+					SDL_SetRenderDrawColor (Renderer, 0, 0, -RedBlueValue, 255);
+				}
+				else
+				SDL_SetRenderDrawColor (Renderer, RedBlueValue, 0, 0, 255);
+				SDL_RenderFillRect (Renderer, &Canvas->cellsA[i][j].fill_square);
+			}
+		}
+	}
+	SDL_RenderPresent (Renderer);
+}
+
+
+// fills each Canvas->cellsA[i][j].fill_square in green with an opacity proportional
+// to the local densities, i.e. Dispo->unitsA[i][j].local_density
+void SDL_DisplayUnitDensities (SDL_Renderer* Renderer, canvas Canvas, disposition Dispo){
+	
+	for (int i = 0; i < Canvas->height_cells ; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			int GreenValue = (int) (255.0*(Dispo->unitsA[i][j].local_density)
+			/**/ /Dispo->max_possible_density);
+			SDL_SetRenderDrawColor (Renderer, 0, GreenValue, 0, 255);
+			SDL_RenderFillRect (Renderer, &Canvas->cellsA[i][j].fill_square);
+		}
+	}
+	SDL_RenderPresent (Renderer);
+}
+
+
+// fills each Canvas->cellsA[i][j].fill_square in magenta with an opacity proportional
+// to the local entropy value stored in Dispo->unitsA[i][j]
+void SDL_DisplayUnitEntropies (SDL_Renderer* Renderer, canvas Canvas, disposition Dispo){
+	
+	double MaxEntropy = log(cCellHomeLimit);
+	
+	for (int i = 0; i < Canvas->height_cells ; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			int MagentaValue = (int) (255.0*(Dispo->unitsA[i][j].local_entropy)/MaxEntropy);
+			SDL_SetRenderDrawColor (Renderer, MagentaValue, 0, MagentaValue, 255);
+			SDL_RenderFillRect (Renderer, &Canvas->cellsA[i][j].fill_square);
+		}
+	}
+	SDL_RenderPresent (Renderer);
+}
+
+
+// renders the services which have been drawn and filled on Canvas
+void SDL_RenderExistingServices (SDL_Renderer* Renderer, canvas Canvas){
+	
+	l_list BorderPixels = Canvas->service_border_pixelsL;
+	l_list InteriorCells = Canvas->service_interior_cellsL;
+	int i, j;
+	int Red, Green, Blue;
+	
+	// render borders
+	while (BorderPixels != NULL){
+		
+		ASSIGN_COLOR_OF_SERVICE_CLASS (BorderPixels->spec, &Red, &Green, &Blue);
+		SDL_SetRenderDrawColor (Renderer, Red, Green, Blue, 255);
+		ASSIGN_CELL_OF_PIXEL (&i, &j, Canvas, BorderPixels->x, BorderPixels->y);
+		SDL_RenderFillRect (Renderer, &Canvas->cellsA[i][j].fill_square);
+		
+		BorderPixels = BorderPixels->next;
+	}
+	// render interiors
+	while (InteriorCells != NULL){
+		
+		ASSIGN_COLOR_OF_SERVICE_CLASS (InteriorCells->spec, &Red, &Green, &Blue);
+		SDL_SetRenderDrawColor (Renderer, Red, Green, Blue, 255);
+		SDL_RenderFillRect (Renderer, &Canvas->cellsA[InteriorCells->x][InteriorCells->y].fill_square);
+		
+		InteriorCells = InteriorCells->next;
+	}
+	SDL_RenderPresent (Renderer);
+}
+
+
+// colors each cell Canvas->cellsA[i][j] in white with an opacity proportional to
+// the number of homes contained in Dispo->unitsA[i][j]
+void SDL_RenderExistingHomes (SDL_Renderer* Renderer, canvas Canvas, disposition Dispo){
+	
+	for (int i = 0; i < Canvas->height_cells ; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			int WhiteValue = (int) (255.0*((double) Dispo->unitsA[i][j].num_homes)
+			/**/ /(double)cCellHomeLimit);
+			SDL_SetRenderDrawColor (Renderer, WhiteValue, WhiteValue, WhiteValue, 255);
+			SDL_RenderFillRect (Renderer, &Canvas->cellsA[i][j].fill_square);
+		}
+	}
+	SDL_RenderPresent (Renderer);
+}
+
+
+void SDL_RenderTerrain (SDL_Renderer* Renderer, canvas Canvas){
+	
+	int Red, Green, Blue;
+	
+	for (int i = 0; i < Canvas->height_cells ; i++){
+		for (int j = 0; j < Canvas->width_cells; j++){
+			
+			int TerrainType = TERRAIN_TYPE_OF_HEIGHT (Canvas->cellsA[i][j].terrain_height);
+			ASSIGN_COLOR_OF_TERRAIN_TYPE (TerrainType, &Red, &Green, &Blue);
+			
+			SDL_SetRenderDrawColor (Renderer, Red, Green, Blue, 50);
+			SDL_RenderFillRect (Renderer, &Canvas->cellsA[i][j].fill_square);
+		}
+	}
+	SDL_RenderPresent (Renderer);
+}
+
+
+// hyp: the current SDL render draw color is the display color of service class class
+// && cell (i,j) of Canvas is surrounded by a closed boundary of the same class
+// if Canvas->cellsA[i][j] is a valid cell, fills it, marks it as occupied by service class
+// class and adds it to updates Canvas->service_interior_cellsL
+// then, applies itself recursively on all neighboring cells which have not yet been
+// marked as occupied by class, i.e. which have yet to be filled
+void SDL_FloodFillService (SDL_Renderer* Renderer, canvas Canvas, int class, int i, int j){
+	
+	if (IS_CELL_IN_CANVAS (Canvas, i, j)){
+		
+		// fill starting cell and update canvas cell attributes and service interiors list
+		SDL_RenderFillRect (Renderer, &Canvas->cellsA[i][j].fill_square);
+		Canvas->cellsA[i][j].service_presence_class = class;
+		l_insert (&Canvas->service_interior_cellsL, i, j, class);
+		
+		// recursive calls to all four neighboring cells
+		if (Canvas->cellsA[i+1][j].service_presence_class != class){
+			Canvas->cellsA[i+1][j].service_presence_class = class;
+			SDL_FloodFillService (Renderer, Canvas, class, i+1, j);
+		}
+		if (Canvas->cellsA[i][j+1].service_presence_class != class){
+			Canvas->cellsA[i+1][j].service_presence_class = class;
+			SDL_FloodFillService (Renderer, Canvas, class, i, j+1);
+		}
+		if (Canvas->cellsA[i][j-1].service_presence_class != class){
+			Canvas->cellsA[i+1][j].service_presence_class = class;
+			SDL_FloodFillService (Renderer, Canvas, class, i, j-1);
+		}
+		if (Canvas->cellsA[i-1][j].service_presence_class != class){
+			Canvas->cellsA[i+1][j].service_presence_class = class;
+			SDL_FloodFillService (Renderer, Canvas, class, i-1, j);
+		}
+	}
+}
+
+
+// literally does nothing (made for convenience and ease of operation of SDL keypress
+// registers)
+void SDL_DoNothing (void){}
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{gen-algo.h}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#ifndef GENALGO_H
+#define GENALGO_H
+
+#include "canvas.h"
+#include "dispo.h"
+#include "terrain.h"
+#include "display.h"
+
+
+struct individual_s {
+	disposition dispo;
+	
+	double potential_exploitation_ratio;
+	
+	double density_score;
+	double attractiveness_score;
+	double entropy_score;
+	double cost_penalty;
+	
+	double total_score;
+};
+
+struct vpopulation_s {
+	int num_individuals;
+	struct individual_s* individualsA;
+	int* sorted_individual_indices_score;
+};
+
+
+typedef struct individual_s individual;
+typedef struct vpopulation_s* population;
+
+
+extern const double cOptimalDensityToMaxDensityRatio;
+
+extern const double cScoreFactorWeights[2];
+
+extern const double cMutationHomeDisplacementRadius; //add: pixels
+
+extern SDL_Renderer* RendererGENALGO;
+
+// double F_CELL_ATTRACTIVENESS_EXPLOITATION (canvas Canvas, disposition Dispo);
+
+// elementary score functions
+double F_DENSITY_SCORE_FROM_UNIT (unit Unit, double MaxDensity);
+double F_ATTRACTIVENESS_SCORE_FROM_UNIT_CELL (unit Unit, cell Cell);
+double F_ENTROPY_SCORE (unit Unit);
+
+// generating and evaluating individuals
+void INITIALIZE_INDIVIDUAL (individual* pIndiv, canvas Canvas, int NumHomes);
+void CALCULATE_SCORES_OF_INDIVIDUAL (individual* pIndiv, canvas Canvas); // invert
+/**/ // argument order
+
+// creating populations and ensuring correctness
+population CREATE_POPULATION (canvas Canvas, int PopSize);
+void SORT_INDIVIDUAL_INDICES (population Popl);
+
+// genetic processes
+individual* MUTATE_INDIVIDUAL (canvas Canvas, individual Indiv, double ProportionMutatedUnits);
+individual* CROSS_INDIVIDUALS (canvas Canvas, individual Parent1, individual Parent2,
+/**/ double MaxProportionOfFirst, double StdDeviation);
+void RENEW_POPULATION (canvas Canvas, population Popl, double KeepProportion,
+/**/ double MutateProportion, double CrossProportion);
+
+/* population GENERATE_RANDOM_POPULATION (canvas Canvas, int PopSize, int NumHomes);
+population SELECT_FITTEST_INDIVIDUALS (population Popl);
+individual* MUTATE_INDIVIDUAL (canvas Canvas, individual Indiv, double ProportionMutatedUnits); */
+
+// void ITERATE_POPULATION_RENEWAL (canvas Canvas, population Popl, double ConservationProportion);
+
+
+
+void FREE_INDIVIDUAL (individual* pIndiv);
+
+#endif
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{gen-algo.c}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#include "gen-algo.h"
+
+const double cOptimalDensityToMaxDensityRatio = 0.15;
+
+const double cMutationHomeDisplacementRadius = 800;
+
+SDL_Renderer* RendererGENALGO;
+
+
+// returns the signed density score contribution of Unit, which accounts for its local
+// density in comparison to the theoretical maximum possible density in a manner dictated
+// by cOptimalDensityToMaxDensityRatio, and is proportional to Unit.num_homes
+double F_DENSITY_SCORE_FROM_UNIT (unit Unit, double MaxDensity){
+	
+	double y = (0.96/cOptimalDensityToMaxDensityRatio)*(Unit.local_density/MaxDensity);
+	return 0.25*Unit.num_homes*((1.8*exp(-(y-1)*(y-1))) - 1./(1.+exp(-y-0.5)));
+}
+
+// hyp : Unit's corresponding canvas cell is Cell
+// returns the attractiveness score contribution of Unit based on Cell's attractiveness
+double F_ATTRACTIVENESS_SCORE_FROM_UNIT_CELL (unit Unit, cell Cell){
+	
+	return 1.5*Unit.num_homes*(Cell.attractiveness/1000);
+}
+
+
+// returns the entropy score ontribution of a Unit
+double F_ENTROPY_SCORE (unit Unit){
+	
+	double u = 6*Unit.local_entropy/log(cCellHomeLimit);
+	return 0.5*(1.1*exp(-u*u*u/10)-0.12*(u+exp(-1))*log(u+exp(-1))-1);
+}
+
+
+double F_COST_PENALTY (unit Unit, cell Cell, int NumHomes){
+	
+	double CostCoeff = cTerrainCosts[TERRAIN_TYPE_OF_HEIGHT (Cell.terrain_height)];
+	return -(0.001*CostCoeff)*(double)Unit.num_homes*(1-Cell.terrain_height)
+	/**/ *(1-Cell.terrain_height)*0;
+}
+
+
+// intiializes an individual whose disposition is obtained by calling CREATE_CANVAS_
+// DISPOSITION with a random HomeAttributionInflation parameter
+// then, calculates said individuals's scores (therefore calculating it's disposition's
+// densities and entropies) before returning it 
+void INITIALIZE_INDIVIDUAL (individual* pIndiv, canvas Canvas, int NumHomes){
+	
+	pIndiv->potential_exploitation_ratio = 0;
+	pIndiv->density_score = 0;
+	pIndiv->attractiveness_score = 0;
+	pIndiv->total_score = -DBL_MAX;
+	
+	pIndiv->dispo = CREATE_CANVAS_DISPOSITION (Canvas);
+	
+	double RandHomeAttributionInflation = 2.*((double)rand()/(double)RAND_MAX);
+	
+	INITIALIZE_DISPOSITION_BLINDLY (Canvas, pIndiv->dispo,
+	/**/ NumHomes); //, RandHomeAttributionInflation);
+	
+	CALCULATE_LOCAL_DENSITIES (Canvas, pIndiv->dispo);
+	CALCULATE_LOCAL_ENTROPIES (Canvas, pIndiv->dispo);
+	CALCULATE_SCORES_OF_INDIVIDUAL (pIndiv, Canvas);
+}
+
+
+// calculates and assigns to *pIndiv its attractiveness, density and total score if the
+// latter has not yet been calculated, i.e. has its initializing value -DBL_MAX
+void CALCULATE_SCORES_OF_INDIVIDUAL (individual* pIndiv, canvas Canvas){
+	
+	if (pIndiv->total_score == -DBL_MAX){
+		
+		pIndiv->density_score = 0;
+		pIndiv->attractiveness_score = 0;
+		pIndiv->entropy_score = 0;
+		pIndiv->cost_penalty = 0;
+		
+		for (int i = 0; i < pIndiv->dispo->height_units; i++){
+			for (int j = 0; j < pIndiv->dispo->width_units; j++){
+				
+				if (pIndiv->dispo->unitsA[i][j].num_homes > 0){
+					
+					pIndiv->density_score += F_DENSITY_SCORE_FROM_UNIT (pIndiv->dispo->unitsA[i][j],
+					/**/ pIndiv->dispo->max_possible_density);
+					pIndiv->attractiveness_score += F_ATTRACTIVENESS_SCORE_FROM_UNIT_CELL
+					/**/ (pIndiv->dispo->unitsA[i][j], Canvas->cellsA[i][j]);
+					// printf ("%f | ", pIndiv->density_score);
+					pIndiv->entropy_score += F_ENTROPY_SCORE (pIndiv->dispo->unitsA[i][j]);
+					pIndiv->cost_penalty += F_COST_PENALTY (pIndiv->dispo->unitsA[i][j],
+					/**/ Canvas->cellsA[i][j], pIndiv->dispo->num_inhabitants);
+				}
+			}
+		}
+		pIndiv->total_score = pIndiv->density_score + pIndiv->attractiveness_score
+		/**/ + pIndiv->entropy_score + pIndiv->cost_penalty;
+	}
+}
+
+
+// allocates memory for a population of PopSize individuals and returns the corresponding
+// pointer
+population CREATE_POPULATION (canvas Canvas, int PopSize){
+	
+	population Popl = (population) malloc (sizeof(struct vpopulation_s));
+	
+	Popl->num_individuals = PopSize;
+	Popl->individualsA = (individual*) malloc (PopSize*sizeof(individual));
+	Popl->sorted_individual_indices_score = (int*) malloc (PopSize*sizeof(int));
+	
+	for (int index = 0; index < PopSize; index++){
+		
+		Popl->sorted_individual_indices_score[index] = index;
+	}
+	
+	return Popl;
+}
+
+
+// sorts Popl->sorted_individual_indices_score such that the sequence
+// (Popl->individualsA[k]) increases in k
+void SORT_INDIVIDUAL_INDICES (population Popl){
+	
+	int* IndividualIndices = Popl->sorted_individual_indices_score;
+	double* IndividualScores = (double*) malloc (Popl->num_individuals*sizeof(double));
+	
+	for (int index = 0; index < Popl->num_individuals; index++){
+		
+		IndividualScores[index] = Popl->individualsA[IndividualIndices[index]].total_score;
+	}
+	
+	QS_SORT_ELEMENTS_BY_SCORE (IndividualIndices, IndividualScores, 0,
+	/**/Popl->num_individuals-1);
+	
+	/* printf ("freeing individualscores\n");
+	free (IndividualScores); */
+}
+
+individual* MUTATE_INDIVIDUAL (canvas Canvas, individual Indiv, double ProportionMutatedUnits){
+	
+	SORT_UNIT_INDICES (Canvas, Indiv.dispo);
+	
+	individual* pMutatedIndiv = (individual*) malloc (sizeof(individual));
+	pMutatedIndiv->dispo = COPY_DISPOSITION (Canvas, Indiv.dispo);
+	
+	// number of units to transfer homes from
+	int NumRemainingUnits = (int) ceil (ProportionMutatedUnits*Indiv.dispo->height_units
+	/**/ *Indiv.dispo->width_units);
+	// printf ("%d to mutate\n (proportion: %f)", NumRemainingUnits, ProportionMutatedUnits);
+	
+	int pos = 0;
+	int ci, cj;
+	
+	while (NumRemainingUnits > 0){
+		
+		ASSIGN_DELIN_INDEX (&ci, &cj, Canvas, Indiv.dispo->sorted_unit_indices_density[pos]);
+		
+		int UnitX, UnitY;
+		ASSIGN_MIDPOINT_OF_CELL (&UnitX, &UnitY, Canvas, ci, cj);
+		
+		double RandDouble = ((double)rand()/(double)RAND_MAX);
+		if (RandDouble <= Indiv.dispo->unitsA[ci][cj].local_density){
+			
+			int X_min = max (UnitX - cMutationHomeDisplacementRadius, 0);
+			int X_max = min (UnitX + cMutationHomeDisplacementRadius, cWindowDims[0]-1);
+			int Y_min = max (UnitY - cMutationHomeDisplacementRadius, 0);
+			int Y_max = min (UnitY + cMutationHomeDisplacementRadius, cWindowDims[1]-1);
+			
+			int DestinationX, DestinationY;
+			double SqDist = DBL_MAX;
+			
+			while (SqDist > cMutationHomeDisplacementRadius){
+				
+				DestinationX = rand () % (X_max - X_min + 1) + X_min;
+				DestinationY = rand () % (Y_max - Y_min + 1) + Y_min;
+				SqDist = (DestinationX-UnitX)*(DestinationX-UnitX) +
+				/**/ (DestinationY-UnitY)*(DestinationY-UnitY);
+			}
+			int Destination_i, Destination_j;
+			ASSIGN_CELL_OF_PIXEL (&Destination_i, &Destination_j, Canvas,
+			/**/ DestinationX, DestinationY);
+			
+			int NumTransferredHomes = rand () % (cCellHomeLimit+1);
+			if (TRANSFER_HOMES (Canvas, pMutatedIndiv->dispo, NumTransferredHomes,
+			/**/ ci, cj, Destination_i, Destination_j)){
+				NumRemainingUnits--;
+			}
+		}
+		pos++;
+	}
+	pMutatedIndiv->total_score = -DBL_MAX;
+	CALCULATE_LOCAL_DENSITIES (Canvas, pMutatedIndiv->dispo);
+	CALCULATE_LOCAL_ENTROPIES (Canvas, pMutatedIndiv->dispo);
+	CALCULATE_SCORES_OF_INDIVIDUAL (pMutatedIndiv, Canvas);
+	return pMutatedIndiv;
+}
+
+
+individual* CROSS_INDIVIDUALS (canvas Canvas, individual Parent1, individual Parent2,
+/**/ double MaxProportionOfFirst, double StdDeviation){
+	
+	/* int NumUnits = Canvas->height_cells*Canvas->width_cells;
+	int* ShuffledUnits = (int*) malloc (NumUnits*sizeof(int));
+	for (int pos = 0; pos < NumUnits; pos++){
+		ShuffledUnits[pos] = pos;
+	}
+	for (int num_swapped = 0; num_swapped < NumSwaps; num_swapped++){
+		
+		int pos1 = rand () % (NumUnits);
+		int pos2 = pos1;
+		while (pos2 == pos1){
+			pos2 = rand () % (NumUnits);
+		}
+		
+		int TempIndex = ShuffledUnits[pos1];
+		ShuffledUnits[pos1] = ShuffledUnits[pos2];
+		ShuffledUnits[pos2] = ShuffledUnits[pos1];
+	}
+	
+	int end_index = (int)ceil(ProportionUnitsFromFirst*NumUnits); */
+	
+	individual* pChildIndiv = (individual*) malloc (sizeof(individual));
+	pChildIndiv->total_score = -DBL_MAX;
+	
+	pChildIndiv->dispo = CREATE_CANVAS_DISPOSITION (Canvas);
+	pChildIndiv->dispo->num_inhabitants = Parent1.dispo->num_inhabitants;
+	
+	int NumRemainingHomes = Parent1.dispo->num_inhabitants;
+	
+	for (int index = 0; index < Canvas->height_cells*Canvas->width_cells &&
+	/**/ NumRemainingHomes > 0; index++){
+		
+		int ci, cj;
+		ASSIGN_DELIN_INDEX (&ci, &cj, Canvas, Canvas->sorted_cell_indices_attractiveness
+		/**/ [index]);
+		
+		int NumFromParent1 = Parent1.dispo->unitsA[ci][cj].num_homes;
+		int NumFromParent2 = Parent2.dispo->unitsA[ci][cj].num_homes;
+		double ProportionOfFirst = max_double (0, RAND_VAR_HALF_NORMAL_DISTRIBUTION
+		/**/ (MaxProportionOfFirst, StdDeviation));
+		
+		int NumReceivedHomes = min (cCellHomeLimit, (int)ceil(ProportionOfFirst*NumFromParent1 +
+		/**/ (1-ProportionOfFirst)*NumFromParent2));
+		
+		// printf("Proportion: %lf ; attempted to merge %d from first and %d from second ; yields %d\n",
+		/**/ //ProportionOfFirst, NumFromParent1, NumFromParent2, NumReceivedHomes);
+		
+		pChildIndiv->dispo->unitsA[ci][cj].num_homes = NumReceivedHomes;
+		NumRemainingHomes -= NumReceivedHomes;
+	}
+	pChildIndiv->total_score = -DBL_MAX;
+	CALCULATE_LOCAL_DENSITIES (Canvas, pChildIndiv->dispo);
+	CALCULATE_LOCAL_ENTROPIES (Canvas, pChildIndiv->dispo);
+	CALCULATE_SCORES_OF_INDIVIDUAL (pChildIndiv, Canvas);
+	return pChildIndiv;
+}
+
+void RENEW_POPULATION (canvas Canvas, population Popl, double KeepProportion,
+/**/ double MutateProportion, double CrossProportion){
+	
+	int NumKeptFromPreviousPop = (int)ceil(KeepProportion*Popl->num_individuals);
+	int NumMutatedFromPreviousPop = (int)ceil(MutateProportion*Popl->num_individuals);
+	int NumCrossedFromPreviousPop = (int)ceil(CrossProportion*Popl->num_individuals);
+	int NumNewlyGenerated = Popl->num_individuals - NumKeptFromPreviousPop
+	/**/ - NumMutatedFromPreviousPop - NumCrossedFromPreviousPop;
+	
+	int NumHomes = Popl->individualsA[0].dispo->num_inhabitants;
+	
+	// keep NumKeptFromPreviousPop and mutate NumMutatedFromPreviousPop of them into
+	// new individuals
+	for (int index = NumKeptFromPreviousPop; index < NumKeptFromPreviousPop
+	/**/ + NumMutatedFromPreviousPop; index++){
+		
+		individual ReferenceIndiv = Popl->individualsA
+		/**/ [Popl->sorted_individual_indices_score[index]];
+		individual* pMutatingIndiv = &Popl->individualsA
+		/**/ [Popl->sorted_individual_indices_score[index]];
+		
+		double RandMutationProportion = 0.15*((double)rand()/(double)RAND_MAX);
+		
+		*pMutatingIndiv = *(MUTATE_INDIVIDUAL (Canvas, ReferenceIndiv,
+		/**/ RandMutationProportion));
+		// FREE_INDIVIDUAL (pMutatingIndiv);
+	}
+	
+	// cross between the best until
+	int parent_1 = 0;
+	int parent_2 = 1;
+	for (int index = NumKeptFromPreviousPop + NumMutatedFromPreviousPop;
+	/**/ index < NumKeptFromPreviousPop + NumMutatedFromPreviousPop + NumCrossedFromPreviousPop;
+	/**/ index++){
+		
+		individual ParentIndiv1 = Popl->individualsA[Popl->sorted_individual_indices_score
+		/**/ [parent_1]];
+		individual ParentIndiv2 = Popl->individualsA[Popl->sorted_individual_indices_score
+		/**/ [parent_2]];
+		
+		individual* pChildIndiv = &Popl->individualsA[Popl->sorted_individual_indices_score
+		/**/ [index]];
+		
+		double MaxProportionOfFirst = ParentIndiv1.total_score/(ParentIndiv1.total_score +
+		/**/ ParentIndiv2.total_score);
+		double StdDeviation = 0.5*MaxProportionOfFirst*(double)rand()/(double)RAND_MAX;
+		
+		*pChildIndiv = *(CROSS_INDIVIDUALS (Canvas, ParentIndiv1, ParentIndiv2,
+		/**/ MaxProportionOfFirst, StdDeviation));
+		
+		parent_1++;
+		parent_2++;
+	}
+	
+	// complete the rest with randomly generated individuals
+	for (int index = NumKeptFromPreviousPop + NumMutatedFromPreviousPop + NumCrossedFromPreviousPop;
+	/**/ index < Popl->num_individuals; index++){
+		
+		individual* pCurrentIndiv = &Popl->individualsA
+		/**/ [Popl->sorted_individual_indices_score[index]];
+		
+		// FREE_INDIVIDUAL (pCurrentIndiv);
+		INITIALIZE_INDIVIDUAL (pCurrentIndiv, Canvas, NumHomes);
+		// printf ("Individual %d/%d generated randomly.\n", index, Popl->num_individuals);
+		// printf ("Attractiveness: %f | Density: %f | Entropy: %f | Cost penalty: %f || Total: %f\n",
+		// /**/ index,
+		// /**/ pCurrentIndiv->attractiveness_score,
+		// /**/ pCurrentIndiv->density_score,
+		// /**/ pCurrentIndiv->entropy_score,
+		// /**/ pCurrentIndiv->cost_penalty,
+		// /**/ pCurrentIndiv->total_score);
+		// SDL_RenderClear (RendererGENALGO);
+		// SDL_RenderExistingServices (RendererGENALGO, Canvas);
+		// SDL_RenderExistingHomes (RendererGENALGO, Canvas, pCurrentIndiv->dispo);
+		// SDL_DisplayUnitEntropies (RendererGENALGO, Canvas, pCurrentIndiv->dispo);
+		
+		double RandMutationProportion = 0.15*((double)rand()/(double)RAND_MAX);
+		*pCurrentIndiv = *(MUTATE_INDIVIDUAL (Canvas, *pCurrentIndiv, RandMutationProportion));
+		int parent_1 = rand () % (Popl->num_individuals);
+		int parent_2 = parent_1;
+		while (parent_2 == parent_1)
+		parent_2 = rand () % (Popl->num_individuals);
+		
+		individual ParentIndiv1 = Popl->individualsA[Popl->sorted_individual_indices_score
+		/**/ [parent_1]];
+		individual ParentIndiv2 = Popl->individualsA[Popl->sorted_individual_indices_score
+		/**/ [parent_2]];
+		
+		*pCurrentIndiv = *(CROSS_INDIVIDUALS (Canvas, ParentIndiv1, ParentIndiv2,
+		/**/ 0.5, 0.25));
+		// printf ("Individual %d/%d mutated.\n", index, Popl->num_individuals);
+		// printf ("Attractiveness: %f | Density: %f | Entropy: %f | Cost penalty: %f || Total: %f\n",
+		// /**/ index,
+		// /**/ pCurrentIndiv->attractiveness_score,
+		// /**/ pCurrentIndiv->density_score,
+		// /**/ pCurrentIndiv->entropy_score,
+		// /**/ pCurrentIndiv->cost_penalty,
+		// /**/ pCurrentIndiv->total_score);
+		// printf("\n");
+		// SDL_RenderClear (RendererGENALGO);
+		// SDL_RenderExistingServices (RendererGENALGO, Canvas);
+		// SDL_RenderExistingHomes (RendererGENALGO, Canvas, pCurrentIndiv->dispo);
+		// SDL_DisplayUnitEntropies (RendererGENALGO, Canvas, pCurrentIndiv->dispo);
+	}
+	
+	// resort individuals
+	SORT_INDIVIDUAL_INDICES (Popl);
+}
+
+
+void FREE_INDIVIDUAL (individual* pIndiv){
+	
+	printf ("freeing individual\n");
+	FREE_DISPOSITION (pIndiv->dispo);
+}
+
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{interactions.h}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#ifndef INTERACTIONS_H
+#define INTERACTIONS_H
+
+#include "canvas.h"
+#include "terrain.h"
+#include "display.h"
+#include "dispo.h"
+#include "gen-algo.h"
+
+void USER_CLEAR_SCREEN (SDL_Renderer* Renderer);
+
+void USER_CYCLE_SERVICE_CLASS_PREV (SDL_Renderer* Renderer, int* pServiceClass,
+/**/ int* pRed, int* pBlue, int* pGreen);
+void USER_CYCLE_SERVICE_CLASS_NEXT (SDL_Renderer* Renderer, int* pServiceClass,
+/**/ int* pRed, int* pBlue, int* pGreen);
+
+void USER_DRAW_SERVICE (SDL_Renderer* Renderer, int* pRed, int* pGreen, int* pBlue,
+/**/ int* pMouseX, int* pMouseY, canvas Canvas, int* pFill_i, int* pFill_j, int ServiceClass);
+void USER_FILL_SERVICE (SDL_Renderer* Renderer, int* pMouseX, int* pMouseY,
+/**/ canvas Canvas, int* pFill_i, int* pFill_j, int ServiceClass);
+void USER_RERENDER_SERVICES (SDL_Renderer* Renderer, canvas Canvas);
+
+
+void USER_CALCULATE_AND_DISPLAY_ATTRACTIVENESSES (SDL_Renderer* Renderer, canvas Canvas);
+void USER_DISPLAY_ATTRACTIVENESSES (SDL_Renderer* Renderer, canvas Canvas);
+
+void USER_INITIALIZE_DISPOSITION_AND_DISPLAY_HOMES (SDL_Renderer* Renderer, canvas Canvas,
+/**/ disposition Dispo);
+void USER_CALCULATE_AND_DISPLAY_DENSITIES (SDL_Renderer* Renderer, canvas Canvas, disposition Dispo);
+
+void USER_INITIALIZE_AND_SORT_POPULATION (canvas Canvas, population* pPopl);
+void USER_RENEW_POPULATION (canvas Canvas, population Popl);
+
+void USER_DISPLAY_POPULATION_INDIVIDUAL_DESC_SCORE (SDL_Renderer* Renderer, canvas Canvas,
+/**/ population Popl);
+
+void USER_INITIALIZE_AND_DISPLAY_INIDIVIDUAL (canvas Canvas, disposition Dispo,
+/**/ individual* pIndiv);
+void USER_MUTATE_AND_DISPLAY_INDIVIDUAL (SDL_Renderer* Renderer, canvas Canvas,
+/**/ individual* pIndiv);
+
+// void USER_LAUNCH_GENETIC_ALGORITHM (SDL_Renderer* Renderer, canvas Canvas);
+void USER_CALCULATE_AND_DISPLAY_ENTROPIES (SDL_Renderer* Renderer, canvas Canvas, disposition Dispo);
+
+
+
+
+void USER_COMPUTE_AND_DISPLAY_HEIGHTS (SDL_Renderer* Renderer, canvas Canvas);
+void USER_DISPLAY_TERRAIN (SDL_Renderer* Renderer, canvas Canvas);
+
+
+void INITIALIZE_AND_EVOLVE_POPULATION (SDL_Renderer* Renderer, canvas Canvas);
+void USER_GENETIC_ALGORITHM (SDL_Renderer* Renderer, canvas	Canvas);
+
+
+
+void USER_INITIALIZE_POPULATION (canvas Canvas, population* pPopl, double* pKeepProportion,
+/**/ double* pMutateProportion);
+void USER_GENETIC_ALGORITHM_STEP (canvas Canvas, population Popl,
+/**/ double KeepProportion, double MutateProportion);
+
+void USER_CROSS_AND_DISPLAY_INDIVIDUALS (SDL_Renderer* Renderer, canvas Canvas,
+/**/ individual* pIndiv1, individual* pIndiv2);
+void USER_INITIALIZE_AND_DISPLAY_INDIVIDUAL_AND_DISPO (SDL_Renderer* Renderer,
+canvas Canvas, individual* pIndiv);
+
+#endif
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{interactions.c}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#include "interactions.h"
+
+// renders an empty black screen
+void USER_CLEAR_SCREEN (SDL_Renderer* Renderer){
+	
+	SDL_SetRenderDrawColor (Renderer, 0, 0, 0, 0);
+	SDL_RenderClear (Renderer);
+	SDL_RenderPresent (Renderer);
+}
+
+
+// assigns to *pServiceClass the previous service class ID and readies *pRed, *pGreen and
+// *pBlue for drawing in the new class's display color
+void USER_CYCLE_SERVICE_CLASS_PREV (SDL_Renderer* Renderer, int* pServiceClass,
+/**/ int* pRed, int* pBlue, int* pGreen){
+	
+	*pServiceClass = (*pServiceClass - 1) % cNumServiceClasses;
+	if (*pServiceClass < 0)
+	*pServiceClass += cNumServiceClasses;
+	ASSIGN_COLOR_OF_SERVICE_CLASS (*pServiceClass, pRed, pGreen, pBlue);
+	SDL_SetRenderDrawColor (Renderer, *pRed, *pGreen, *pBlue, 255);
+}
+
+
+// assigns to *pServiceClass the next service class ID and readies *pRed, *pGreen and
+// *pBlue for drawing in the new class's display color
+void USER_CYCLE_SERVICE_CLASS_NEXT (SDL_Renderer* Renderer, int* pServiceClass,
+/**/ int* pRed, int* pBlue, int* pGreen){
+	
+	*pServiceClass = (*pServiceClass + 1) % cNumServiceClasses;
+	ASSIGN_COLOR_OF_SERVICE_CLASS (*pServiceClass, pRed, pGreen, pBlue);
+	SDL_SetRenderDrawColor (Renderer, *pRed, *pGreen, *pBlue, 255);
+}
+
+
+// fills each blank cell of Canvas hovered over by the user's cursor in ServiceClass's
+// dispay color, also updating Canvas->service_border_pixels by adding midpoints of all
+// newly filled cells
+void USER_DRAW_SERVICE (SDL_Renderer* Renderer, int* pRed, int* pGreen, int* pBlue,
+/**/ int* pMouseX, int* pMouseY, canvas Canvas, int* pFill_i, int* pFill_j, int ServiceClass){
+	
+	SDL_GetMouseState (pMouseX, pMouseY);
+	ASSIGN_CELL_OF_PIXEL (pFill_i, pFill_j, Canvas, *pMouseX, *pMouseY);
+	
+	ASSIGN_COLOR_OF_SERVICE_CLASS (ServiceClass, pRed, pGreen, pBlue);
+	SDL_SetRenderDrawColor (Renderer, *pRed, *pGreen, *pBlue, 255);
+	
+	if (Canvas->cellsA[*pFill_i][*pFill_j].service_presence_class == -1){
+		
+		Canvas->cellsA[*pFill_i][*pFill_j].service_presence_class = ServiceClass;
+		SDL_RenderFillRect (Renderer, &Canvas->cellsA[*pFill_i][*pFill_j].fill_square);
+		SDL_RenderPresent (Renderer);
+		
+		int X, Y;
+		ASSIGN_MIDPOINT_OF_CELL (&X, &Y, Canvas, *pFill_i, *pFill_j);
+		l_insert (&Canvas->service_border_pixelsL, X, Y, ServiceClass);
+	}
+}
+
+
+// hyp: Canvas' service whose borders surround the user's current cursor position has
+// class ServiceClass
+// fills the cells surrounded by the aforementioned service
+void USER_FILL_SERVICE (SDL_Renderer* Renderer, int* pMouseX, int* pMouseY,
+/**/ canvas Canvas, int* pFill_i, int* pFill_j, int ServiceClass){
+	
+	SDL_GetMouseState (pMouseX, pMouseY);
+	ASSIGN_CELL_OF_PIXEL (pFill_i, pFill_j, Canvas, *pMouseX, *pMouseY);
+	SDL_FloodFillService (Renderer, Canvas, ServiceClass, *pFill_i, *pFill_j);
+	SDL_RenderPresent (Renderer);
+}
+
+
+// rerenders services which have been drawn on Canvas
+void USER_RERENDER_SERVICES (SDL_Renderer* Renderer, canvas Canvas){
+	
+	SDL_RenderExistingServices (Renderer, Canvas);
+}
+
+// calculates then displays the attractivenesses of Canvas' cells
+void USER_CALCULATE_AND_DISPLAY_ATTRACTIVENESSES (SDL_Renderer* Renderer, canvas Canvas){
+	
+	CALCULATE_ATTRACTIVENESSES (Canvas);
+	SDL_DisplayCellAttractivenesses (Renderer, Canvas);
+}
+
+
+// hyp: Canvas' cell attractivenesses have been previously calculated
+// displays the attractivenesses of Canvas' cells
+void USER_DISPLAY_ATTRACTIVENESSES (SDL_Renderer* Renderer, canvas Canvas){
+	
+	SDL_DisplayCellAttractivenesses (Renderer, Canvas);
+}
+
+
+// creates and initializes a disposition on Canvas set to contain NumHomes homes using
+// INITIALIZE_DISPOSITION_FROM_CELLS, then displays it
+void USER_INITIALIZE_DISPOSITION_AND_DISPLAY_HOMES (SDL_Renderer* Renderer, canvas Canvas,
+/**/ disposition Dispo){
+	
+	int NumHomes;
+	printf ("Enter number of homes to place for test disposition :\n");
+	scanf ("%d", &NumHomes);
+	
+	double HomeAttributionInflation;
+	printf ("Enter inflation parameter for home attribution :\n");
+	scanf ("%lf", &HomeAttributionInflation);
+	
+	INITIALIZE_DISPOSITION_FROM_CELLS_2 (Canvas, Dispo, NumHomes, HomeAttributionInflation);
+	SDL_RenderExistingHomes (Renderer, Canvas, Dispo);
+}
+
+
+// hyp: TestDispo has been initialized
+//
+void USER_CALCULATE_AND_DISPLAY_DENSITIES (SDL_Renderer* Renderer, canvas Canvas, disposition Dispo){
+	
+	CALCULATE_LOCAL_DENSITIES (Canvas, Dispo);
+	SDL_DisplayUnitDensities (Renderer, Canvas, Dispo);
+	SORT_UNIT_INDICES (Canvas, Dispo);
+}
+
+
+void USER_INITIALIZE_AND_SORT_POPULATION (canvas Canvas, population* pPopl){
+	
+	int NumHomes;
+	printf ("Enter number of homes to place for population's individuals :\n");
+	scanf ("%d", &NumHomes);
+	
+	int PopSize;
+	printf ("Enter number of individuals to generate :\n");
+	scanf ("%d", &PopSize);
+	
+	*pPopl = CREATE_POPULATION (Canvas, PopSize);
+	for (int index = 0; index < PopSize; index++){
+		INITIALIZE_INDIVIDUAL (((*pPopl)->individualsA)+index, Canvas, NumHomes);
+		printf ("%f\n", (*pPopl)->individualsA[index].total_score);
+	}
+	SORT_INDIVIDUAL_INDICES (*pPopl);
+}
+
+
+// void USER_RENEW_POPULATION (canvas Canvas, population Popl){
+	// 	double ConservationProportion;
+	// 	printf ("Enter proportion of fittest individuals to keep and mutate :\n");
+	// 	scanf ("%lf", &ConservationProportion);
+	
+	// 	ITERATE_POPULATION_RENEWAL (Canvas, Popl, ConservationProportion);
+	// }
+
+
+void USER_DISPLAY_POPULATION_INDIVIDUAL_DESC_SCORE (SDL_Renderer* Renderer, canvas Canvas,
+/**/ population Popl){
+	
+	int IndivIndex;
+	printf ("Enter index of individual to display (between 0 and %d) :\n", Popl->num_individuals-1);
+	scanf ("%d", &IndivIndex);
+	
+	USER_CLEAR_SCREEN (Renderer);
+	USER_RERENDER_SERVICES (Renderer, Canvas);
+	SDL_RenderExistingHomes (Renderer, Canvas,
+	/**/ Popl->individualsA[Popl->sorted_individual_indices_score[IndivIndex]].dispo);
+	
+	printf ("\n---------\nAttractiveness : %f\nDensity : %f\nEntropy : %f (entropy is %f)\nCost : %f\nTotal : %f\n",
+	/**/ Popl->individualsA[Popl->sorted_individual_indices_score[IndivIndex]].attractiveness_score,
+	/**/ Popl->individualsA[Popl->sorted_individual_indices_score[IndivIndex]].density_score,
+	Popl->individualsA[Popl->sorted_individual_indices_score[IndivIndex]].entropy_score,
+	Popl->individualsA[Popl->sorted_individual_indices_score[IndivIndex]].dispo->entropy,
+	Popl->individualsA[Popl->sorted_individual_indices_score[IndivIndex]].cost_penalty,
+	/**/ Popl->individualsA[Popl->sorted_individual_indices_score[IndivIndex]].total_score);
+}
+
+
+void USER_INITIALIZE_AND_DISPLAY_INIDIVIDUAL (canvas Canvas, disposition Dispo, individual* pIndiv){
+	
+	pIndiv->dispo = Dispo;
+	pIndiv->total_score = -DBL_MAX;
+	CALCULATE_SCORES_OF_INDIVIDUAL (pIndiv, Canvas);
+	printf ("Attractiveness : %f || Density : %f || Total : %f \n",
+	/**/ pIndiv->attractiveness_score, pIndiv->density_score, pIndiv->total_score);
+}
+
+void USER_INITIALIZE_AND_DISPLAY_INDIVIDUAL_AND_DISPO (SDL_Renderer* Renderer,
+canvas Canvas, individual* pIndiv){
+	
+	pIndiv->dispo = CREATE_CANVAS_DISPOSITION (Canvas);
+	
+	int NumHomes;
+	printf ("Enter number of homes to place for test disposition :\n");
+	scanf ("%d", &NumHomes);
+	
+	double HomeAttributionInflation;
+	printf ("Enter inflation parameter for home attribution :\n");
+	scanf ("%lf", &HomeAttributionInflation);
+	
+	INITIALIZE_DISPOSITION_FROM_CELLS_2 (Canvas, pIndiv->dispo, NumHomes, HomeAttributionInflation);
+	SDL_RenderExistingHomes (Renderer, Canvas, pIndiv->dispo);
+	
+	pIndiv->total_score = -DBL_MAX;
+	CALCULATE_SCORES_OF_INDIVIDUAL (pIndiv, Canvas);
+}
+
+
+void USER_MUTATE_AND_DISPLAY_INDIVIDUAL (SDL_Renderer* Renderer, canvas Canvas,
+/**/ individual* pIndiv){
+	
+	double MutationProportion;
+	printf ("Enter proportion of units to be mutated for individual :\n");
+	scanf ("%lf", &MutationProportion);
+	
+	individual* pNewIndiv = MUTATE_INDIVIDUAL (Canvas, *pIndiv, MutationProportion);
+	*pIndiv = *pNewIndiv;
+	USER_CLEAR_SCREEN (Renderer);
+	USER_RERENDER_SERVICES (Renderer, Canvas);
+	SDL_RenderExistingHomes (Renderer, Canvas, pIndiv->dispo);
+	CALCULATE_LOCAL_DENSITIES (Canvas, pIndiv->dispo);
+	SORT_UNIT_INDICES (Canvas, pIndiv->dispo);
+}
+
+
+void USER_CROSS_AND_DISPLAY_INDIVIDUALS (SDL_Renderer* Renderer, canvas Canvas,
+/**/ individual* pIndiv1, individual* pIndiv2){
+	
+	double MaxProportionOfFirst;
+	double StdDeviation;
+	printf ("Enter maximum proportion of first :\n");
+	scanf ("%lf", &MaxProportionOfFirst);
+	printf ("Enter standard deviation (ideally > (1/2)*MaxProportionOfFirst) :\n");
+	scanf ("%lf", &StdDeviation);
+	printf ("ok, %lf and %lf\n", MaxProportionOfFirst, StdDeviation);
+	
+	individual* pNewIndiv = CROSS_INDIVIDUALS (Canvas, *pIndiv1, *pIndiv2,
+	/**/ MaxProportionOfFirst, StdDeviation);
+	
+	*pIndiv1 = *pNewIndiv;
+	USER_CLEAR_SCREEN (Renderer);
+	USER_RERENDER_SERVICES (Renderer, Canvas);
+	SDL_RenderExistingHomes (Renderer, Canvas, pIndiv1->dispo);
+	CALCULATE_LOCAL_DENSITIES (Canvas, pIndiv1->dispo);
+	SORT_UNIT_INDICES (Canvas, pIndiv1->dispo);
+}
+
+// void USER_LAUNCH_GENETIC_ALGORITHM (SDL_Renderer* Renderer, canvas Canvas){
+	
+	// 	int NumHomes, GenerationSize, NumRenewals;
+	// 	printf ("Enter number of homes to place on canvas :\n");
+	// 	scanf ("%d", &NumHomes);
+	// 	printf ("Enter number of individuals in population :\n");
+	// 	scanf ("%d", &GenerationSize);
+	// 	printf ("Enter the number of generations :\n");
+	// 	scanf ("%d", &NumRenewals);
+	
+	// 	population Popl = GENERATE_RANDOM_POPULATION (Canvas, GenerationSize, NumHomes);
+	
+	// 	printf("a\n");
+	// 	USER_CLEAR_SCREEN (Renderer);
+	// 	USER_RERENDER_SERVICES (Renderer, Canvas);
+	// 	SDL_RenderExistingHomes (Renderer, Canvas,
+	// 	/**/ Popl->individualsA[Popl->sorted_individual_indices_score[0]].dispo);
+	
+	// 	printf ("Best individual stats\n---------------------\nAttractiveness : %f || Density : %f || Total : %f \n\n",
+	// 	/**/ Popl->individualsA[Popl->sorted_individual_indices_score[0]].attractiveness_score,
+	// 	/**/ Popl->individualsA[Popl->sorted_individual_indices_score[0]].density_score,
+	// 	/**/ Popl->individualsA[Popl->sorted_individual_indices_score[0]].total_score);
+	
+	// 	printf ("b\n");
+	// 	for (int generation = 0; generation < NumRenewals; generation++){
+		
+		// 		for (int individual = 0; individual < GenerationSize; individual++){
+			// 			assert (IS_DISPOSITION_HOME_ASSIGNMENT_COHERENT
+			// 			/**/ (Popl->individualsA[individual].dispo));
+			// 		}
+		// 		ITERATE_POPULATION_RENEWAL (Canvas, Popl, 0.6);
+		
+		// 		USER_CLEAR_SCREEN (Renderer);
+		// 		USER_RERENDER_SERVICES (Renderer, Canvas);
+		// 		SDL_RenderExistingHomes (Renderer, Canvas,
+		// 		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[0]].dispo);
+		
+		// 		printf ("Best individual stats\n---------------------\nAttractiveness : %f || Density : %f || Total : %f \n\n",
+		// 		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[0]].attractiveness_score,
+		// 		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[0]].density_score,
+		// 		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[0]].total_score);
+		
+		// 	}
+	// 	printf ("\n\nDone.\n");
+	// }
+
+
+void USER_CALCULATE_AND_DISPLAY_ENTROPIES (SDL_Renderer* Renderer, canvas Canvas, disposition Dispo){
+	
+	CALCULATE_LOCAL_ENTROPIES (Canvas, Dispo);
+	SDL_DisplayUnitEntropies (Renderer, Canvas, Dispo);
+}
+
+void USER_COMPUTE_AND_DISPLAY_HEIGHTS (SDL_Renderer* Renderer, canvas Canvas){
+	
+	double Amplitude;
+	int Frequency;
+	int NumOctaves;
+	double Lacunarity;
+	double Persistence;
+	double Exponentiation;
+	printf ("Enter following parameters in order, seperated by semicolons : amplitude, frequency, number of octaves, lacunarity, persistence, expontentiation.\n");
+	scanf ("%lf ; %d ; %d ; %lf ; %lf ; %lf", &Amplitude, &Frequency, &NumOctaves, &Lacunarity,
+	/**/ &Persistence, &Exponentiation);
+	printf ("%f ; %d ; %d ; %f ; %f ; %f\n", Amplitude, Frequency, NumOctaves, Lacunarity,
+	/**/ Persistence, Exponentiation);
+	
+	GENERATE_TERRAIN_HEIGHTMAP (Canvas, Amplitude, Frequency, NumOctaves, Lacunarity,
+	/**/ Persistence, Exponentiation);
+	
+	SDL_DisplayTerrainHeights (Renderer, Canvas);
+}
+
+void USER_DISPLAY_TERRAIN (SDL_Renderer* Renderer, canvas Canvas){
+	
+	SDL_RenderTerrain (Renderer, Canvas);
+}
+
+
+
+
+
+void INITIALIZE_AND_EVOLVE_POPULATION (SDL_Renderer* Renderer, canvas Canvas){
+	
+	int NumHomes;
+	int NumIndividuals;
+	int NumGenerations;
+	
+	double KeepProportion;
+	double MutateProportion;
+	double CrossProportion;
+	
+	printf ("Enter : NumHomes, NumIndividuals, NumGenerations, KeepProportion, MutateProportion, CrossProportion.\n");
+	scanf ("%d ; %d ; %d ; %lf ; %lf ; %lf", &NumHomes, &NumIndividuals, &NumGenerations,
+	/**/ &KeepProportion, &MutateProportion, &CrossProportion);
+	
+	// printf ("a\n");
+	
+	// initialize first generation
+	population Popl = CREATE_POPULATION (Canvas, NumIndividuals);
+	for (int index = 0; index < Popl->num_individuals; index++){
+		
+		INITIALIZE_INDIVIDUAL (&Popl->individualsA[index], Canvas, NumHomes);
+	}
+	SORT_INDIVIDUAL_INDICES (Popl);
+	
+	// printf ("b\n");
+	
+	USER_CLEAR_SCREEN (Renderer);
+	USER_RERENDER_SERVICES (Renderer, Canvas);
+	// USER_DISPLAY_TERRAIN (Renderer, Canvas);
+	SDL_RenderExistingHomes (Renderer, Canvas,
+	/**/ Popl->individualsA[Popl->sorted_individual_indices_score[0]].dispo);
+	
+	// printf ("c\n");
+	
+	printf ("INIT_POP:\n----------\n");
+	for (int index = 0; index < NumIndividuals; index++){
+		printf ("IND#%d : Attractiveness: %f | Density: %f | Entropy: %f | Cost penalty: %f || Total: %f\n",
+		/**/ index,
+		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].attractiveness_score,
+		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].density_score,
+		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].entropy_score,
+		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].cost_penalty,
+		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].total_score);
+	}
+	printf ("\n");
+	
+	// iterate renewal for NumGenerations generations
+	for (int generation = 0; generation < NumGenerations; generation++){
+		
+		RENEW_POPULATION (Canvas, Popl, KeepProportion, MutateProportion, CrossProportion);
+		
+		USER_CLEAR_SCREEN (Renderer);
+		USER_RERENDER_SERVICES (Renderer, Canvas);
+		// USER_DISPLAY_TERRAIN (Renderer, Canvas);
+		SDL_RenderExistingHomes (Renderer, Canvas,
+		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[0]].dispo);
+		
+		printf ("POP %d:\n----------\n", generation+1);
+		for (int index = 0; index < NumIndividuals; index++){
+			printf ("IND#%d : Attractiveness: %f | Density: %f | Entropy: %f | Cost penalty: %f || Total: %f\n",
+			/**/ index,
+			/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].attractiveness_score,
+			/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].density_score,
+			/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].entropy_score,
+			/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].cost_penalty,
+			/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].total_score);
+		}
+		printf ("\n");
+	}
+}
+
+
+
+void USER_INITIALIZE_POPULATION (canvas Canvas, population* pPopl,
+/**/ double* pKeepProportion,
+/**/ double* pMutateProportion){
+	
+	int NumHomes;
+	int NumIndividuals;
+	
+	printf ("Enter : NumHomes, NumIndividuals, KeepProportion, MutateProportion.\n");
+	scanf ("%d ; %d ; %lf ; %lf", &NumHomes, &NumIndividuals,
+	/**/ pKeepProportion, pMutateProportion);
+	
+	*pPopl = CREATE_POPULATION (Canvas, NumIndividuals);
+	for (int index = 0; index < (*pPopl)->num_individuals; index++){
+		
+		INITIALIZE_INDIVIDUAL (&(*pPopl)->individualsA[index], Canvas, NumHomes);
+	}
+	SORT_INDIVIDUAL_INDICES (*pPopl);
+	
+	printf ("\n----------\n");
+	for (int index = 0; index < NumIndividuals; index++){
+		printf ("IND#%d : Attractiveness: %f | Density: %f | Entropy: %f | Cost penalty: %f || Total: %f\n",
+		/**/ index,
+		/**/ (*pPopl)->individualsA[(*pPopl)->sorted_individual_indices_score[index]].attractiveness_score,
+		/**/ (*pPopl)->individualsA[(*pPopl)->sorted_individual_indices_score[index]].density_score,
+		/**/ (*pPopl)->individualsA[(*pPopl)->sorted_individual_indices_score[index]].entropy_score,
+		/**/ (*pPopl)->individualsA[(*pPopl)->sorted_individual_indices_score[index]].cost_penalty,
+		/**/ (*pPopl)->individualsA[(*pPopl)->sorted_individual_indices_score[index]].total_score);
+	}
+	printf ("\n");
+}
+
+void USER_GENETIC_ALGORITHM_STEP (canvas Canvas, population Popl,
+/**/ double KeepProportion, double MutateProportion){
+	
+	RENEW_POPULATION (Canvas, Popl, KeepProportion, MutateProportion, 0);
+	int NumIndividuals = Popl->num_individuals;
+	
+	printf ("\n----------\n");
+	for (int index = 0; index < NumIndividuals; index++){
+		printf ("IND#%d : Attractiveness: %f | Density: %f | Entropy: %f | Cost penalty: %f || Total: %f\n",
+		/**/ index,
+		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].attractiveness_score,
+		/**/ Popl->individualsA[Popl->sorted_individual_indices_score[index]].density_score,
+		/**/ (Popl)->individualsA[Popl->sorted_individual_indices_score[index]].entropy_score,
+		/**/ (Popl)->individualsA[Popl->sorted_individual_indices_score[index]].cost_penalty,
+		/**/ (Popl)->individualsA[Popl->sorted_individual_indices_score[index]].total_score);
+	}
+	printf ("\n");
+}
+
+
+void USER_GENETIC_ALGORITHM (SDL_Renderer* Renderer, canvas Canvas){
+	
+	INITIALIZE_AND_EVOLVE_POPULATION (Renderer, Canvas);
+}
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{main.c}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#include "canvas.h"
+#include "dispo.h"
+#include "gen-algo.h"
+
+#include "display.h"
+#include "interactions.h"
+
+int main (int argc, char argv[]){
+	
+	// initialize srand
+	srand(time(NULL));
+	
+	// initialize and configure SDL
+	SDL_Window* Window = NULL;
+	SDL_Renderer* Renderer = NULL;
+	
+	if (SDL_Init (SDL_INIT_VIDEO) != 0){
+		SDL_Log ("ERROR : SDL initialization failed > %s\n", SDL_GetError ());
+		exit (EXIT_FAILURE);
+	}
+	
+	Window = SDL_CreateWindow ("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1920, 1080,
+	/**/ SDL_WINDOW_MAXIMIZED);
+	if (Window == NULL){
+		SDL_Log ("ERROR : SDL window creation failed > %s\n", SDL_GetError ());
+		exit (EXIT_FAILURE);
+	}
+	
+	Renderer = SDL_CreateRenderer(Window,-1,SDL_RENDERER_SOFTWARE);
+	if (Renderer == NULL) {
+		SDL_Log ("ERROR : SDL renderer creation failed > %s\n", SDL_GetError ());
+		exit (EXIT_FAILURE);
+	}
+	SDL_bool PRG_RUN = SDL_TRUE;
+	
+	SDL_SetRenderDrawBlendMode(Renderer,SDL_BLENDMODE_ADD);
+	SDL_RenderPresent (Renderer);
+	
+	
+	
+	RendererGENALGO = Renderer;
+	double KeepProportion;
+	double MutateProportion;
+	
+	
+	// initialize canvas and attributes
+	canvas MainCanvas = CREATE_CANVAS (cCellSizePixels, cWindowDims);
+	int CurrentServiceClass = 0;
+	int currentEntertainType = 0;
+	
+	// declare/initialize test disposition and population
+	disposition TestDispo = CREATE_CANVAS_DISPOSITION (MainCanvas);
+	individual TestIndiv;
+	individual TestIndiv_bis;
+	population TestPopl;
+	
+	// declare mouse interaction variables
+	bool IsMouseButtonClicked = false;
+	int MouseX, MouseY;
+	
+	// declare drawing and filling varibales
+	int DrawRed;
+	int DrawGreen;
+	int DrawBlue;
+	
+	int Fill_row;
+	int Fill_column;
+	
+	
+	
+	SDL_Event Event;
+	
+	// program execution
+	while(PRG_RUN){
+		
+		while (SDL_PollEvent(&Event)){
+			
+			switch (Event.type){
+				
+				case (SDL_KEYDOWN) :
+				
+				switch (Event.key.keysym.sym){
+					
+					case SDLK_q :
+					USER_CLEAR_SCREEN (Renderer);
+					continue;
+					case SDLK_w :
+					USER_CYCLE_SERVICE_CLASS_PREV (Renderer, &CurrentServiceClass,
+					&DrawRed, &DrawBlue, &DrawGreen);
+					continue;
+					case SDLK_e :
+					USER_CYCLE_SERVICE_CLASS_NEXT (Renderer, &CurrentServiceClass,
+					&DrawRed, &DrawBlue, &DrawGreen);
+					continue;
+					case SDLK_r :
+					USER_RERENDER_SERVICES (Renderer, MainCanvas);
+					continue;
+					case SDLK_t :
+					USER_CALCULATE_AND_DISPLAY_ATTRACTIVENESSES (Renderer,
+					MainCanvas);
+					continue;
+					case SDLK_y :
+					USER_DISPLAY_ATTRACTIVENESSES (Renderer, MainCanvas);
+					continue;
+					case SDLK_f :
+					USER_FILL_SERVICE (Renderer, &MouseX, &MouseY, MainCanvas,
+					&Fill_row, &Fill_column, CurrentServiceClass);
+					continue;
+					case SDLK_u :
+					USER_INITIALIZE_DISPOSITION_AND_DISPLAY_HOMES (Renderer,
+					MainCanvas, TestDispo);
+					continue;
+					case SDLK_i :
+					USER_CALCULATE_AND_DISPLAY_DENSITIES (Renderer,
+					MainCanvas, TestDispo);
+					continue;
+					case SDLK_o :
+					USER_INITIALIZE_AND_SORT_POPULATION (MainCanvas, &TestPopl);
+					continue;
+					case SDLK_p :
+					USER_DISPLAY_POPULATION_INDIVIDUAL_DESC_SCORE (Renderer, MainCanvas,
+					TestPopl);
+					continue;
+					case SDLK_a :
+					USER_INITIALIZE_AND_DISPLAY_INIDIVIDUAL (MainCanvas,
+					TestDispo, &TestIndiv);
+					continue;
+					case SDLK_s :
+					USER_MUTATE_AND_DISPLAY_INDIVIDUAL (Renderer, MainCanvas, &TestIndiv);
+					continue;
+					/* case SDLK_d :
+					USER_RENEW_POPULATION (MainCanvas, TestPopl);
+					continue; */	
+					/* case SDLK_g :
+					USER_LAUNCH_GENETIC_ALGORITHM (Renderer, MainCanvas);
+					continue; */
+					case SDLK_h :
+					USER_CALCULATE_AND_DISPLAY_ENTROPIES (Renderer, MainCanvas,
+					TestDispo);
+					continue;
+					case SDLK_j :
+					USER_COMPUTE_AND_DISPLAY_HEIGHTS (Renderer, MainCanvas);
+					continue;
+					case SDLK_k :
+					USER_DISPLAY_TERRAIN (Renderer, MainCanvas);
+					continue;
+					case SDLK_l :
+					USER_GENETIC_ALGORITHM (Renderer, MainCanvas);
+					continue;
+					case SDLK_z :
+					USER_INITIALIZE_POPULATION (MainCanvas, &TestPopl, &KeepProportion,
+					&MutateProportion);
+					continue;
+					case SDLK_x :
+					USER_GENETIC_ALGORITHM_STEP (MainCanvas, TestPopl, KeepProportion,
+					MutateProportion);
+					continue;
+					case SDLK_c :
+					USER_INITIALIZE_AND_DISPLAY_INDIVIDUAL_AND_DISPO (Renderer, MainCanvas,
+					&TestIndiv);
+					continue;
+					case SDLK_v :
+					USER_INITIALIZE_AND_DISPLAY_INDIVIDUAL_AND_DISPO (Renderer, MainCanvas,
+					&TestIndiv_bis);
+					continue;
+					case SDLK_b :
+					USER_CROSS_AND_DISPLAY_INDIVIDUALS (Renderer, MainCanvas,
+					&TestIndiv, &TestIndiv_bis);
+					continue;
+					
+					default:
+					continue;
+				}
+				
+				case (SDL_MOUSEBUTTONDOWN) :
+				IsMouseButtonClicked = true;
+				continue;
+				
+				case (SDL_MOUSEBUTTONUP) :
+				IsMouseButtonClicked = false;
+				continue;
+				
+				case (SDL_MOUSEMOTION) :
+				if (IsMouseButtonClicked) USER_DRAW_SERVICE (Renderer, &DrawRed,
+				&DrawBlue, &DrawGreen, &MouseX, &MouseY, MainCanvas, &Fill_row,
+				&Fill_column, CurrentServiceClass);
+				continue;
+				
+				case SDL_QUIT:
+				PRG_RUN = SDL_FALSE;
+				SDL_DestroyRenderer (Renderer);
+				SDL_DestroyWindow (Window);
+				break;
+				default:
+				continue;
+			}
+		}
+	}
+	
+	return EXIT_SUCCESS;
+}
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{linked\_list.h}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#ifndef LINKED_LIST_H
+#define LINKED_LIST_H
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+struct l_node_s {
+	int x;
+	int y;
+	int spec;
+	struct l_node_s* next;
+};
+typedef struct l_node_s* l_list;
+
+l_list create_l_node (int x, int y, int spec);
+bool is_empty_l_list (l_list l);
+void free_l_list (l_list l);
+void l_insert (l_list* pl, int x, int y, int spec);
+
+#endif
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{linked\_list.c}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#include "linked_list.h"
+
+l_list create_l_node (int x, int y, int spec){
+	// retourne une liste chaînée réduite à une cellule contenant les champs x, y et spec
+	l_list l = (l_list) malloc (sizeof(struct l_node_s));
+	l->x = x;
+	l->y = y;
+	l->spec = spec;
+	return l;
+}
+
+bool is_empty_l_list (l_list l){
+	return l == NULL;
+}
+
+void free_l_list (l_list l){
+	// libère l'espace mémoire alloué à la liste l
+	while (l != NULL){
+		l_list temp = l;
+		l = l->next;
+		free (temp);
+	}
+}
+
+void l_insert (l_list* pl, int x, int y, int spec){
+	l_list new_nd = create_l_node (x, y, spec);
+	new_nd->next = *pl;
+	*pl = new_nd;
+}
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{tools.h}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#ifndef TOOLS_H
+#define TOOLS_H
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <math.h>
+
+extern const double pi;
+
+int min (int a, int b);
+int max (int a, int b);
+double min_double (double a, double b);
+double max_double (double a, double b);
+double RAND_VAR_HALF_NORMAL_DISTRIBUTION (double Peak, double StdDeviation);
+
+#endif
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{tools.c}}}
+\vspace*{1mm}
+\hrule
+\begin{C}
+#include "tools.h"
+
+
+const double pi = 3.141592654;
+
+
+int min (int a, int b){
+	if (a < b) return a;
+	else return b;
+}
+
+int max (int a, int b){
+	if (a > b) return a;
+	else return b;
+}
+
+double min_double (double a, double b){
+	if (a < b) return a;
+	else return b;
+}
+
+double max_double (double a, double b){
+	if (a > b) return a;
+	else return b;
+}
+
+double abs_double (double x){
+	if (x >= 0) return x;
+	else return -x;
+}
+
+// generates a random float in ]-inf,Peak] according to a left half-normal distribution
+// with mean Peak and standard deviation StdDeviation
+double RAND_VAR_HALF_NORMAL_DISTRIBUTION (double Peak, double StdDeviation){
+	double Unif1, Unif2;
+	double SumSq = 1;
+	// generate Unif1 and Unif2 values following uniform distribution on [-1,1[
+	while (SumSq >= 1){
+		Unif1 = 2*((double)rand() / (double)RAND_MAX)-1;
+		Unif2 = 2*((double)rand() / (double)RAND_MAX)-1;
+		SumSq = Unif1*Unif1 + Unif2*Unif2;
+	}
+	// NormalStandardized follows a normal distribution of mean 0 and variance 1
+	double NormalStandardized = Unif1*sqrt((-2*log(SumSq))/SumSq);
+	return -StdDeviation*(abs_double(NormalStandardized)) + Peak;
+}
+\end{C}
+\vspace*{5mm}
+{\Large \texttt{\textbf{Makefile}}}
+\vspace*{1mm}
+\hrule
+\begin{minted}[tabsize=4]{c}
+tools.o : tools.c tools.h
+gcc -c -g tools.c -o tools.o $$(sdl2-config --cflags --libs) -lm
+
+canvas.o : canvas.c canvas.h
+gcc -c -g canvas.c -o canvas.o $$(sdl2-config --cflags --libs) -lm
+
+terrain.o : terrain.c terrain.h
+gcc -c -g terrain.c -o terrain.o $$(sdl2-config --cflags --libs) -lm
+
+display.o : display.c display.h
+gcc -c -g display.c -o display.o $$(sdl2-config --cflags --libs) -lm 
+
+dispo.o : dispo.c dispo.h
+gcc -c -g dispo.c -o dispo.o $$(sdl2-config --cflags --libs) -lm 
+
+gen-algo.o : gen-algo.c gen-algo.h
+gcc -c -g gen-algo.c -o gen-algo.o $$(sdl2-config --cflags --libs) -lm 
+
+interactions.o : interactions.c interactions.h
+gcc -c -g interactions.c -o interactions.o $$(sdl2-config --cflags --libs) -lm 
+
+linked_list.o : linked_list.c linked_list.h
+gcc -c -g linked_list.c -o linked_list.o
+
+
+
+
+
+clean :
+rm -f *.o
+
+clean_all :
+rm -f *.o
+rm main
+
+main : main.c tools.c canvas.c terrain.c dispo.c display.c gen-algo.c interactions.c linked_list.c
+	tools.o canvas.o terrain.o dispo.o display.o gen-algo.o interactions.o linked_list.o
+gcc -g tools.o canvas.o terrain.o dispo.o display.o gen-algo.o interactions.o linked_list.o main.c
+	-o main $$(sdl2-config --cflags --libs) -lm
+rm -f *.o
+\end{minted}
+\end{document}

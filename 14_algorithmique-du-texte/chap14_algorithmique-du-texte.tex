@@ -1,0 +1,323 @@
+\input{../commands_alt.tex}
+\usepackage{euscript}
+\DeclareMathOperator{\argormax}{(arg)max}
+\DeclareMathOperator{\val}{val}
+
+\begin{document}
+	
+\title{Algorithmique du texte}
+
+\intro{On appelle texte toute suite finie de caractères, c'est-à-dire ce qu'on a appelé ``mot'' jusqu'à présent. L'algorithmique du texte consiste à résoudre des problèmes sur des textes qui peuvent en \\ réalité modéliser des informations diverses : textes réels, séquences d'ADN, musique, images...}
+
+L'algorithmique du texte présente des applications dans la résolution de nombreux problèmes en informatique, par exemple : \\
+	\hs{5} \bdot les recherches de similarité (plus long sous-mot commun, plus long facteur commun, distance\\ \hs{7.8} d'édition et recherche d'alignements...) \\
+	\hs{5} \bdot la recherche de motifs (penser au \textsf{Ctrl\,+\,F} dans un éditeur de texte ou un navigateur) \\
+	\hs{5} \bdot la compression de texte (encodage des caractères sur un nombre variable de bits, encodage par \\ \hs{7.8} facteurs...) \nt
+	%
+Dans ce chapitre, nous traiterons et résoudrons quelques uns de ces problèmes.
+
+\eqskip{3mm}
+\vs{1}
+\begin{Rappel}[alphabets, mots et concaténation]
+	On rappelle qu'un alphabet est un ensemble de fini et non vide de caractères. Pour \(\Sigma\) un alphabet, on définit l'ensemble des mots sur \(\Sigma\) et l'ensemble des mots \emph{non vides} sur \(\Sigma\), notés respectivement \(\Sigma^*\) et \(\Sigma^+\), par :
+		\begin{align*}
+			& \text{\bdot} \Sigma^* = \bigcup_{n\in\bb{N}} \Sigma^n \\
+			& \text{\bdot} \Sigma^+ = \bigcup_{n\in\bb{N}^*} \Sigma^n = \Sigma^*\backslash\{\varepsilon\}
+		\end{align*}
+	où \(\varepsilon\) désigne le mot vide, unique élément de \(\Sigma^0\). \nt
+		%
+	\colsep{1.5pt}
+	\eqskip{2mm}
+	On définit aussi l'opération de concaténation sur \(\Sigma^*\), notée ``\(\cdot\)'' :
+		\[
+			\forall\left(\!(u_i)_{i\in[1..n]}, (v_j)_{j\in[1..m]}\right)\in(\Sigma^*)^2, \,u\cdot v = (w_k)_{k\in[1..n+m]} \text{ où}\,
+			\left\{ \begin{tabular}[h]{l}
+				\(\forall\,k\in[1..n]\), \(w_k = u_k\) \\
+				\(\forall\,k\in[n+1..n+m]\), \(w_k = v_{k-n}\)
+			\end{tabular} \right.
+		\]
+	Alors, \((\Sigma^*,\cdot)\) est un monoïde (\emph{i.e.} la loi \(\cdot\) est interne associative et possède un élément neutre). Son neutre est \(\varepsilon\).
+\end{Rappel}
+
+\begin{Rappel}[sous-mots, facteurs, préfixes et suffixes]
+	Soit \((u,v)\in(\Sigma^*)^2\), on note \(n=|u|\) et \(m=|v|\). Alors : \\
+		\hs{5} \bdot \(u\) est un sous-mot de \(v\) ssi il existe une application \(\varphi\in\EuScript{F}([1..n],[1..m])\) strictement \\ \hs{7.8} croissante telle que \(u = (v_{\varphi(i)})_{i\in[1..n]}\) \\
+		\hs{5} \bdot \(u\) est un facteur de \(v\) ssi il existe \(i\in[1..m-n]\) tel que \(u = (v_{i+k})_{k\in[1..n]}\) \\
+		\hs{5} \bdot \(u\) est un préfixe de \(v\) ssi il existe \(w\in\Sigma^*\) tel que \(v = u\cdot w\) \\
+		\hs{5} \bdot \(u\) est un suffixe de \(v\) ssi il existe \(w\in\Sigma^*\) tel que \(v = w\cdot u\).
+\end{Rappel}
+
+\vs{2}
+\begin{Remarque}
+	De façon alternative, \(u\in\Sigma^*\) est un facteur de \(v \in \Sigma^*\) ssi il existe \((i,j)\in[1..|u|]^2\) tel que \(u = (v_k)_{k\in[i..j]}\). En particulier, \(\varepsilon\) est toujours un facteur de \(v\).
+\end{Remarque}
+
+\pagebreak
+\section{Plus long facteur commun}
+	
+	On considère le problème \textsf{Plus long facteur commun}, que l'on abrège en \textsf{PLFC} :
+	\begin{center}
+		\pbm{PLFC}{\(u\in\Sigma^*\) de longueur \(n\) \\ \entspace \(v\in\Sigma^*\) de longueur \(m\) \\[-3mm]}{\(\argormax \left\{ |f| \,\middle|\, f\in\Sigma^*, \hs{-2}
+		\begin{tabular}[h]{l}
+			\(\exists\,(i,j)\in[1..n]^2,\, f = (u_k)_{k\in[i..j]}\) \\
+			\(\exists\,(p,q)\in[1..m]^2,\, f = (v_k)_{k\in[p..q]}\)
+		\end{tabular} \hs{-2}\right\}\)}
+	\end{center}
+	\vs{2}
+	\eqskip{2mm}
+	On en propose une résolution par programmation dynamique. \\
+	Soit \((u,v)\in(\Sigma^*)^2\). Notons \(n=|u|\) et \(m=|v|\). \nt
+	Pour \((i,j)\in[0..n]\times[0..m]\), on pose :
+			\[
+				A_{i,j} = \max\{|s| \,|\, \text{\(s\) est un suffixe de \(u_1...u_i\) et \(v_1...v_j\)}\} \leq \min(i,j)
+			\]
+	La propriété qui suit donne alors une façon de résoudre le problème à partir de ces sous-problèmes.
+			
+	\begin{Proprietes}
+		\colsep{1.5pt}
+		On a :\!
+			\begin{tabular}[t]{cl}
+				\i & \(A_{0,0} = 0\) \\
+				\ii & \(\forall\,i\in[0..n]\), \(A_{i,0} = 0\) \\
+				\iii & \(\forall\,j\in[0..m]\), \(A_{0,j} = 0\) \\[-2mm]
+				\iv & \(\forall\,(i,j)\in[1..n]\times[1..m]\), \(A_{i,j} =
+				\left\{ \begin{tabular}[h]{l}
+					\(A_{i-1,j-1} + 1\) si \(u_i = v_j\) \\
+					\(0\) sinon
+				\end{tabular} \right.\)
+			\end{tabular} \nt
+		De plus, \(\mathsf{PLFC}(u,v) = \displaystyle \max_{(i,j)\in[0..n]\times[0..m]} A_{i,j}\).
+	\end{Proprietes}
+
+
+\section{Recherche de motifs}
+
+	On s'intéresse à présent à la recherche de motifs dans un texte. Plus précisément, on veut obtenir toutes les occurences d'un motif donné dans un texte donné, ce qui peut se formaliser comme suit.
+		\begin{center}
+			\pbm{RDM}{\(t\in\Sigma^*\) un texte de longueur \(n\) \\ \entspace \(x\in\Sigma^*\) un motif de longueur \(m\)}{\(\left\{i\in[1..n-m+1] \,|\, (t_{i+k})_{k\in[0..m-1]} = x\right\}\)}
+		\end{center}
+	Remarquons que dans cette formalisation du problème, on obtient en sortie de \(\mathsf{RDM}(t,x)\) l'ensemble des indices de \emph{début} des occurences de \(x\) dans \(t\).
+	
+	\subsection{Algorithme naïf}
+	
+		Une première approche possible pour sa résolution est celle naïve que propose l'algorithme suivant.
+		
+		\begin{algo}{Motif\_naïf}{$(t_i)_{i\in[1..n]} \in \Sigma^*$ et $(x_i)_{i\in[1..m]} \in \Sigma^*$}{}{}
+			\(i = 1\) \\
+			Tant que \(i \leq n-m+1\) \\ \Indp
+				\(j = 0\) \\
+				Tant que (\(j<m\) et \(t_{i+j} = x_{j+1}\)) \\ \Indp
+					\(j \gets j+1\) \\ \Indm
+				Si \(j = m\) alors \\ \Indp afficher \(i\) \\ \Indm
+				\(i \gets i+1\)
+		\end{algo}
+	
+		\textsf{Motif\_naïf} est facilement en \(\Theta(m(n-m))\), soit encore \(\Theta(nm)\) quand \(|x| \ll |t|\). Cependant, on peut faire mieux : c'est précisément l'objet de la prochaine propriété, qui introduit un principe reposant sur la représentation des entiers en base \(b\) et permettant d'écrire des algorithmes plus efficaces.
+	
+	\subsection{Algorithmes de Rabin-Karp}
+	
+		\vs{-2}
+		\begin{Propriete}
+			Soit \(\Sigma = [0..b[\). Pour \(w \in \Sigma^m\) et \((g,d)\in\Sigma^2\), on a :
+				\begin{align*}
+					& \text{\bdot} \val_b(g\cdot w) = gb^m + \val_b(w) \\[-1mm]
+					& \text{\bdot} \val_b(w\cdot d) = b\val_b(w) + d = b (\val_b(gw) - gb^m) + d
+				\end{align*}
+		\end{Propriete}
+		
+		\vs{2}
+		\begin{algo}{Rabin-Karp}{\(t\in\Sigma^*\) où \(|\Sigma|=b\) \\ \aentspace \(x\in\Sigma^*\) avec \(|x| \leq |t|\)}{}{}
+			\(n,m = |t|, |x|\) \\
+			\(c_x, c_f, b_m = 0,0,1\) \\
+			Pour \(i\) allant de \(1\) à \(m\) \\ \Indp
+				\(c_x \gets (c_x * b) + x_i \) \\
+				\(c_f \gets (c_f * b) + t_i\) \\
+				\(b_m \gets b \times b_m\) \\ \Indm
+			Si \(c_f = c_x\) alors \quad{\footnotesize \textbf{/\!\!/\emph{ici \(\bm{b_m = b^m}\)}}} \\ \Indp afficher 1 \\ \Indm
+			Pour \(d\) allant de 0 à \(n-m-1\) \\ \Indp
+				\(c_f \gets b(c_f - t_{d+1}b_m) + t_{d+m+1}\) \\
+				Si \(c_x = c_f\) alors \\ \Indp
+					afficher \((d+2)\)
+		\end{algo}
+		
+		\bdot Si l'on compte les additions et les multiplications, la première boucle ``Pour'' est en \(\Theta(m)\). \\ 
+		\bdot De même, il y a de l'ordre de \(\Theta(n-m)\) tours de la deuxième boucle ``Pour'', chacune faisant intervenir des opérations \(=,+,-,\times\) qui sont en \(\Theta(m)\). \nt
+			%
+		D'où une complexité totale en \(\Theta(nm)\) : elle n'est donc pas pour l'instant meilleure que \textsf{Motif-naïf}. \nll
+			%
+		Afin de l'améliorer, on modifie l'algorithme en décidant de réaliser cette fois les opérations modulo un entier \(q > 0\), ce qui permet de rendre leurs complexités constantes (c'est-à-dire en \(\Theta(1)\)).
+		
+		\begin{algo}{Rabin-Karp\_bis}{\(q\in\bb{N}^*\) \\ \aentspace \(t\in\Sigma^*\) avec \(|\Sigma|=b\) \\ \aentspace \(x\in\Sigma^*\) avec \(|x| \leq |t|\)}{}{}
+			\(n,m = |t|, |x|\) \\
+			\(c_x, c_f, b_m = 0,0,1\) \\
+			Pour \(i\) allant de \(1\) à \(m\) \\ \Indp
+				\(c_x \gets (c_x * b) + x_i \mod{q}\) \\
+				\(c_f \gets (c_f * b) + t_i \mod{q}\) \\
+				\(b_m \gets b \times b_m\) \\ \Indm
+			Si \(c_f = c_x\) alors \\ \Indp
+				Si \(t_1...t_{m} = x\) alors \\ \Indp
+					afficher \(1\) \\ \Indm \Indm
+		\end{algo}
+		
+		\begin{algocont}
+			Pour \(d\) allant de \(0\) à \(n-m-1\) \\ \Indp
+			\(c_f \gets b(c_f - t_{d+1}b_m) + t_{d+m+1} \mod{q}\) \\
+			Si \(c_f = c_x\) alors \\ \Indp
+			Si \(t_{d+2}...t_{d+m+1} = x\) alors \\ \Indp
+			afficher \((d+2)\) \\ \Indm \Indm
+		\end{algocont}
+		
+		Cette nouvelle version de l'algorithme présente toujours des tests d'égalité en \(\Theta(m)\) dans les boucles ``Pour'', mais ils se produisent maintenant beaucoup plus rarement, ce qui affaiblit la complexité moyenne.
+		
+	\subsection{Algorithmes de Boyer-Moore}
+		
+		On donne enfin deux exemples d'algorithmes qui exploitent la forme même du motif afin d'effectuer une recherche plus intelligente de ses éventuelles occurences dans le texte considéré.
+		
+		\subsubsection{Algorithme de Boyer-Moore-Horspoole}
+		
+			\vs{-2}
+			\colsep{2.2pt}
+			\begin{Notation}
+				Pour \(x\in\Sigma^m\), on pose :
+					\(
+						f_x = \fun{\Sigma}{\bb{N}}{a}{
+							\left\{ \begin{tabular}[h]{l}
+								\(m\) si \(a\notin\{x_i \,|\, i\in[1..m-1]\}\) \\
+								\(m - \max\left\{i\in[1..m-1] \,|\, x_i = a\right\}\) sinon
+							\end{tabular} \right.
+						}
+					\)
+			\end{Notation}
+			
+			\vs{2}
+			\begin{Remarque}
+				Si \(a\in\Sigma\), on peut aussi écrire \(f_x(a) = m - \max\left(\left\{i\in[1..m-1]\,|\,x_i = a\right\} \cup \{0\}\right)\).
+			\end{Remarque}
+			\vs{2}
+			
+			\begin{algo}{Precalcul\_BMH}{\(x\in\Sigma^*\)}{}{}
+				\(f = \text{tableau indexé par \(\Sigma\), initialisé à \(m\)}\) \\[-2mm]
+				Pour \(i\) allant de \(1\) à \(m-1\) \colsep{1.2pt}\quad{\footnotesize \textbf{/\!\!/\emph{\(\bm{\,\forall\,a\in\Sigma,\, f[a] =
+					\left\{}\begin{tabular}[h]{l}
+						\(\bm{m}\) si \(\bm{a\notin \{x_j \,|\, j\in[1..i-1]}\}\) \\
+						\(\bm{m - \max\left\{ j \in [1..i-1] \,|\, x_j = a\right\}}\) sinon
+					\end{tabular} \right.\)}}} \\[-3mm] \Indp
+					\(f[x_i] \gets m-i\) \\ \Indm
+				Retourner \(f\)
+			\end{algo}
+		
+			\begin{algo}{Boyer-Moore-Horspoole}{\(x,t\in\Sigma^*\)}{}{}
+				\(n,m = |t|,|x|\) \\
+				\(f = \mathsf{Precalcul\_BMH}(x)\) \\
+				\(d=0\) \\
+				Tant que \(d\leq n-m\) \\ \Indp
+					Si \(t_{d+1}...t_{d+m} = x_1...x_m\) alors \\ \Indp
+						afficher \(d+1\) \\ \Indm
+					\(d \gets d+f[t_{d+m}]\)
+			\end{algo}
+			
+			\vs{4}
+			\begin{Exemple}
+				\emph{cf.} annexe.
+			\end{Exemple}
+		
+		\subsubsection{Algorithme simplifié de Boyer-Moore}
+			
+			\pagebreak
+			\colsep{2.2pt}
+			\begin{Notation}
+				Pour \(x\in\Sigma^m\), on note :
+				\(
+				g_x = \fun{\Sigma}{\bb{N}}{a}{
+					\left\{ \begin{tabular}[h]{l}
+						\(m\) si \(a\notin\{x_i \,|\, i\in[1..m]\}\) \\
+						\(m - \max\left\{i\in[1..m] \,|\, x_i = a\right\}\) sinon
+					\end{tabular} \right.
+				}
+				\)
+			\end{Notation}
+		
+			\begin{algo}{Precalcul\_BMS}{\(x\in\Sigma^*\)}{}{}
+				\(g = \text{tableau indexé par \(\Sigma\), initialisé à \(m\)}\) \\
+				Pour \(i\) allant de \(1\) à \(m\) \\ \Indp
+				\(f[x_i] \gets m-i\) \\ \Indm
+				Retourner \(g\)
+			\end{algo}
+		
+			\begin{algo}{Boyer-Moore\_simplifié}{\(x,t\in\Sigma^*\)}{}{}
+				\(n,m = |t|,|x|\) \\
+				\(g = \mathsf{Precalcul\_BMS}(x)\) \\
+				\(d=0\) \\
+				Tant que \(d\leq n-m\) \\ \Indp
+					\(i = 0\) \\ 
+					Tant que (\(t_{d+m-i}=x_{m-i}\) et \(i < m\)) \\ \Indp
+						\(i \gets i+1\) \\ \Indm
+					Si \(i=m\) alors \\ \Indp
+						afficher \(d+1\) \\
+						\(d \gets d+1\) \\ \Indm
+					Sinon \\ \Indp
+						\(d \gets d+\max(1,g[t_{d+m-i}]-i)\)
+			\end{algo}
+			
+			\vs{4}
+			\begin{Exemple}
+				\emph{cf.} annexe.
+			\end{Exemple}
+		
+\section{Compression}
+
+	\'Etant donné un texte \(t = t_1t_2...t_k...t_n\) dont les caractères sont dans un alphabet \(\Sigma\), on cherche à l'encoder par des caractères d'un ``sur-alphabet'' ou ``super-alphabet'' \(\widehat{\Sigma}\) dont certains caractères encoderont des facteurs de \(t\), ceci dans le but de réduire la taille de stockage du texte. \nt
+		%
+	On aura donc un application \(\varphi\in\EuScript{F}_p(\Sigma^+,\widehat{\Sigma})\) telle que \(\Sigma \subseteq \EuScript{D}(\varphi)\), injective (voire même bijective, quitte à restreindre \(\widehat{\Sigma}\)).
+	
+	\vs{-2}
+	\begin{Illustration}
+		Concrètement, pour un texte \(t = \overbrace{t_1...t_{r_1}|t_{r_1+1}...t_{r_2}|\ldots|t_{r_{K-1}+1}...t_{n}}^K\), on aura un encodage de la forme \(c = \varphi(t_1...t_{r_1})\,\varphi(t_{r_1+1}...t_{r_2})\ldots\varphi(t_{r_{K-1}+1}...t_n) \in \widehat{\Sigma}^K\).
+	\end{Illustration}
+	
+	\subsection{Algorithmes de Lempel-Ziv-Welch}
+	
+	Voyons dans un premier temps comment on peut intuitivement réaliser la compression et la décompression d'un texte, à partir d'un exemple bien choisi.
+	
+	\vs{2}
+	\begin{Exemple}
+		Prenons \(t = \text{\textsf{AUTOAUTOTAU}}\) sur \(\Sigma_\ell\), l'ensemble des lettres de l'alphabet latin majuscule.
+	\end{Exemple}
+	
+	\vs{2}
+	On donne maintenant les pseudo-codes correspondant aux deux algorithmes que nous venons d'appliquer, appelés algorithmes de Lempel-Ziv-Welch.
+	\vs{2}
+	
+	\begin{algo}{Comp\_LZW}{\(t = (t_i)_{i\in[0..n]}\) un texte \\ \aentspace \(d\) un dictionnaire}{}{$t\in\Sigma^+$, les clés de \(d\) sont exactement \(\Sigma\) et ses valeurs sont dans $[0..|\Sigma|-1]$}
+		\(n,k = |t|, |\Sigma|\) \\
+		\(\rm{res} = \varepsilon\) \\
+		\(m = t[\,0\,]\) \\
+		Pour \(i\) allant de \(1\) à \(n-1\) \\ \Indp
+			Si \(m\cdot t[\,i\,] \in d.\text{\textsf{clés}}\) alors \\ \Indp
+				\(m \gets m\cdot t[\,i\,]\) \\ \Indm
+			Sinon \\ \Indp
+				\(\rm{res} \gets \rm{res} \cdot d[m]\) \\
+				\(d.\text{\textsf{ajouter}}\,(\overbrace{m\cdot t[\,i\,]}^{\rm{clé}}, \!\overbrace{k}^{\rm{valeur}}\!)\) \\
+				\(k \gets k+1\) \\
+				\(m \gets t[\,i\,]\) \\ \Indm \Indm
+		Retourner \(\rm{res}\)
+	\end{algo}
+	
+	\vs{4}
+	\begin{algo}{Décomp\_LZW}{\(c = (c_i)_{i\in[0..n-1]}\) un texte non vide \\ \aentspace \(d\) un dictionnaire}{}{les clés de \(d\) sont $[0..|d|-1]$}
+		\(n,k = |c|, |d|\) \\
+		\(\rm{res} = d[\,c[0]\,]\) \\
+		\(m = d[\,c[0]\,]\) \\
+		Pour \(i\) allant de \(1\) à \(n-1\) \\ \Indp
+			Si \(c[\,i\,] \in d.\text{\textsf{clés}}\) alors \\ \Indp
+				\(r = d[\,c[i]\,]\) \\ \Indm
+			Sinon \\ \Indp
+				\(r = m \cdot m[\,0\,]\) \\ \Indm
+			\(\rm{res} \gets \rm{res} \cdot r\) \\
+			\(d.\text{\textsf{ajouter}}\,(\overbrace{k}^{\text{clé}}, \!\overbrace{m\cdot r[\,0\,]}^{\text{val. \!associée}} \!)\) \\
+			\(k \gets k+1\) \\
+			\(m \gets r\) \\ \Indm
+		Retourner res
+	\end{algo}
+
+\end{document}

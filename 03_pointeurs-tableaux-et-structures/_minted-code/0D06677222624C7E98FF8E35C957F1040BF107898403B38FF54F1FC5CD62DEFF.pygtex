@@ -1,0 +1,119 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include}\PYG{+w}{ }\PYG{c+cpf}{\PYGZdq{}terrain.h\PYGZdq{}}
+
+
+\PYG{k}{const}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cNoiseFrequencyPixels}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{200}\PYG{p}{;}
+
+
+\PYG{c+c1}{// returns smoothstep (lambda)}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{SMOOTHSTEP}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{lambda}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mi}{3}\PYG{o}{*}\PYG{n}{lambda}\PYG{o}{*}\PYG{n}{lambda}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{n}{lambda}\PYG{o}{*}\PYG{n}{lambda}\PYG{o}{*}\PYG{n}{lambda}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// given a noise tiling whose tiles are sized NoiseFrequency and the noise values at each}
+\PYG{c+c1}{// tile\PYGZsq{}s corners contained in VertexHeights, returns the height map\PYGZsq{}s value at the point}
+\PYG{c+c1}{// of coordinates (PixelX, PixelY) obtained by interpolating between the nearest vertices}
+\PYG{c+c1}{// according to the smoothstep function}
+\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{F\PYGZus{}HEIGHT\PYGZus{}OF\PYGZus{}PIXEL}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{o}{*}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{VertexHeights}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NoiseFrequency}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{PixelX}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{PixelY}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// find the position of the tile containing PixelX and PixelY}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Tile\PYGZus{}i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{PixelY}\PYG{o}{/}\PYG{n}{NoiseFrequency}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Tile\PYGZus{}j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{PixelX}\PYG{o}{/}\PYG{n}{NoiseFrequency}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// printf (\PYGZdq{}\PYGZpc{}d,\PYGZpc{}d\PYGZbs{}n\PYGZdq{}, Tile\PYGZus{}i, Tile\PYGZus{}j);}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// extract the height at each one of the tile\PYGZsq{}s corners}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{VertexHeights}\PYG{p}{[}\PYG{n}{Tile\PYGZus{}i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{Tile\PYGZus{}j}\PYG{p}{]}\PYG{p}{;}\PYG{+w}{     }\PYG{c+c1}{// top\PYGZhy{}left}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{b}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{VertexHeights}\PYG{p}{[}\PYG{n}{Tile\PYGZus{}i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{Tile\PYGZus{}j}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{;}\PYG{+w}{   }\PYG{c+c1}{// top\PYGZhy{}right}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{c}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{VertexHeights}\PYG{p}{[}\PYG{n}{Tile\PYGZus{}i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{[}\PYG{n}{Tile\PYGZus{}j}\PYG{p}{]}\PYG{p}{;}\PYG{+w}{   }\PYG{c+c1}{// bottom\PYGZhy{}left}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{d}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{VertexHeights}\PYG{p}{[}\PYG{n}{Tile\PYGZus{}i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{[}\PYG{n}{Tile\PYGZus{}j}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// bottom\PYGZhy{}right}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{i\PYGZus{}diff}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{PixelY}\PYG{o}{/}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{NoiseFrequency}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{Tile\PYGZus{}i}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{j\PYGZus{}diff}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{PixelX}\PYG{o}{/}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{NoiseFrequency}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{Tile\PYGZus{}j}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{b}\PYG{o}{\PYGZhy{}}\PYG{n}{a}\PYG{p}{)}\PYG{o}{*}\PYG{n}{SMOOTHSTEP}\PYG{p}{(}\PYG{n}{j\PYGZus{}diff}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{c}\PYG{o}{\PYGZhy{}}\PYG{n}{a}\PYG{p}{)}\PYG{o}{*}\PYG{n}{SMOOTHSTEP}\PYG{p}{(}\PYG{n}{i\PYGZus{}diff}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}
+\PYG{+w}{	}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{a}\PYG{o}{\PYGZhy{}}\PYG{n}{b}\PYG{o}{\PYGZhy{}}\PYG{n}{c}\PYG{o}{+}\PYG{n}{d}\PYG{p}{)}\PYG{o}{*}\PYG{n}{SMOOTHSTEP}\PYG{p}{(}\PYG{n}{j\PYGZus{}diff}\PYG{p}{)}\PYG{o}{*}\PYG{n}{SMOOTHSTEP}\PYG{p}{(}\PYG{n}{i\PYGZus{}diff}\PYG{p}{)}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{//}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{ADD\PYGZus{}NOISE\PYGZus{}LAYER}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NoiseFrequency}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{RotationRadians}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{LayerWeight}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// calculate number of tiles in length, in width and diagonally to cover window rectangle}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{WidthTiles}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{/}\PYG{n}{NoiseFrequency}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{HeightTiles}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{/}\PYG{n}{NoiseFrequency}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{DiagonalSizePixels}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{ceil}\PYG{p}{(}\PYG{n}{sqrt}\PYG{p}{(}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{*}\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{+}
+\PYG{+w}{	}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{*}\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// determine heights of tile vertices randomly}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{InscribingSquareSizeTiles}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{n}{DiagonalSizePixels}\PYG{o}{/}\PYG{n}{NoiseFrequency}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{o}{*}\PYG{o}{*}\PYG{+w}{ }\PYG{n}{VertexHeights}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{o}{*}\PYG{o}{*}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{(}\PYG{n}{InscribingSquareSizeTiles}\PYG{p}{)}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{double}\PYG{o}{*}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{row}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{InscribingSquareSizeTiles}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{row}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{VertexHeights}\PYG{p}{[}\PYG{n}{row}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{double}\PYG{o}{*}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{malloc}\PYG{+w}{ }\PYG{p}{(}\PYG{p}{(}\PYG{n}{InscribingSquareSizeTiles}\PYG{p}{)}\PYG{o}{*}\PYG{k}{sizeof}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{column}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{InscribingSquareSizeTiles}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{column}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{VertexHeights}\PYG{p}{[}\PYG{n}{row}\PYG{p}{]}\PYG{p}{[}\PYG{n}{column}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{LayerWeight}\PYG{o}{*}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{rand}\PYG{p}{(}\PYG{p}{)}\PYG{o}{/}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{RAND\PYGZus{}MAX}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// calculate height of each canvas cell\PYGZsq{}s midpoint pixel according to the above values}
+\PYG{+w}{	}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{CellX}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{CellY}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{ASSIGN\PYGZus{}MIDPOINT\PYGZus{}OF\PYGZus{}CELL}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{CellX}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZam{}}\PYG{n}{CellY}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{j}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{HalfWidth}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{;}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{HalfHeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cWindowDims}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{;}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{c+c1}{// rotate heightmap by RotationRadians}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{RotatedX}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{cos}\PYG{p}{(}\PYG{n}{RotationRadians}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{CellX}\PYG{o}{\PYGZhy{}}\PYG{n}{HalfWidth}\PYG{p}{)}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{sin}\PYG{p}{(}\PYG{n}{RotationRadians}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{CellY}\PYG{o}{\PYGZhy{}}\PYG{n}{HalfHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{DiagonalSizePixels}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{;}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{RotatedY}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{sin}\PYG{p}{(}\PYG{n}{RotationRadians}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{CellX}\PYG{o}{\PYGZhy{}}\PYG{n}{HalfWidth}\PYG{p}{)}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{cos}\PYG{p}{(}\PYG{n}{RotationRadians}\PYG{p}{)}\PYG{o}{*}\PYG{p}{(}\PYG{n}{CellY}\PYG{o}{\PYGZhy{}}\PYG{n}{HalfHeight}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{DiagonalSizePixels}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{;}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{c+c1}{// printf (\PYGZdq{}\PYGZpc{}d, \PYGZpc{}d \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZgt{} (\PYGZpc{}f) \PYGZpc{}d, \PYGZpc{}d\PYGZbs{}n\PYGZdq{}, CellX, CellY, RotationRadians, RotatedX, RotatedY);}
+\PYG{+w}{			}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{terrain\PYGZus{}height}\PYG{+w}{ }\PYG{o}{+}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{F\PYGZus{}HEIGHT\PYGZus{}OF\PYGZus{}PIXEL}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{VertexHeights}\PYG{p}{,}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{n}{NoiseFrequency}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{RotatedX}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{RotatedY}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{//}
+\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{GENERATE\PYGZus{}TERRAIN\PYGZus{}HEIGHTMAP}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{canvas}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Amplitude}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{Frequency}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{NumOctaves}\PYG{p}{,}
+\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Lacunarity}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Persistence}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{Exponentiation}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{terrain\PYGZus{}height}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{NoiseFrequency}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Frequency}\PYG{p}{;}
+\PYG{+w}{	}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{LayerWeight}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{\PYGZhy{}}\PYG{n}{Persistence}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{layer}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{layer}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{NumOctaves}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{layer}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{RandAngle}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{o}{*}\PYG{l+m+mf}{3.141592}\PYG{o}{*}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{rand}\PYG{p}{(}\PYG{p}{)}\PYG{o}{/}\PYG{p}{(}\PYG{k+kt}{double}\PYG{p}{)}\PYG{n}{RAND\PYGZus{}MAX}\PYG{p}{;}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{ADD\PYGZus{}NOISE\PYGZus{}LAYER}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Canvas}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{NoiseFrequency}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{RandAngle}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{LayerWeight}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{LayerWeight}\PYG{+w}{ }\PYG{o}{*}\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Persistence}\PYG{p}{;}
+\PYG{+w}{		}\PYG{n}{NoiseFrequency}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{p}{)}\PYG{n}{ceil}\PYG{p}{(}\PYG{p}{(}\PYG{n}{NoiseFrequency}\PYG{o}{/}\PYG{n}{Lacunarity}\PYG{p}{)}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{height\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{width\PYGZus{}cells}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{j}\PYG{o}{+}\PYG{o}{+}\PYG{p}{)}\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{terrain\PYGZus{}height}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Amplitude}
+\PYG{+w}{			}\PYG{c+cm}{/**/}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{n}{pow}\PYG{p}{(}\PYG{n}{Canvas}\PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}}\PYG{n}{cellsA}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{p}{.}\PYG{n}{terrain\PYGZus{}height}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Exponentiation}\PYG{p}{)}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}
